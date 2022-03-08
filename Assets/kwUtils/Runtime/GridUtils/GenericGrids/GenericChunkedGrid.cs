@@ -6,21 +6,24 @@ using UnityEngine;
 
 namespace KWUtils
 {
-    public sealed class GenericChunkedGrid<T> : GenericGrid<T>
+    public sealed class GenericChunkedGrid<T> : AbstractGrid<T>
     where T : struct
     {
         private Dictionary<int, T[]> chunkDictionary;
-        
-        public GenericChunkedGrid(in int2 mapSize, int cellSize, Func<int2, T> createGridObject) : base(in mapSize, cellSize, createGridObject)
+        public GenericChunkedGrid(in int2 mapSize, int cellSize, Func<int2, T> createGridObject)
         {
                 
         }
 
-        public new T[] this[int index]
+        public T[] this[int index]
         {
             get => chunkDictionary[index];
-            set => chunkDictionary[index] = value;
+            set
+            {
+                chunkDictionary[index] = value;
+            }
         }
+        
 
         public void UpdateChunk()
         {

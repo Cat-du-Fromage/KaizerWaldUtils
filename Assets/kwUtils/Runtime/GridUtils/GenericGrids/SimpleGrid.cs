@@ -6,18 +6,9 @@ using UnityEngine;
 
 namespace KWUtils
 {
-    public class GenericGrid<T>
-    //where T : struct
+    public class GenericGrid<T> : AbstractGrid<T>
+    where T : struct
     {
-        protected int CellSize;
-        protected int GridWidth;
-        protected int GridHeight;
-        
-        protected int2 MapWidthHeight;
-        protected int2 GridBounds;
-        
-        public T[] GridArray;
-        
         public GenericGrid(in int2 mapSize, int cellSize, Func<int2, T> createGridObject)
         {
             CellSize = cellSize;
