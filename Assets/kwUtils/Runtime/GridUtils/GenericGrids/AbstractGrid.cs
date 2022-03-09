@@ -2,12 +2,14 @@ using Unity.Mathematics;
 
 namespace KWUtils
 {
-    public interface IGridHandlerTest<T>
+    public interface IGridHandlerTest<T1, out T2>
+    where T1 : struct
+    where T2 : GenericGrid<T1>
     {
-        public T Grid { get; }
+        public T2 Grid { get; }
     }
     
-    public class GridSystemTest : IGridHandlerTest<GenericGrid<bool>>
+    public class GridSystemTest : IGridHandlerTest<bool, GenericGrid<bool>>
     {
         public GenericGrid<bool> Grid { get; }
 
@@ -17,7 +19,7 @@ namespace KWUtils
         }
     }
     
-    public class GridSystemTest2 : IGridHandlerTest<GenericChunkedGrid<bool>>
+    public class GridSystemTest2 : IGridHandlerTest<bool, GenericChunkedGrid<bool>>
     {
         public GenericChunkedGrid<bool> Grid { get; }
 
@@ -25,17 +27,5 @@ namespace KWUtils
         {
             
         }
-    }
-    
-    public abstract class AbstractGrid<T>
-    {
-        protected int CellSize;
-        protected int GridWidth;
-        protected int GridHeight;
-        
-        protected int2 MapWidthHeight;
-        protected int2 GridBounds;
-        
-        public T[] GridArray;
     }
 }

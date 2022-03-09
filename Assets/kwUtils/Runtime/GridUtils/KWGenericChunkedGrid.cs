@@ -53,7 +53,6 @@ namespace KWUtils.KWGenericGrid
             chunkDictionary = arrayGrid.GetGridValueOrderedByChunk(new GridData(chunkSize, cellWidthHeight));
         }
         
-        
         public ChunkedGrid(int2 mapSize, int chunkSize, int cellSize = 1, [CanBeNull] Func<T[]> providerFunction = null)
         {
             BaseConstructor(mapSize.x, mapSize.y, chunkSize, cellSize);
