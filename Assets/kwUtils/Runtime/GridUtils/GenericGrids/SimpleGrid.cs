@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using Unity.Mathematics;
 using UnityEngine;
 
-namespace KWUtils
+namespace KWUtils.KWGenericGrid
 {
     public class GenericGrid<T>
     where T : struct
@@ -51,7 +51,7 @@ namespace KWUtils
             
             GridArray = new T[GridWidth * GridHeight];
         }
-        
+
         //==============================================================================================================
         //ARRAY MANIPULATION
         //==============================================================================================================
@@ -62,5 +62,6 @@ namespace KWUtils
         }
 
         public virtual T GetValue(int index) => GridArray[index];
+        
     }
 }

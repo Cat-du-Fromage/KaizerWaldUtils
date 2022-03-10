@@ -1,15 +1,9 @@
+using System.Collections.Generic;
 using Unity.Mathematics;
 
-namespace KWUtils
+namespace KWUtils.KWGenericGrid
 {
-    public interface IGridHandlerTest<T1, out T2>
-    where T1 : struct
-    where T2 : GenericGrid<T1>
-    {
-        public T2 Grid { get; }
-    }
-    
-    public class GridSystemTest : IGridHandlerTest<bool, GenericGrid<bool>>
+    public class GridSystemTest : IGridHandler<bool, GenericGrid<bool>>
     {
         public GenericGrid<bool> Grid { get; }
 
@@ -17,13 +11,24 @@ namespace KWUtils
         {
             
         }
+
+
+        public void InitializeGrid(int2 terrainBounds)
+        {
+            
+        }
     }
     
-    public class GridSystemTest2 : IGridHandlerTest<bool, GenericChunkedGrid<bool>>
+    public class GridSystemTest2 : IGridHandler<bool, GenericChunkedGrid<bool>>
     {
         public GenericChunkedGrid<bool> Grid { get; }
 
         public void test()
+        {
+            
+        }
+
+        public void InitializeGrid(int2 terrainBounds)
         {
             
         }
