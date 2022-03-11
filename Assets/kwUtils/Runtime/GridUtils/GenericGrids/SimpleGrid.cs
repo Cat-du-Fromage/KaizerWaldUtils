@@ -10,6 +10,7 @@ namespace KWUtils.KWGenericGrid
     where T : struct
     {
         protected int CellSize;
+        protected float HalfCell;
         protected int GridWidth;
         protected int GridHeight;
         
@@ -21,7 +22,7 @@ namespace KWUtils.KWGenericGrid
         public GenericGrid(in int2 mapSize, int cellSize, Func<int2, T> createGridObject)
         {
             CellSize = cellSize;
-
+            HalfCell = cellSize / 2f;
             MapWidthHeight = mapSize;
             
             GridWidth = mapSize.x / cellSize;
@@ -41,7 +42,8 @@ namespace KWUtils.KWGenericGrid
         public GenericGrid(in int2 mapSize, int cellSize)
         {
             CellSize = cellSize;
-
+            HalfCell = cellSize / 2f;
+            
             MapWidthHeight = mapSize;
             
             GridWidth = mapSize.x / cellSize;
@@ -56,6 +58,12 @@ namespace KWUtils.KWGenericGrid
         //ARRAY MANIPULATION
         //==============================================================================================================
 
+        public Vector3 GetCellCenter(int index)
+        {
+            float2 cellCoord = index.GetXY2(MapWidthHeight.x) + new float2(HalfCell);
+            return new Vector3(cellCoord.x,0,cellCoord.y);
+        }
+        
         public virtual void SetValue(int index, T value)
         {
             GridArray[index] = value;

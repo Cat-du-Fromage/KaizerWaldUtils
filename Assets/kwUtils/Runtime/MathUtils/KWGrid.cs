@@ -55,6 +55,15 @@ namespace KWUtils
             return (x, y);
         }
         
+        /// <summary>
+        /// Get array Index from Coord
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static int GetIndex(this in int2 coord, int gridWidth)
+        {
+            return coord.y * gridWidth + coord.x;
+        }
+        
         //=====================================
         //START : MIN INDEX
         //=====================================

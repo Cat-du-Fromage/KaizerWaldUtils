@@ -13,12 +13,12 @@ public class GridSystem : MonoBehaviour, IGridSystem
     public TerrainData MapData { get; private set; }
 
     [SerializeField] private GridHandlerOne gridOne;
-    [SerializeField] private GridHandlerTwo gridTwo;
+    [SerializeField] private ChunkedGridHandlerTwo chunkedGridTwo;
     
     private void Awake()
     {
         gridOne ??= FindObjectOfType<GridHandlerOne>();
-        gridTwo ??= FindObjectOfType<GridHandlerTwo>();
+        chunkedGridTwo ??= FindObjectOfType<ChunkedGridHandlerTwo>();
         
         MapData = mapDataForDebug = FindObjectOfType<Terrain>().terrainData;
         this.AsInterface<IGridSystem>()?.InitializeAllGrids();

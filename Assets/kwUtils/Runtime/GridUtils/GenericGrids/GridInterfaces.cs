@@ -27,8 +27,8 @@ namespace KWUtils.KWGenericGrid
     }
     
     public interface IGridHandler<T1, out T2> : IGridBehaviour
-        where T1 : struct
-        where T2 : GenericGrid<T1>
+    where T1 : struct
+    where T2 : GenericGrid<T1>
     {
         public T2 Grid { get; }
     }
