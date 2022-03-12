@@ -5,12 +5,17 @@ using KWUtils;
 using KWUtils.KWGenericGrid;
 using Unity.Mathematics;
 using UnityEngine;
-
+/*
 public class GridSystem : MonoBehaviour, IGridSystem
 {
     public TerrainData mapDataForDebug;
+    public TerrainData MapData { get; set; }
+    public int2 MapBounds { get; set; }
 
-    public TerrainData MapData { get; private set; }
+    public T1[] RequestGrid<T1, T2>(T2 gridType) where T1 : struct where T2 : Enum
+    {
+        throw new NotImplementedException();
+    }
 
     [SerializeField] private GridHandlerOne gridOne;
     [SerializeField] private ChunkedGridHandlerTwo chunkedGridTwo;
@@ -30,3 +35,4 @@ public class GridSystem : MonoBehaviour, IGridSystem
         
     }
 }
+*/

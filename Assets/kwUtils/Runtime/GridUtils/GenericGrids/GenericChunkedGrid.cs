@@ -17,28 +17,31 @@ namespace KWUtils.KWGenericGrid
         private float halfChunk;
         private int2 chunkWidthHeight;
         
-        public readonly Dictionary<int, T[]> ChunkDictionary;
-        
+        private GridData gridData;
+
+        public Dictionary<int, T[]> ChunkDictionary { get; private set; }
+
         public GenericChunkedGrid(in int2 mapSize, int chunkSize ,int cellSize, Func<int2, T> createGridObject) : base(in mapSize, cellSize, createGridObject)
         {
             this.chunkSize = GetChunkSize(chunkSize, cellSize);
             halfChunk = this.chunkSize / 2f;
 
             chunkWidthHeight = MapWidthHeight / chunkSize;
-            
-            ChunkDictionary = GridArray.GetGridValueOrderedByChunk(new GridData(chunkSize, GridBounds));
+
+            gridData = new GridData(chunkSize, GridBounds);
+            ChunkDictionary = GridArray.GetGridValueOrderedByChunk(gridData);
         }
         
         public GenericChunkedGrid(in int2 mapSize, int chunkSize, int cellSize = 1, [CanBeNull] Func<T[]> providerFunction = null) : base(in mapSize, cellSize)
         {
             this.chunkSize = GetChunkSize(chunkSize, cellSize);
             halfChunk = this.chunkSize / 2f;
-            UnityEngine.Debug.Log($"chunkSize = {this.chunkSize}; half : {halfChunk}");
-            
+
             chunkWidthHeight = MapWidthHeight / chunkSize;
 
             providerFunction?.Invoke()?.CopyTo((Span<T>) GridArray); //CAREFULL may switch with Memory<T>!
-            ChunkDictionary = GridArray.GetGridValueOrderedByChunk(new GridData(chunkSize, GridBounds));
+            gridData = new GridData(chunkSize, GridBounds);
+            ChunkDictionary = GridArray.GetGridValueOrderedByChunk(gridData);
         }
 
         private int GetChunkSize(int chunksSize ,int cellSize)
@@ -73,9 +76,17 @@ namespace KWUtils.KWGenericGrid
             int2 cellCoordInChunk = cellCoord - (chunkCoord * chunkSize);
             return cellCoordInChunk.GetIndex(chunkSize);
         }
+        
         //==============================================================================================================
         //Set both grid value and Chunk Value
         //==============================================================================================================
+        
+        public sealed override void CopyFrom(T[] otherArray)
+        {
+            base.CopyFrom(otherArray);
+            ChunkDictionary = GridArray.GetGridValueOrderedByChunk(gridData);
+        }
+        
         private void UpdateChunk(int gridIndex, T value)
         {
             int2 cellCoord = gridIndex.GetXY2(MapWidthHeight.x);
@@ -102,8 +113,6 @@ namespace KWUtils.KWGenericGrid
         public T[] GetValues(int x, int y) => ChunkDictionary[y * GridWidth + x];
         public T[] GetValues(int2 coord) => ChunkDictionary[coord.y * GridWidth + coord.x];
 
-
-        
 
         
     }

@@ -5,11 +5,13 @@ using KWUtils.KWGenericGrid;
 using Unity.Mathematics;
 using UnityEditor;
 using UnityEngine;
-
+/*
 public class ChunkedGridHandlerTwo : MonoBehaviour, IGridHandler<Vector3, GenericChunkedGrid<Vector3>>
 {
     public bool EnableDebug;
     public GenericChunkedGrid<Vector3> Grid { get; private set; }
+
+    public IGridSystem GridSystem { get; set; }
 
     public void InitializeGrid(int2 terrainBounds)
     {
@@ -50,3 +52,4 @@ public class ChunkedGridHandlerTwo : MonoBehaviour, IGridHandler<Vector3, Generi
         }
     }
 }
+*/

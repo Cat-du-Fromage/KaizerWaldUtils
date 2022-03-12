@@ -1,3 +1,4 @@
+using System.Buffers;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -23,12 +24,18 @@ namespace KWUtils
         {
             MonoBehaviour[] monoBehaviours = Object.FindObjectsOfType<MonoBehaviour>();
             List<I> list = new List<I>();
- 
             foreach(MonoBehaviour behaviour in monoBehaviours)
             {
-                I component = behaviour.GetComponent(typeof(I)) as I;
-                if (component is null) continue;
-                list.Add(component);
+                I[] components = behaviour.GetComponents<I>();
+                if (components.IsNullOrEmpty()) continue;
+                list.AddRange(components);
+                /*
+                for (int i = 0; i < components.Length; i++)
+                {
+                    if (components[i] == null) continue;
+                    list.Add(components[i]);
+                }
+                */
             }
             return list;
         }

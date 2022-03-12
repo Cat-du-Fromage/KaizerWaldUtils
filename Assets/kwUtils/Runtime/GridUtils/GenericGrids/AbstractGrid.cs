@@ -13,6 +13,8 @@ namespace KWUtils.KWGenericGrid
         }
 
 
+        public IGridSystem GridSystem { get; set; }
+
         public void InitializeGrid(int2 terrainBounds)
         {
             
@@ -27,6 +29,8 @@ namespace KWUtils.KWGenericGrid
         {
             
         }
+
+        public IGridSystem GridSystem { get; set; }
 
         public void InitializeGrid(int2 terrainBounds)
         {

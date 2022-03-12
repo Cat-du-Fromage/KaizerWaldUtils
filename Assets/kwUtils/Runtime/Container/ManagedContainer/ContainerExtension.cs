@@ -113,7 +113,6 @@ namespace KWUtils
         }
         
         public static bool IsNullOrEmpty<T>(this T[] array)
-        where T : struct
         {
             return array == null || array.Length == 0;
         }

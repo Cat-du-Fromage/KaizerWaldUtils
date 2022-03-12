@@ -5,11 +5,13 @@ using KWUtils;
 using KWUtils.KWGenericGrid;
 using Unity.Mathematics;
 using UnityEngine;
-
+/*
 public class GridHandlerOne : MonoBehaviour, IGridHandler<int, GenericGrid<int>>
 {
     public bool EnableDebug;
     public GenericGrid<int> Grid { get; private set; }
+
+    public IGridSystem GridSystem { get; set; }
 
     public void InitializeGrid(int2 terrainBounds)
     {
@@ -34,3 +36,4 @@ public class GridHandlerOne : MonoBehaviour, IGridHandler<int, GenericGrid<int>>
         }
     }
 }
+*/

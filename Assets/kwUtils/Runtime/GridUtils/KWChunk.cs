@@ -169,8 +169,36 @@ namespace KWUtils
         }
         
         //This One is not eligible for Burst Compile!
+        /*
         public static Dictionary<int, T[]> GetGridValueOrderedByChunk<T>(this T[] unorderedIndices, in GridData gridData)
         where T : struct
+        {
+            int totalChunk = cmul(gridData.NumChunkXY); //gridData.NumChunkXY.x * gridData.NumChunkXY.y;
+            
+            using NativeArray<T> nativeUnOrderedIndices = unorderedIndices.ToNativeArray();
+            using NativeArray<T> nativeOrderedIndices = new (unorderedIndices.Length, Allocator.TempJob, NativeArrayOptions.UninitializedMemory);
+            
+            JGenericOrderArrayByChunkIndex<T> job = new JGenericOrderArrayByChunkIndex<T>
+            {
+                MapSizeX = gridData.MapSize.x,
+                ChunkSize = gridData.ChunkSize,
+                NumChunkX = gridData.NumChunkXY.x,
+                UnsortedArray = nativeUnOrderedIndices,
+                SortedArray = nativeOrderedIndices
+            };
+            job.ScheduleParallel(totalChunk, JobWorkerCount - 1, default).Complete();
+            
+            Dictionary<int, T[]> chunkCells = new Dictionary<int, T[]>(totalChunk);
+            int totalChunkCell = Sq(gridData.ChunkSize);
+            for (int i = 0; i < totalChunk; i++)
+            {
+                chunkCells.Add(i, nativeOrderedIndices.GetSubArray(i * totalChunkCell, totalChunkCell).ToArray());
+            }
+            return chunkCells;
+        }
+        */
+        public static Dictionary<int, T[]> GetGridValueOrderedByChunk<T>(this T[] unorderedIndices, in GridData gridData)
+            where T : struct
         {
             int totalChunk = cmul(gridData.NumChunkXY); //gridData.NumChunkXY.x * gridData.NumChunkXY.y;
             
@@ -247,7 +275,7 @@ namespace KWUtils
         [ReadOnly] public int MapSizeX;
         [ReadOnly] public int ChunkSize;
         [ReadOnly] public int NumChunkX;
-        
+
         [NativeDisableParallelForRestriction]
         [ReadOnly] public NativeArray<T> UnsortedArray;
         
@@ -272,5 +300,6 @@ namespace KWUtils
                 }
             }
         }
+
     }
 }

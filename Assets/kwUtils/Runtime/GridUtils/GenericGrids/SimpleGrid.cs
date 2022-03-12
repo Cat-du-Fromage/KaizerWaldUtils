@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Codice.CM.SEIDInfo;
 using Unity.Mathematics;
 using UnityEngine;
 
@@ -58,9 +59,15 @@ namespace KWUtils.KWGenericGrid
         //ARRAY MANIPULATION
         //==============================================================================================================
 
+        //Update all the array at once
+        public virtual void CopyFrom(T[] otherArray)
+        {
+            otherArray.CopyTo((Span<T>) GridArray);
+        }
+        
         public Vector3 GetCellCenter(int index)
         {
-            float2 cellCoord = index.GetXY2(MapWidthHeight.x) + new float2(HalfCell);
+            float2 cellCoord = index.GetXY2(GridBounds.x) * CellSize + new float2(HalfCell, HalfCell);
             return new Vector3(cellCoord.x,0,cellCoord.y);
         }
         
@@ -69,7 +76,26 @@ namespace KWUtils.KWGenericGrid
             GridArray[index] = value;
         }
 
-        public virtual T GetValue(int index) => GridArray[index];
-        
+        public T GetValue(int index) => GridArray[index];
+
+
+        //==============================================================================================================
+        //Adaptation to an other Grid with different Cell
+        //==============================================================================================================
+
+        public void SetFromAnOtherGrid<U>(GenericGrid<U> otherGrid, int index) 
+        where U : struct
+        {
+            int cellSizeOtherGrid = otherGrid.CellSize;
+
+            if (cellSizeOtherGrid < this.CellSize)
+            {
+                int numCellAffected = this.CellSize / cellSizeOtherGrid;
+                
+                
+            }
+
+            return;
+        }
     }
 }
