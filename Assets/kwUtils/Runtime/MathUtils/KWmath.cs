@@ -47,7 +47,7 @@ namespace KWUtils
 
         //==============================================================================================================
         /// <summary>
-        /// ComponentWise substraction (x - y)
+        /// ComponentWise subtraction (x - y)
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int csub(int2 v) => v.x - v.y;

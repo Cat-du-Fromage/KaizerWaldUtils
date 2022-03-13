@@ -13,10 +13,12 @@ using static KWUtils.NativeCollectionExt;
 
 public class FlowField
 {
-    private readonly int2 gridSize;
+    private int targetCellIndex = 0;
+    
     private readonly int chunkSize;
     private readonly int totalNumCells;
-
+    private readonly int2 gridSize;
+    
     //CostField
     private NativeArray<bool> nativeWalkableCells;
     private NativeArray<byte> nativeCostField;
@@ -29,8 +31,23 @@ public class FlowField
     public int[] BestCostField;
     public Vector3[] directionField;
 
+    /// <summary>
+    /// Target Cell Is Dynamic
+    /// </summary>
     public FlowField(int2 gridSize, int chunkSize)
     {
+        this.targetCellIndex = 0;
+        this.gridSize = gridSize;
+        this.chunkSize = chunkSize;
+        totalNumCells = gridSize.x * gridSize.y;
+    }
+    
+    /// <summary>
+    /// Target Cell Is Fixe
+    /// </summary>
+    public FlowField(int2 gridSize, int chunkSize, int targetCellIndex)
+    {
+        this.targetCellIndex = targetCellIndex;
         this.gridSize = gridSize;
         this.chunkSize = chunkSize;
         totalNumCells = gridSize.x * gridSize.y;
@@ -38,16 +55,20 @@ public class FlowField
 
     public Vector3[] GetFlowField(int targetCell, IGridHandler<bool, GenericGrid<bool>> obstacleGrid)
     {
-        return CalculateFlowField(targetCell, obstacleGrid.Grid.GridArray);
+        return CalculateFlowField(obstacleGrid.Grid.GridArray, targetCell);
     }
     
     public Vector3[] GetFlowField(int targetCell, bool[] walkableCells)
     {
-        return CalculateFlowField(targetCell, walkableCells);
+        return CalculateFlowField(walkableCells, targetCell);
     }
 
-    private Vector3[] CalculateFlowField(int targetCell, bool[] walkableCells = null)
+    public void UpdateFlowField(int targetCell, bool[] walkableCells) => CalculateFlowField(walkableCells, targetCell);
+
+    private Vector3[] CalculateFlowField(bool[] walkableCells = null, int targetCell = -1)
     {
+        targetCellIndex = targetCell == -1 ? targetCellIndex : targetCell;
+        
         CostField      ??= new byte[totalNumCells];
         BestCostField  ??= new int[totalNumCells];
         directionField ??= new Vector3[totalNumCells];

@@ -238,6 +238,37 @@ MonoBehaviour:
   m_ShadowLayerMask: 1
   m_LightCookieSize: {x: 1, y: 1}
   m_LightCookieOffset: {x: 0, y: 0}
+--- !u!1 &855365044
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 855365045}
+  m_Layer: 0
+  m_Name: TestChangeObstaclesGrid
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &855365045
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 855365044}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 52.794994, y: 9.781146, z: 25.065512}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_RootOrder: 10
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1001894462
 GameObject:
   m_ObjectHideFlags: 0
@@ -512,7 +543,7 @@ GameObject:
   - component: {fileID: 1549763115}
   - component: {fileID: 1549763114}
   - component: {fileID: 1549763113}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: Terrain
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -694,9 +725,9 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 2078732656}
-  - component: {fileID: 2078732655}
-  - component: {fileID: 2078732658}
-  - component: {fileID: 2078732657}
+  - component: {fileID: 2078732661}
+  - component: {fileID: 2078732659}
+  - component: {fileID: 2078732660}
   m_Layer: 0
   m_Name: GridSystem
   m_TagString: Untagged
@@ -704,23 +735,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &2078732655
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2078732654}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3f705dba0bd1e7942ac3c9c465f26ff6, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  Goal: {fileID: 1124078300}
-  goalIndex: 0
-  goalPosition: {x: 0, y: 0, z: 0}
-  ObstacleGrid: {fileID: 0}
-  directionGrid: {fileID: 0}
 --- !u!4 &2078732656
 Transform:
   m_ObjectHideFlags: 0
@@ -736,7 +750,7 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 6
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &2078732657
+--- !u!114 &2078732659
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -745,11 +759,13 @@ MonoBehaviour:
   m_GameObject: {fileID: 2078732654}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3a4bd6e4a99102b418308bf8e773b9ea, type: 3}
+  m_Script: {fileID: 11500000, guid: 3aa2453bd41f1334a816befc4657a1ce, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  DebugEnable: 0
---- !u!114 &2078732658
+  Goal: {fileID: 1124078300}
+  Chunksize: 16
+  CellSize: 2
+--- !u!114 &2078732660
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -758,6 +774,23 @@ MonoBehaviour:
   m_GameObject: {fileID: 2078732654}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d82b4b8555cb969408123ff481e0d330, type: 3}
+  m_Script: {fileID: 11500000, guid: 3f308fa116eb82b47b1b1ea1f2dd656d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!114 &2078732661
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2078732654}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9a756f0164db1af428403920eae7c2b1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  Goal: {fileID: 2078732656}
+  goalIndex: 0
+  goalPosition: {x: 0, y: 0, z: 0}
+  FlowFieldGrid: {fileID: 0}
+  ObstaclesGrid: {fileID: 0}

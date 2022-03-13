@@ -9,8 +9,10 @@ using UnityEngine;
 public enum GridType
 {
     Obstacles,
+    Directions,
     FlowField,
 }
+
 
 public class GridManager : MonoBehaviour, IGridSystem
 {
@@ -24,9 +26,10 @@ public class GridManager : MonoBehaviour, IGridSystem
     public int goalIndex;
     public Vector3 goalPosition;
     
-    private FlowField flowField;
-    [SerializeField] private ObstacleManager ObstacleGrid; //cell = 2
-    [SerializeField] private DirectionManager directionGrid; //cell = 1
+    //private FlowField flowField;
+    [SerializeField] private FlowFieldGrid    FlowFieldGrid;
+    [SerializeField] private ObstacleManager  ObstacleGrid; //cell = 2
+    [SerializeField] private DirectionManager DirectionGrid; //cell = 1
     //How to manage the conversion?
     
     //EventManager?
@@ -38,14 +41,21 @@ public class GridManager : MonoBehaviour, IGridSystem
         if (Goal == null) return;
         InitGoal();
         
+        FlowFieldGrid ??= FindObjectOfType<FlowFieldGrid>();
         ObstacleGrid  ??= FindObjectOfType<ObstacleManager>();
-        directionGrid ??= FindObjectOfType<DirectionManager>();
+        DirectionGrid ??= FindObjectOfType<DirectionManager>();
         
-        MapData = FindObjectOfType<Terrain>().terrainData;
         this.AsInterface<IGridSystem>().InitializeAllGrids();
         
-        flowField = new FlowField(MapBounds/cellSize, chunkSize); //CARFEULL CELL SIZE
-        flowField.GetFlowField(goalIndex, ObstacleGrid.Grid.GridArray);
+        //flowField = new FlowField(MapBounds/cellSize, chunkSize, goalIndex); //CARFEULL CELL SIZE
+        //flowField.GetFlowField(goalIndex, ObstacleGrid.Grid.GridArray);
+    }
+
+    private void OnDestroy()
+    {
+        ObstacleGrid.Grid.ClearEvents();
+        DirectionGrid.Grid.ClearEvents();
+        FlowFieldGrid.Grid.ClearEvents();
     }
 
     private void InitGoal()
@@ -54,17 +64,31 @@ public class GridManager : MonoBehaviour, IGridSystem
         goalIndex = goalPosition.XZ().GetIndexFromPosition(MapBounds, 2);
     }
 
-    public T1[] RequestGrid<T1, T2>(T2 gridType) where T1 : struct where T2 : Enum
+    public void SubscribeToGrid<T>(T gridType, Action action) 
+    where T : Enum
     {
         switch (gridType)
         {
             case GridType.Obstacles:
-                return ObstacleGrid.Grid.GridArray as T1[];
+                ObstacleGrid.Grid.OnGridChange += action;
+                return;
+            case GridType.Directions:
+                DirectionGrid.Grid.OnGridChange += action;
+                return;
             case GridType.FlowField:
-                return flowField.directionField as T1[];
-            default:
-                throw new ArgumentOutOfRangeException(nameof(gridType), gridType, null);
+                return;
         }
-        return null;
+    }
+
+    public T1[] RequestGrid<T1, T2>(T2 gridType) 
+    where T1 : struct 
+    where T2 : Enum
+    {
+        return gridType switch
+        {
+            GridType.Obstacles => ObstacleGrid.Grid.GridArray as T1[],
+            GridType.FlowField => FlowFieldGrid.Grid.GridArray as T1[],
+            _ => throw new ArgumentOutOfRangeException(nameof(gridType), gridType, null)
+        };
     }
 }

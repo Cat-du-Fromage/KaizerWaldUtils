@@ -70,6 +70,31 @@ namespace KWUtils
             return arr;
         }
         
+        public static unsafe NativeArray<T> CopyAllData<T>(this T[] array, Allocator allocator = Allocator.TempJob) 
+        where T : unmanaged
+        {
+            NativeArray<T> dst = new NativeArray<T>(array.Length, allocator, NativeArrayOptions.UninitializedMemory);
+            fixed (T* srcPtr = array)
+            {
+                void* dstPtr = dst.GetUnsafePtr();
+                UnsafeUtility.MemCpy(dstPtr,srcPtr, sizeof(T) * array.Length);
+            }
+            return dst;
+        }
+        
+        public static unsafe NativeArray<T> CopyData<T>(this T[] array, int count, int offset = 0, Allocator allocator = Allocator.TempJob) 
+        where T : unmanaged
+        {
+            NativeArray<T> dst = new NativeArray<T>(count, allocator);
+            fixed (T* srcPtr = array)
+            {
+                void* dstPtr = dst.GetUnsafePtr();
+                UnsafeUtility.MemCpy(dstPtr,srcPtr + offset, sizeof(T) * count);
+            }
+            return dst;
+        }
+
+        
         /// <summary>
         /// Convert HashSet To Array
         /// </summary>

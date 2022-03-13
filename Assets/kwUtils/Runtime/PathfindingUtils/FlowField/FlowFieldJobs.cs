@@ -56,7 +56,7 @@ using float3 = Unity.Mathematics.float3;
             while(cellsToCheck.Count > 0)
             {
                 int currentCellIndex = cellsToCheck.Dequeue();
-                GetNeighborCells(currentCellIndex, ref currentNeighbors);
+                GetNeighborCells(currentCellIndex, currentNeighbors);
 
                 for (int i = 0; i < currentNeighbors.Length; i++)
                 {
@@ -70,12 +70,9 @@ using float3 = Unity.Mathematics.float3;
                 }
                 currentNeighbors.Clear();
             }
-
-            currentNeighbors.Dispose();
-            cellsToCheck.Dispose();
         }
         
-        private void GetNeighborCells(int index, ref NativeList<int> curNeighbors)
+        private readonly void GetNeighborCells(int index, NativeList<int> curNeighbors)
         {
             int2 coord = index.GetXY2(MapSizeX);
             for (int i = 0; i < 4; i++)
@@ -106,15 +103,12 @@ using float3 = Unity.Mathematics.float3;
                 return;
             }
             
-            NativeList<int> neighbors = new NativeList<int>(8,Allocator.Temp);
-            
-            GetNeighborCells(index, ref neighbors);
-
             int2 currentCellCoord = index.GetXY2(MapSizeX);
-
+            NativeList<int> neighbors = GetNeighborCells(index, currentCellCoord);
+            
             for (int i = 0; i < neighbors.Length; i++)
             {
-                int currentNeighbor = neighbors[i];
+                int currentNeighbor = neighbors.ElementAt(i);
                 if(BestCostField[currentNeighbor] < currentBestCost)
                 {
                     currentBestCost = BestCostField[currentNeighbor];
@@ -123,17 +117,17 @@ using float3 = Unity.Mathematics.float3;
                     CellBestDirection[index] = float3(bestDirection.x, 0, bestDirection.y);
                 }
             }
-            neighbors.Dispose();
         }
         
-        private void GetNeighborCells(int index, ref NativeList<int> neighbors)
+        private readonly NativeList<int> GetNeighborCells(int index, in int2 coord)
         {
-            int2 coord = index.GetXY2(MapSizeX);
-            for (int i = 0; i < 8; i++)
+            NativeList<int> neighbors = new NativeList<int>(4,Allocator.Temp);
+            for (int i = 0; i < 4; i++)
             {
                 int neighborId = index.AdjCellFromIndex((1 << i), coord, MapSizeX);
                 if (neighborId == -1) continue;
                 neighbors.Add(neighborId);
             }
+            return neighbors;
         }
     }

@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using Codice.CM.SEIDInfo;
 using Unity.Mathematics;
+using UnityEditor;
 using UnityEngine;
 
 namespace KWUtils.KWGenericGrid
@@ -12,31 +13,27 @@ namespace KWUtils.KWGenericGrid
     {
         protected int CellSize;
         protected float HalfCell;
-        protected int GridWidth;
-        protected int GridHeight;
-        
+
         protected int2 MapWidthHeight;
         protected int2 GridBounds;
         
         public T[] GridArray;
+
+        public event Action OnGridChange;
         
         public GenericGrid(in int2 mapSize, int cellSize, Func<int2, T> createGridObject)
         {
             CellSize = cellSize;
             HalfCell = cellSize / 2f;
             MapWidthHeight = mapSize;
-            
-            GridWidth = mapSize.x / cellSize;
-            GridHeight = mapSize.y / cellSize;
-            
-            GridBounds = new int2(GridWidth, GridHeight);
-            
-            GridArray = new T[GridWidth * GridHeight];
+
+            GridBounds = new int2(mapSize.x, mapSize.y) / cellSize;
+            GridArray = new T[GridBounds.x * GridBounds.y];
             
             //Init Grid
             for (int i = 0; i < GridArray.Length; i++)
             {
-                GridArray[i] = createGridObject(i.GetXY2(GridWidth));
+                GridArray[i] = createGridObject(i.GetXY2(GridBounds.x));
             }
         }
         
@@ -47,12 +44,21 @@ namespace KWUtils.KWGenericGrid
             
             MapWidthHeight = mapSize;
             
-            GridWidth = mapSize.x / cellSize;
-            GridHeight = mapSize.y / cellSize;
-            
-            GridBounds = new int2(GridWidth, GridHeight);
-            
-            GridArray = new T[GridWidth * GridHeight];
+            GridBounds = new int2(mapSize.x, mapSize.y) / cellSize;
+            GridArray = new T[GridBounds.x * GridBounds.y];
+        }
+        
+        //Accessors
+        public int2 GridBound => GridBounds;
+        
+        //Clear Events
+        public virtual void ClearEvents()
+        {
+            if (OnGridChange == null) return;
+            foreach (Delegate action in OnGridChange.GetInvocationList())
+            {
+                OnGridChange -= (Action)action;
+            }
         }
 
         //==============================================================================================================
@@ -67,13 +73,14 @@ namespace KWUtils.KWGenericGrid
         
         public Vector3 GetCellCenter(int index)
         {
-            float2 cellCoord = index.GetXY2(GridBounds.x) * CellSize + new float2(HalfCell, HalfCell);
+            float2 cellCoord = index.GetXY2(GridBounds.x) * CellSize + new float2(HalfCell);
             return new Vector3(cellCoord.x,0,cellCoord.y);
         }
         
         public virtual void SetValue(int index, T value)
         {
             GridArray[index] = value;
+            OnGridChange?.Invoke();
         }
 
         public T GetValue(int index) => GridArray[index];

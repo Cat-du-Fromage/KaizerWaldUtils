@@ -90,6 +90,57 @@ namespace KWUtils
             return chunkIndex.GetGridCellIndexFromChunkCellIndex(gridData, GetChunkEnterPoint(point, gridData));
         }
 
+        //==============================================================================================================
+        // ORDER ARRAY
+        //==============================================================================================================
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void OrderArrayByChunk<T>(this T[] unorderedIndices, in int2 mapWidth, int chunkSize, JobHandle dependency = default)
+        where T : struct
+        {
+            int2 chunkBounds = mapWidth / chunkSize;
+            int totalChunk = cmul(chunkBounds);
+            
+            using NativeArray<T> unOrderedIndices = unorderedIndices.ToNativeArray(); 
+            using NativeArray<T> orderedIndices = new (unorderedIndices.Length, Allocator.TempJob, NativeArrayOptions.UninitializedMemory);
+            
+            JGenericOrderArrayByChunkIndex<T> job = new JGenericOrderArrayByChunkIndex<T>
+            {
+                MapSizeX = mapWidth.x,
+                ChunkSize = chunkSize,
+                NumChunkX = chunkBounds.x,
+                UnsortedArray = unOrderedIndices,
+                SortedArray = orderedIndices
+            };
+            job.ScheduleParallel(totalChunk, JobWorkerCount - 1, dependency).Complete();
+            orderedIndices.CopyTo(unorderedIndices);
+        }
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static JobHandle OrderNativeArrayByChunk(this NativeArray<float3> unorderedIndices, NativeArray<float3> orderedIndices, in int2 gridBounds, int chunkSize, in JobHandle dependency = default)
+        {
+            int2 chunkBounds = gridBounds / chunkSize;
+            int totalChunk = cmul(chunkBounds);
+            
+            //using NativeArray<Vector3> unOrderedIndices = unorderedIndices.ToNativeArray(); 
+            //using NativeArray<float3> orderedIndices = new (unorderedIndices.Length, Allocator.TempJob, NativeArrayOptions.UninitializedMemory);
+            
+            JOrderArrayByChunkIndex<float3> job = new JOrderArrayByChunkIndex<float3>
+            {
+                MapSizeX = gridBounds.x,
+                ChunkSize = chunkSize,
+                NumChunkX = chunkBounds.x,
+                UnsortedArray = unorderedIndices,
+                SortedArray = orderedIndices
+            };
+            JobHandle jobHandle = job.ScheduleParallel(totalChunk, JobWorkerCount - 1, dependency);
+            return jobHandle;
+            //orderedIndices.CopyTo(unorderedIndices);
+        }
+        
+        //==============================================================================================================
+        // ORDER AND PACK ARRAYS INTO DICTIONARY
+        //==============================================================================================================
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Dictionary<int, int[]> GetArrayOrderedByChunk(int[] unorderedIndices, in GridData gridData)
         {
             int totalChunk = gridData.NumChunkXY.x * gridData.NumChunkXY.y;
@@ -116,7 +167,7 @@ namespace KWUtils
             }
             return chunkCells;
         }
-        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Dictionary<int, Vector3[]> GetArrayOrderedByChunk(this Vector3[] unorderedIndices, in GridData gridData)
         {
             int totalChunk = gridData.NumChunkXY.x * gridData.NumChunkXY.y;
@@ -142,7 +193,7 @@ namespace KWUtils
             }
             return chunkCells;
         }
-        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Dictionary<int, byte[]> GetArrayOrderedByChunk(byte[] unorderedIndices, in GridData gridData)
         {
             int totalChunk = cmul(gridData.NumChunkXY);
@@ -169,7 +220,7 @@ namespace KWUtils
         }
         
         //This One is not eligible for Burst Compile!
-        /*
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Dictionary<int, T[]> GetGridValueOrderedByChunk<T>(this T[] unorderedIndices, in GridData gridData)
         where T : struct
         {
@@ -186,40 +237,16 @@ namespace KWUtils
                 UnsortedArray = nativeUnOrderedIndices,
                 SortedArray = nativeOrderedIndices
             };
-            job.ScheduleParallel(totalChunk, JobWorkerCount - 1, default).Complete();
+            JobHandle jobHandle = job.ScheduleParallel(totalChunk, JobWorkerCount - 1, default);
+            JobHandle.ScheduleBatchedJobs();
             
             Dictionary<int, T[]> chunkCells = new Dictionary<int, T[]>(totalChunk);
-            int totalChunkCell = Sq(gridData.ChunkSize);
+            //int totalChunkCell = Sq(gridData.ChunkSize);
+            jobHandle.Complete();
+            
             for (int i = 0; i < totalChunk; i++)
             {
-                chunkCells.Add(i, nativeOrderedIndices.GetSubArray(i * totalChunkCell, totalChunkCell).ToArray());
-            }
-            return chunkCells;
-        }
-        */
-        public static Dictionary<int, T[]> GetGridValueOrderedByChunk<T>(this T[] unorderedIndices, in GridData gridData)
-            where T : struct
-        {
-            int totalChunk = cmul(gridData.NumChunkXY); //gridData.NumChunkXY.x * gridData.NumChunkXY.y;
-            
-            using NativeArray<T> nativeUnOrderedIndices = unorderedIndices.ToNativeArray();
-            using NativeArray<T> nativeOrderedIndices = new (unorderedIndices.Length, Allocator.TempJob, NativeArrayOptions.UninitializedMemory);
-            
-            JGenericOrderArrayByChunkIndex<T> job = new JGenericOrderArrayByChunkIndex<T>
-            {
-                MapSizeX = gridData.MapSize.x,
-                ChunkSize = gridData.ChunkSize,
-                NumChunkX = gridData.NumChunkXY.x,
-                UnsortedArray = nativeUnOrderedIndices,
-                SortedArray = nativeOrderedIndices
-            };
-            job.ScheduleParallel(totalChunk, JobWorkerCount - 1, default).Complete();
-            
-            Dictionary<int, T[]> chunkCells = new Dictionary<int, T[]>(totalChunk);
-            int totalChunkCell = Sq(gridData.ChunkSize);
-            for (int i = 0; i < totalChunk; i++)
-            {
-                chunkCells.Add(i, nativeOrderedIndices.GetSubArray(i * totalChunkCell, totalChunkCell).ToArray());
+                chunkCells.Add(i, nativeOrderedIndices.Slice(i * totalChunk, totalChunk).ToArray());
             }
             return chunkCells;
         }
@@ -302,4 +329,47 @@ namespace KWUtils
         }
 
     }
+    
+    //==================================================================================================================
+    // The Job will "slice" the array and reorder them
+    // at the end when we cut the array given the number of cell in one chunk
+    // we only get the value owned by the chunk
+    // ✂ 1️⃣2️⃣3️⃣ ✂ 4️⃣5️⃣6️⃣ ✂ 7️⃣8️⃣9️⃣
+    /*
+#if EnableBurst
+    [BurstCompile]
+#endif
+    public struct JOrderArrayByChunkIndex<T> : IJobFor
+        where T : struct
+    {
+        [ReadOnly] public int MapSizeX;
+        [ReadOnly] public int ChunkSize;
+        [ReadOnly] public int NumChunkX;
+        
+        [NativeDisableParallelForRestriction]
+        [ReadOnly] public NativeArray<T> UnsortedArray;
+        
+        [NativeDisableParallelForRestriction]
+        [WriteOnly] public NativeArray<T> SortedArray;
+        public void Execute(int index)
+        {
+            int chunkPosY = (int)floor(index / (float)NumChunkX);
+            int chunkPosX = index - (chunkPosY * NumChunkX);
+            
+            for (int z = 0; z < ChunkSize; z++) // z axis
+            {
+                int startY = (chunkPosY * MapSizeX) * ChunkSize;
+                int startX = chunkPosX * ChunkSize;
+                int startYChunk = z * MapSizeX;
+                int start = startY + startX + startYChunk;
+
+                for (int x = 0; x < ChunkSize; x++) // x axis
+                {
+                    int sliceIndex = mad(z, ChunkSize, x) + (index * (ChunkSize * ChunkSize));
+                    SortedArray[sliceIndex] = UnsortedArray[start + x];
+                }
+            }
+        }
+    }
+    */
 }

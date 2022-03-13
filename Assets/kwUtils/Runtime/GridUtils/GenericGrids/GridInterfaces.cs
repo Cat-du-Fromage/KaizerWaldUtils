@@ -8,7 +8,6 @@ using Object = UnityEngine.Object;
 
 namespace KWUtils.KWGenericGrid
 {
-
     public interface IGridBehaviour
     {
         public IGridSystem GridSystem { get; set; }
@@ -22,6 +21,8 @@ namespace KWUtils.KWGenericGrid
         public TerrainData MapData { get; set; }
 
         public int2 MapBounds { get; set; }
+        
+        public void SubscribeToGrid<T>(T gridType, Action action) where T : Enum;
 
         public T1[] RequestGrid<T1, T2>(T2 gridType)
         where T1 : struct
@@ -49,6 +50,5 @@ namespace KWUtils.KWGenericGrid
     where T2 : GenericGrid<T1>
     {
         public T2 Grid { get; }
-        public T1[] GridArray => Grid.GridArray;
     }
 }
