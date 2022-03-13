@@ -50,7 +50,7 @@ namespace KWUtils.KWGenericGrid
         {
             BaseConstructor(mapWidth, mapHeight, chunkSize, cellSize);
 
-            chunkDictionary = arrayGrid.GetGridValueOrderedByChunk(new GridData(chunkSize, cellWidthHeight));
+            chunkDictionary = arrayGrid.GetGridValueOrderedByChunk(new GridData(cellSize, chunkSize, cellWidthHeight));
         }
         
         public ChunkedGrid(int2 mapSize, int chunkSize, int cellSize = 1, [CanBeNull] Func<T[]> providerFunction = null)
@@ -58,7 +58,7 @@ namespace KWUtils.KWGenericGrid
             BaseConstructor(mapSize.x, mapSize.y, chunkSize, cellSize);
 
             providerFunction?.Invoke()?.CopyTo((Memory<T>) arrayGrid);
-            chunkDictionary = arrayGrid.GetGridValueOrderedByChunk(new GridData(chunkSize, cellWidthHeight));
+            chunkDictionary = arrayGrid.GetGridValueOrderedByChunk(new GridData(cellSize, chunkSize, cellWidthHeight));
         }
 
         /// <summary>

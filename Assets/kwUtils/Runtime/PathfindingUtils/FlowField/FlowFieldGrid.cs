@@ -99,14 +99,31 @@ namespace KWUtils.KWGenericGrid
             lastJobScheduled.Complete();
             nativeBestDirection.Reinterpret<Vector3>().CopyTo(directionField);
             
-            Grid.GridArray = directionField;
+            //Grid.GridArray = directionField;
             int totalChunkCell = KWmath.Sq(Chunksize/CellSize);
+            //UnityEngine.Debug.Log($"totalChunkCell {totalChunkCell}");
             for (int i = 0; i < Grid.ChunkDictionary.Count; i++)
             {
+                Vector3[] test = nativeOrderedBestDirection
+                    .Slice(i * totalChunkCell, totalChunkCell)
+                    .SliceConvert<Vector3>()
+                    .ToArray();
+
+                if (i == 0)
+                {
+                    for (int j = 0; j < test.Length; j++)
+                    {
+                        //UnityEngine.Debug.Log($"test at {j} {test[i]}");
+                    }
+                }
+
+                Grid.SetValues(i, test);
+                /*
                 Grid.SetValues(i, nativeOrderedBestDirection
                     .Slice(i * totalChunkCell, totalChunkCell)
                     .SliceConvert<Vector3>()
                     .ToArray());
+                    */
             }
             
 #if UNITY_EDITOR
@@ -137,7 +154,7 @@ namespace KWUtils.KWGenericGrid
             JobHandle jHDirectionField = GetDirectionField(jHIntegrationField);
             
             nativeOrderedBestDirection = AllocNtvAry<float3>(totalNumCells);
-            lastJobScheduled = nativeBestDirection.OrderNativeArrayByChunk(nativeOrderedBestDirection, gridSize, Chunksize, jHDirectionField);
+            lastJobScheduled = nativeOrderedBestDirection.OrderNativeArrayByChunk(nativeBestDirection, Grid.gridData, jHDirectionField);
             JobHandle.ScheduleBatchedJobs();
             jobSchedule = true;
         }
@@ -187,13 +204,33 @@ namespace KWUtils.KWGenericGrid
         private void OnDrawGizmos()
         {
             if (!DebugEnable || Grid.GridArray.IsNullOrEmpty()) return;
-
+/*
             for (int i = 0; i < Grid.GridArray.Length; i++)
             {
                 Vector3 pos = Grid.GetCellCenter(i);
                 Debug.DrawArrow.ForGizmo(pos, Grid.GridArray[i]);
                 //Handles.Label(pos, flowField.BestCostField[i].ToString());
             }
+            */
+
+            Gizmos.color = Color.red;
+            foreach ((int id, Vector3[] values)in Grid.ChunkDictionary)
+            {
+                if (id == 0)
+                {
+                    Gizmos.DrawWireCube(Grid.GetChunkCenter(0), (Vector3.one * Chunksize).Flat());
+                    Gizmos.color = Color.green;
+                    for (int i = 0; i < values.Length; i++)
+                    {
+                        int cellindex = id.GetGridCellIndexFromChunkCellIndex(Grid.gridData, i);
+                        UnityEngine.Debug.Log(cellindex);
+                        float2 test = (float2)cellindex.GetXY2(Grid.gridData.ChunkCellWidth) * CellSize;
+                        Vector3 cellPos = new Vector3(test.x + 1, 0, test.y + 1);
+                        Debug.DrawArrow.ForGizmo(cellPos, Grid.GridArray[i]);
+                    }
+                }
+            }
+            
         }
     }
 }

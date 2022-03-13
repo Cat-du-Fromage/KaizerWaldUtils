@@ -18,7 +18,7 @@ namespace KWUtils.KWGenericGrid
         private float halfChunk;
         private int2 chunkWidthHeight;
         
-        private GridData gridData;
+        public GridData gridData { get; private set; }
         public new event Action OnGridChange;
         public Dictionary<int, T[]> ChunkDictionary { get; private set; }
 
@@ -29,7 +29,7 @@ namespace KWUtils.KWGenericGrid
 
             chunkWidthHeight = MapWidthHeight / chunkSize;
 
-            gridData = new GridData(chunkSize, GridBounds);
+            gridData = new GridData(cellSize, chunkSize, GridBounds);
             ChunkDictionary = GridArray.GetGridValueOrderedByChunk(gridData);
         }
         
@@ -41,7 +41,7 @@ namespace KWUtils.KWGenericGrid
             chunkWidthHeight = MapWidthHeight / chunkSize;
 
             providerFunction?.Invoke()?.CopyTo((Span<T>) GridArray); //CAREFULL may switch with Memory<T>!
-            gridData = new GridData(chunkSize, GridBounds);
+            gridData = new GridData(cellSize, chunkSize, GridBounds);
             ChunkDictionary = GridArray.GetGridValueOrderedByChunk(gridData);
         }
 
@@ -120,7 +120,7 @@ namespace KWUtils.KWGenericGrid
         
         public void UpdateGrid(int chunkIndex, T[] values)
         {
-            int numCellInChunk = Sq(chunkSize / CellSize);
+            int numCellInChunk = Sq(gridData.ChunkCellWidth);
             for (int i = 0; i < numCellInChunk; i++)
             {
                 GridArray[chunkIndex.GetGridCellIndexFromChunkCellIndex(gridData, i)] = values[i]; //CALCUL FAUX!!!

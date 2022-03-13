@@ -18,14 +18,18 @@ namespace KWUtils
 {
     public readonly struct GridData
     {
+        public readonly int CellSize;
         public readonly int ChunkSize;
+        public readonly int ChunkCellWidth;
         public readonly int2 MapSize;
         public readonly int2 NumChunkXY;
 
-        public GridData(int chunkSize, int2 mapSize)
+        public GridData(int cellSize, int chunkSize, int2 mapSize)
         {
+            CellSize = cellSize;
             ChunkSize = chunkSize;
             MapSize = mapSize;
+            ChunkCellWidth = chunkSize / cellSize;
             NumChunkXY = MapSize / ChunkSize;
         }
     }
@@ -50,9 +54,9 @@ namespace KWUtils
         /// <returns></returns>
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int2 GetGridCellCoordFromChunkCellCoord(this in int2 cellInChunkCoord,  int chunkSize, in int2 chunkCoord)
+        public static int2 GetGridCellCoordFromChunkCellCoord(this in int2 cellInChunkCoord, int cellSize, int chunkSize, in int2 chunkCoord)
         {
-            return (chunkCoord * chunkSize) + cellInChunkCoord;
+            return (chunkCoord * chunkSize) + (cellInChunkCoord);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -60,16 +64,16 @@ namespace KWUtils
         {
             int2 chunkCoord = chunkIndex.GetXY2(gridData.NumChunkXY.x);
             int2 cellCoordInChunk = cellIndexInsideChunk.GetXY2(gridData.ChunkSize);
-            int2 cellGridCoord = cellCoordInChunk.GetGridCellCoordFromChunkCellCoord(gridData.ChunkSize, chunkCoord);
+            int2 cellGridCoord = cellCoordInChunk.GetGridCellCoordFromChunkCellCoord(gridData.CellSize, gridData.ChunkSize, chunkCoord);
             return (cellGridCoord.y * gridData.MapSize.x) + cellGridCoord.x;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)] //May be useful if we dont want to create a gridData
-        public static int GetGridCellIndexFromChunkCellIndex(this int chunkIndex, int mapSizeX, int chunkSize, int cellIndexInsideChunk)
+        public static int GetGridCellIndexFromChunkCellIndex(this int chunkIndex, int mapSizeX,int cellSize ,int chunkSize ,int cellIndexInsideChunk)
         {
             int2 chunkCoord = chunkIndex.GetXY2(mapSizeX/chunkSize);
             int2 cellCoordInChunk = cellIndexInsideChunk.GetXY2(chunkSize);
-            int2 cellGridCoord = cellCoordInChunk.GetGridCellCoordFromChunkCellCoord(chunkSize, chunkCoord);
+            int2 cellGridCoord = cellCoordInChunk.GetGridCellCoordFromChunkCellCoord(cellSize, chunkSize, chunkCoord);
             return (cellGridCoord.y * mapSizeX) + cellGridCoord.x;
         }
         
@@ -116,19 +120,20 @@ namespace KWUtils
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static JobHandle OrderNativeArrayByChunk(this NativeArray<float3> unorderedIndices, NativeArray<float3> orderedIndices, in int2 gridBounds, int chunkSize, in JobHandle dependency = default)
+        public static JobHandle OrderNativeArrayByChunk(this NativeArray<float3> orderedIndices, NativeArray<float3> unorderedIndices, in GridData gridData, in JobHandle dependency = default)
         {
-            int2 chunkBounds = gridBounds / chunkSize;
-            int totalChunk = cmul(chunkBounds);
-            
+            //int2 chunkBounds = gridBounds / chunkSize;
+            int totalChunk = gridData.NumChunkXY.x * gridData.NumChunkXY.y ;
+            UnityEngine.Debug.Log($"MapSize.x : {gridData.MapSize.x}; ChunkSize : {gridData.ChunkSize}; NumChunkXY : {gridData.NumChunkXY.x}");
             //using NativeArray<Vector3> unOrderedIndices = unorderedIndices.ToNativeArray(); 
             //using NativeArray<float3> orderedIndices = new (unorderedIndices.Length, Allocator.TempJob, NativeArrayOptions.UninitializedMemory);
             
-            JOrderArrayByChunkIndex<float3> job = new JOrderArrayByChunkIndex<float3>
+            JOrderArrayByChunkIndex2<float3> job = new JOrderArrayByChunkIndex2<float3>
             {
-                MapSizeX = gridBounds.x,
-                ChunkSize = chunkSize,
-                NumChunkX = chunkBounds.x,
+                MapSizeX = gridData.MapSize.x,
+                CellSize = gridData.CellSize,
+                ChunkSize = gridData.ChunkSize,
+                NumChunkX = gridData.NumChunkXY.x,
                 UnsortedArray = unorderedIndices,
                 SortedArray = orderedIndices
             };
@@ -335,14 +340,15 @@ namespace KWUtils
     // at the end when we cut the array given the number of cell in one chunk
     // we only get the value owned by the chunk
     // ✂ 1️⃣2️⃣3️⃣ ✂ 4️⃣5️⃣6️⃣ ✂ 7️⃣8️⃣9️⃣
-    /*
+    
 #if EnableBurst
     [BurstCompile]
 #endif
-    public struct JOrderArrayByChunkIndex<T> : IJobFor
+    public struct JOrderArrayByChunkIndex2<T> : IJobFor
         where T : struct
     {
         [ReadOnly] public int MapSizeX;
+        [ReadOnly] public int CellSize;
         [ReadOnly] public int ChunkSize;
         [ReadOnly] public int NumChunkX;
         
@@ -355,6 +361,7 @@ namespace KWUtils
         {
             int chunkPosY = (int)floor(index / (float)NumChunkX);
             int chunkPosX = index - (chunkPosY * NumChunkX);
+            int cellByChunk = ChunkSize / CellSize;
             
             for (int z = 0; z < ChunkSize; z++) // z axis
             {
@@ -371,5 +378,5 @@ namespace KWUtils
             }
         }
     }
-    */
+    
 }
