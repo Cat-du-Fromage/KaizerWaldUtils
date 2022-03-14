@@ -17,24 +17,6 @@ using int2 = Unity.Mathematics.int2;
 
 namespace KWUtils
 {
-    public readonly struct GridData
-    {
-        public readonly int CellSize;
-        public readonly int ChunkSize;
-        public readonly int ChunkCellWidth;
-        public readonly int2 MapSize;
-        public readonly int2 NumChunkXY;
-
-        public GridData(int cellSize, int chunkSize, int2 mapSize)
-        {
-            CellSize = cellSize;
-            ChunkSize = chunkSize;
-            MapSize = mapSize;
-            ChunkCellWidth = chunkSize / cellSize;
-            NumChunkXY = MapSize / ChunkSize;
-        }
-    }
-
     public enum ChunkEnterPoint
     {
         Left,
@@ -49,10 +31,6 @@ namespace KWUtils
         /// Cell is at the constant size of 1!
         /// chunk can only be a square, meaning : width = height
         /// </summary>
-        /// <param name="chunkSize">Size of the chunk in your grid</param>
-        /// <param name="chunkCoord">(x, y) position of the chunk in your map</param>
-        /// <param name="cellInChunkCoord">(x, y) position of the cell Inside the chunk</param>
-        /// <returns></returns>
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int2 GetGridCellCoordFromChunkCellCoord(this in int2 cellInChunkCoord, int cellSize, int chunkSize, in int2 chunkCoord)
@@ -102,31 +80,11 @@ namespace KWUtils
         //==============================================================================================================
         // ORDER ARRAY
         //==============================================================================================================
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void OrderArrayByChunk<T>(this T[] unorderedIndices, in int2 mapWidth, int chunkSize,int cellSize, JobHandle dependency = default)
-        where T : struct
-        {
-            int2 chunkBounds = mapWidth / chunkSize;
-            int totalChunk = Sq(chunkSize / cellSize);
-            using NativeArray<T> unOrderedIndices = unorderedIndices.ToNativeArray(); 
-            using NativeArray<T> orderedIndices = new (unorderedIndices.Length, Allocator.TempJob, NativeArrayOptions.UninitializedMemory);
-            
-            JGenericOrderArrayByChunkIndex<T> job = new JGenericOrderArrayByChunkIndex<T>
-            {
-                MapSizeX = mapWidth.x,
-                ChunkSize = chunkSize,
-                NumChunkX = chunkBounds.x,
-                UnsortedArray = unOrderedIndices,
-                SortedArray = orderedIndices
-            };
-            job.ScheduleParallel(totalChunk, JobWorkerCount - 1, dependency).Complete();
-            orderedIndices.CopyTo(unorderedIndices);
-        }
-        
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static JobHandle OrderNativeArrayByChunk(this NativeArray<float3> orderedIndices, NativeArray<float3> unorderedIndices, in GridData gridData, in JobHandle dependency = default)
         {
-            int totalChunk = Sq(gridData.ChunkCellWidth);
+            int totalChunk = cmul(gridData.NumChunkXY);
 
             JOrderArrayByChunkIndex2<float3> job = new JOrderArrayByChunkIndex2<float3>
             {
@@ -139,7 +97,6 @@ namespace KWUtils
             };
             JobHandle jobHandle = job.ScheduleParallel(totalChunk, JobWorkerCount - 1, dependency);
             return jobHandle;
-            //orderedIndices.CopyTo(unorderedIndices);
         }
         
         //==============================================================================================================
@@ -226,13 +183,14 @@ namespace KWUtils
         public static Dictionary<int, T[]> GetGridValueOrderedByChunk<T>(this T[] unorderedIndices, in GridData gridData)
         where T : struct
         {
-            int totalChunk = Sq(gridData.ChunkCellWidth);
+            int totalChunk = cmul(gridData.NumChunkXY);
             using NativeArray<T> nativeUnOrderedIndices = unorderedIndices.ToNativeArray();
             using NativeArray<T> nativeOrderedIndices = new (unorderedIndices.Length, Allocator.TempJob, NativeArrayOptions.UninitializedMemory);
             
-            JGenericOrderArrayByChunkIndex<T> job = new JGenericOrderArrayByChunkIndex<T>
+            JGenericOrderArrayByChunkIndex2<T> job = new JGenericOrderArrayByChunkIndex2<T>
             {
                 MapSizeX = gridData.MapSize.x,
+                ChunkCellWidth = gridData.ChunkCellWidth,
                 ChunkSize = gridData.ChunkSize,
                 NumChunkX = gridData.NumChunkXY.x,
                 UnsortedArray = nativeUnOrderedIndices,
@@ -243,10 +201,10 @@ namespace KWUtils
             
             Dictionary<int, T[]> chunkCells = new Dictionary<int, T[]>(totalChunk);
             jobHandle.Complete();
-            
+            int totalCellInChunk = Sq(gridData.ChunkCellWidth);
             for (int i = 0; i < totalChunk; i++)
             {
-                chunkCells.Add(i, nativeOrderedIndices.Slice(i * totalChunk, totalChunk).ToArray());
+                chunkCells.Add(i, nativeOrderedIndices.Slice(i * totalCellInChunk, totalCellInChunk).ToArray());
             }
             return chunkCells;
         }
@@ -330,6 +288,41 @@ namespace KWUtils
 
     }
     
+    public struct JGenericOrderArrayByChunkIndex2<T> : IJobFor
+    where T : struct
+    {
+        [ReadOnly] public int MapSizeX;
+        [ReadOnly] public int ChunkCellWidth;
+        [ReadOnly] public int ChunkSize;
+        [ReadOnly] public int NumChunkX;
+
+        [NativeDisableParallelForRestriction]
+        [ReadOnly] public NativeArray<T> UnsortedArray;
+        
+        [NativeDisableParallelForRestriction]
+        [WriteOnly] public NativeArray<T> SortedArray;
+        public void Execute(int index)
+        {
+            int chunkPosY = (int)floor(index / (float)NumChunkX);
+            int chunkPosX = index - (chunkPosY * NumChunkX);
+            
+            for (int z = 0; z < ChunkCellWidth; z++) // z axis
+            {
+                int startY = (chunkPosY * MapSizeX) * ChunkSize;
+                int startX = chunkPosX * ChunkSize;
+                int startYChunk = z * MapSizeX;
+                int start = startY + startX + startYChunk;
+
+                for (int x = 0; x < ChunkCellWidth; x++) // x axis
+                {
+                    int sliceIndex = mad(z, ChunkSize, x) + (index * (ChunkSize * ChunkSize));
+                    SortedArray[sliceIndex] = UnsortedArray[start + x];
+                }
+            }
+        }
+
+    }
+    
     //==================================================================================================================
     // The Job will "slice" the array and reorder them
     // at the end when we cut the array given the number of cell in one chunk
@@ -356,8 +349,7 @@ namespace KWUtils
         {
             int chunkPosY = (int)floor(index / (float)NumChunkX);
             int chunkPosX = index - (chunkPosY * NumChunkX);
-            int cellByChunk = ChunkSize / CellSize;
-            
+
             for (int z = 0; z < ChunkSize; z++) // z axis
             {
                 int startY = (chunkPosY * MapSizeX) * ChunkSize;

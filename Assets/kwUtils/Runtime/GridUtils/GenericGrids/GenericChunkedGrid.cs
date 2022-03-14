@@ -15,34 +15,30 @@ namespace KWUtils.KWGenericGrid
     {
         //Chunk Fields
         private int chunkSize;
-        private float halfChunk;
-        private int2 chunkWidthHeight;
+        private int2 chunkGridBounds;
         
-        public GridData gridData { get; private set; }
+        public GridData GridData => new GridData(CellSize, chunkSize, MapBounds);
         public new event Action OnGridChange;
         public Dictionary<int, T[]> ChunkDictionary { get; private set; }
 
-        public GenericChunkedGrid(in int2 mapSize, int chunkSize ,int cellSize, Func<int2, T> createGridObject) : base(in mapSize, cellSize, createGridObject)
+        public GenericChunkedGrid(in int2 mapSize, int chunkSize ,int cellSize, Func<int, T> createGridObject) : base(in mapSize, cellSize, createGridObject)
         {
             this.chunkSize = GetChunkSize(chunkSize, cellSize);
-            halfChunk = this.chunkSize / 2f;
+            chunkGridBounds = mapSize / chunkSize;
 
-            chunkWidthHeight = MapWidthHeight / chunkSize;
-
-            gridData = new GridData(cellSize, chunkSize, GridBounds);
-            ChunkDictionary = GridArray.GetGridValueOrderedByChunk(gridData);
+            ChunkDictionary = new Dictionary<int, T[]>(chunkGridBounds.x * chunkGridBounds.y);
+            ChunkDictionary = GridArray.GetGridValueOrderedByChunk(GridData);
         }
         
         public GenericChunkedGrid(in int2 mapSize, int chunkSize, int cellSize = 1, [CanBeNull] Func<T[]> providerFunction = null) : base(in mapSize, cellSize)
         {
             this.chunkSize = GetChunkSize(chunkSize, cellSize);
-            halfChunk = this.chunkSize / 2f;
-
-            chunkWidthHeight = MapWidthHeight / chunkSize;
+            chunkGridBounds = mapSize / chunkSize;
 
             providerFunction?.Invoke()?.CopyTo((Span<T>) GridArray); //CAREFULL may switch with Memory<T>!
-            gridData = new GridData(cellSize, chunkSize, GridBounds);
-            ChunkDictionary = GridArray.GetGridValueOrderedByChunk(gridData);
+            
+            ChunkDictionary = new Dictionary<int, T[]>(chunkGridBounds.x * chunkGridBounds.y);
+            ChunkDictionary = GridArray.GetGridValueOrderedByChunk(GridData);
         }
 
         /// <summary>
@@ -64,16 +60,13 @@ namespace KWUtils.KWGenericGrid
                 OnGridChange -= (Action)action;
             }
         }
-        
-        //Accessors
-        public int2 ChunkBound => chunkWidthHeight;
-        
+
         //==============================================================================================================
         //Cell Data
         //==============================================================================================================
         public Vector3 GetChunkCenter(int chunkIndex)
         {
-            float2 chunkCoord = ((chunkIndex.GetXY2(chunkWidthHeight.x) * chunkSize) + new float2(halfChunk));
+            float2 chunkCoord = ((chunkIndex.GetXY2(chunkGridBounds.x) * chunkSize) + new float2(chunkSize/2f));
             return new Vector3(chunkCoord.x, 0, chunkCoord.y);
         }
         
@@ -82,14 +75,14 @@ namespace KWUtils.KWGenericGrid
         //==============================================================================================================
         public int ChunkIndexFromGridIndex(int gridIndex)
         {
-            int2 cellCoord = gridIndex.GetXY2(MapWidthHeight.x);
+            int2 cellCoord = gridIndex.GetXY2(MapBounds.x);
             int2 chunkCoord = (int2)floor(cellCoord / chunkSize);
-            return chunkCoord.GetIndex(chunkWidthHeight.x);
+            return chunkCoord.GetIndex(chunkGridBounds.x);
         }
         
         public int CellChunkIndexFromGridIndex(int gridIndex)
         {
-            int2 cellCoord = gridIndex.GetXY2(MapWidthHeight.x);
+            int2 cellCoord = gridIndex.GetXY2(MapBounds.x);
             int2 chunkCoord = (int2)floor(cellCoord / chunkSize);
             int2 cellCoordInChunk = cellCoord - (chunkCoord * chunkSize);
             return cellCoordInChunk.GetIndex(chunkSize);
@@ -102,15 +95,15 @@ namespace KWUtils.KWGenericGrid
         public sealed override void CopyFrom(T[] otherArray)
         {
             base.CopyFrom(otherArray);
-            ChunkDictionary = GridArray.GetGridValueOrderedByChunk(gridData);
+            ChunkDictionary = GridArray.GetGridValueOrderedByChunk(GridData);
         }
 
         private void UpdateChunk(int gridIndex, T value)
         {
-            int2 cellCoord = gridIndex.GetXY2(MapWidthHeight.x);
+            int2 cellCoord = gridIndex.GetXY2(MapBounds.x);
             //Chunk Index
             int2 chunkCoord = (int2)floor(cellCoord / chunkSize);
-            int chunkIndex = chunkCoord.GetIndex(chunkWidthHeight.x);
+            int chunkIndex = chunkCoord.GetIndex(chunkGridBounds.x);
             //CellIndex
             int2 cellCoordInChunk = cellCoord - (chunkCoord * chunkSize);
             int cellIndexInChunk = cellCoordInChunk.GetIndex(chunkSize);
@@ -123,7 +116,7 @@ namespace KWUtils.KWGenericGrid
             //int numCellInChunk = Sq(gridData.ChunkCellWidth);
             for (int i = 0; i < values.Length; i++)
             {
-                GridArray[chunkIndex.GetGridCellIndexFromChunkCellIndex(gridData, i)] = values[i]; //CALCUL FAUX!!!
+                GridArray[chunkIndex.GetGridCellIndexFromChunkCellIndex(GridData, i)] = values[i]; //CALCUL FAUX!!!
             }
         }
         

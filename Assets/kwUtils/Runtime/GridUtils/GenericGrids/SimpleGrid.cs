@@ -12,37 +12,32 @@ namespace KWUtils.KWGenericGrid
     where T : struct
     {
         protected int CellSize;
-        protected float HalfCell;
-
-        protected int2 MapWidthHeight;
+        protected int2 MapBounds;
         protected int2 GridBounds;
         
         public T[] GridArray;
-
         public event Action OnGridChange;
         
-        public GenericGrid(in int2 mapSize, int cellSize, Func<int2, T> createGridObject)
+        public GenericGrid(in int2 mapSize, int cellSize, Func<int, T> createGridObject)
         {
             CellSize = cellSize;
-            HalfCell = cellSize / 2f;
-            MapWidthHeight = mapSize;
+            MapBounds = mapSize;
 
-            GridBounds = new int2(mapSize.x, mapSize.y) / cellSize;
+            GridBounds = mapSize / cellSize;
             GridArray = new T[GridBounds.x * GridBounds.y];
             
             //Init Grid
             for (int i = 0; i < GridArray.Length; i++)
             {
-                GridArray[i] = createGridObject(i.GetXY2(GridBounds.x));
+                GridArray[i] = createGridObject(i);
             }
         }
         
         public GenericGrid(in int2 mapSize, int cellSize)
         {
             CellSize = cellSize;
-            HalfCell = cellSize / 2f;
-            
-            MapWidthHeight = mapSize;
+
+            MapBounds = mapSize;
             
             GridBounds = mapSize / cellSize;
             GridArray = new T[GridBounds.x * GridBounds.y];
@@ -73,7 +68,7 @@ namespace KWUtils.KWGenericGrid
         
         public Vector3 GetCellCenter(int index)
         {
-            float2 cellCoord = index.GetXY2(GridBounds.x) * CellSize + new float2(HalfCell);
+            float2 cellCoord = index.GetXY2(GridBounds.x) * CellSize + new float2(CellSize/2f);
             return new Vector3(cellCoord.x,0,cellCoord.y);
         }
         

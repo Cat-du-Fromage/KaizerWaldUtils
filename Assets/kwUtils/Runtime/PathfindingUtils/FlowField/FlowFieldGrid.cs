@@ -109,14 +109,6 @@ namespace KWUtils.KWGenericGrid
                     .SliceConvert<Vector3>()
                     .ToArray();
 
-                if (i == 0)
-                {
-                    for (int j = 0; j < test.Length; j++)
-                    {
-                        //UnityEngine.Debug.Log($"test at {j} {test[i]}");
-                    }
-                }
-
                 Grid.SetValues(i, test);
                 /*
                 Grid.SetValues(i, nativeOrderedBestDirection
@@ -154,7 +146,7 @@ namespace KWUtils.KWGenericGrid
             JobHandle jHDirectionField = GetDirectionField(jHIntegrationField);
             
             nativeOrderedBestDirection = AllocNtvAry<float3>(totalNumCells);
-            lastJobScheduled = nativeOrderedBestDirection.OrderNativeArrayByChunk(nativeBestDirection, Grid.gridData, jHDirectionField);
+            lastJobScheduled = nativeOrderedBestDirection.OrderNativeArrayByChunk(nativeBestDirection, Grid.GridData, jHDirectionField);
             JobHandle.ScheduleBatchedJobs();
             jobSchedule = true;
         }
@@ -213,21 +205,22 @@ namespace KWUtils.KWGenericGrid
             }
             */
 
-            Gizmos.color = Color.red;
+            
             foreach ((int id, Vector3[] values)in Grid.ChunkDictionary)
             {
-                if (id == 0)
-                {
-                    Gizmos.DrawWireCube(Grid.GetChunkCenter(0), (Vector3.one * Chunksize).Flat());
+                //if (id == 0)
+                //{
+                Gizmos.color = Color.red;
+                    Gizmos.DrawWireCube(Grid.GetChunkCenter(id), (Vector3.one * Chunksize).Flat());
                     Gizmos.color = Color.green;
                     for (int i = 0; i < values.Length; i++)
                     {
-                        int cellindex = id.GetGridCellIndexFromChunkCellIndex(Grid.gridData, i);
-                        float2 test = (float2)cellindex.GetXY2(Grid.gridData.MapSize.x/2) * CellSize;
+                        int cellindex = id.GetGridCellIndexFromChunkCellIndex(Grid.GridData, i);
+                        float2 test = (float2)cellindex.GetXY2(Grid.GridData.MapSize.x/2) * CellSize;
                         Vector3 cellPos = new Vector3(test.x + 1, 0, test.y + 1);
                         Debug.DrawArrow.ForGizmo(cellPos, Grid.GridArray[i]);
                     }
-                }
+                //}
             }
             
         }
