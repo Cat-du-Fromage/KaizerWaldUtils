@@ -44,7 +44,7 @@ namespace KWUtils.KWGenericGrid
             
             MapWidthHeight = mapSize;
             
-            GridBounds = new int2(mapSize.x, mapSize.y) / cellSize;
+            GridBounds = mapSize / cellSize;
             GridArray = new T[GridBounds.x * GridBounds.y];
         }
         

@@ -13,6 +13,7 @@ using static Unity.Mathematics.math;
 using static KWUtils.KWmath;
 using static Unity.Jobs.LowLevel.Unsafe.JobsUtility;
 using Debug = UnityEngine.Debug;
+using int2 = Unity.Mathematics.int2;
 
 namespace KWUtils
 {
@@ -56,16 +57,20 @@ namespace KWUtils
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int2 GetGridCellCoordFromChunkCellCoord(this in int2 cellInChunkCoord, int cellSize, int chunkSize, in int2 chunkCoord)
         {
-            return (chunkCoord * chunkSize) + (cellInChunkCoord);
+            return (chunkCoord * (chunkSize/cellSize)) + (cellInChunkCoord);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int GetGridCellIndexFromChunkCellIndex(this int chunkIndex, in GridData gridData, int cellIndexInsideChunk)
         {
             int2 chunkCoord = chunkIndex.GetXY2(gridData.NumChunkXY.x);
-            int2 cellCoordInChunk = cellIndexInsideChunk.GetXY2(gridData.ChunkSize);
+            
+            int2 cellCoordInChunk = cellIndexInsideChunk.GetXY2(gridData.ChunkCellWidth);
+            
             int2 cellGridCoord = cellCoordInChunk.GetGridCellCoordFromChunkCellCoord(gridData.CellSize, gridData.ChunkSize, chunkCoord);
-            return (cellGridCoord.y * gridData.MapSize.x) + cellGridCoord.x;
+            //if(chunkCoord.Equals(int2.zero))
+                //UnityEngine.Debug.Log($"chunkCoord : {chunkCoord} at {cellCoordInChunk} id :{(cellGridCoord.y * (gridData.MapSize.x/gridData.CellSize)) + cellGridCoord.x}");
+            return (cellGridCoord.y * (gridData.MapSize.x/gridData.CellSize)) + cellGridCoord.x;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)] //May be useful if we dont want to create a gridData
@@ -98,12 +103,11 @@ namespace KWUtils
         // ORDER ARRAY
         //==============================================================================================================
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void OrderArrayByChunk<T>(this T[] unorderedIndices, in int2 mapWidth, int chunkSize, JobHandle dependency = default)
+        public static void OrderArrayByChunk<T>(this T[] unorderedIndices, in int2 mapWidth, int chunkSize,int cellSize, JobHandle dependency = default)
         where T : struct
         {
             int2 chunkBounds = mapWidth / chunkSize;
-            int totalChunk = cmul(chunkBounds);
-            
+            int totalChunk = Sq(chunkSize / cellSize);
             using NativeArray<T> unOrderedIndices = unorderedIndices.ToNativeArray(); 
             using NativeArray<T> orderedIndices = new (unorderedIndices.Length, Allocator.TempJob, NativeArrayOptions.UninitializedMemory);
             
@@ -122,12 +126,8 @@ namespace KWUtils
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static JobHandle OrderNativeArrayByChunk(this NativeArray<float3> orderedIndices, NativeArray<float3> unorderedIndices, in GridData gridData, in JobHandle dependency = default)
         {
-            //int2 chunkBounds = gridBounds / chunkSize;
-            int totalChunk = gridData.NumChunkXY.x * gridData.NumChunkXY.y ;
-            UnityEngine.Debug.Log($"MapSize.x : {gridData.MapSize.x}; ChunkSize : {gridData.ChunkSize}; NumChunkXY : {gridData.NumChunkXY.x}");
-            //using NativeArray<Vector3> unOrderedIndices = unorderedIndices.ToNativeArray(); 
-            //using NativeArray<float3> orderedIndices = new (unorderedIndices.Length, Allocator.TempJob, NativeArrayOptions.UninitializedMemory);
-            
+            int totalChunk = Sq(gridData.ChunkCellWidth);
+
             JOrderArrayByChunkIndex2<float3> job = new JOrderArrayByChunkIndex2<float3>
             {
                 MapSizeX = gridData.MapSize.x,
@@ -148,8 +148,7 @@ namespace KWUtils
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Dictionary<int, int[]> GetArrayOrderedByChunk(int[] unorderedIndices, in GridData gridData)
         {
-            int totalChunk = gridData.NumChunkXY.x * gridData.NumChunkXY.y;
-            
+            int totalChunk = Sq(gridData.ChunkCellWidth);
             using NativeArray<int> unOrderedIndices = unorderedIndices.ToNativeArray(); 
             using NativeArray<int> orderedIndices = new (unorderedIndices.Length, Allocator.TempJob, NativeArrayOptions.UninitializedMemory);
             JOrderArrayByChunkIndex<int> job = new JOrderArrayByChunkIndex<int>
@@ -175,8 +174,7 @@ namespace KWUtils
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Dictionary<int, Vector3[]> GetArrayOrderedByChunk(this Vector3[] unorderedIndices, in GridData gridData)
         {
-            int totalChunk = gridData.NumChunkXY.x * gridData.NumChunkXY.y;
-            
+            int totalChunk = Sq(gridData.ChunkCellWidth);
             using NativeArray<float3> unOrderedIndices = unorderedIndices.ToNativeArray().Reinterpret<float3>(); 
             using NativeArray<float3> orderedIndices = new (unorderedIndices.Length, Allocator.TempJob, NativeArrayOptions.UninitializedMemory);
             JOrderArrayByChunkIndex<float3> job = new JOrderArrayByChunkIndex<float3>
@@ -201,8 +199,7 @@ namespace KWUtils
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Dictionary<int, byte[]> GetArrayOrderedByChunk(byte[] unorderedIndices, in GridData gridData)
         {
-            int totalChunk = cmul(gridData.NumChunkXY);
-            
+            int totalChunk = Sq(gridData.ChunkCellWidth);
             using NativeArray<byte> unOrderedIndices = unorderedIndices.ToNativeArray(); 
             using NativeArray<byte> orderedIndices = new (unorderedIndices.Length, Allocator.TempJob, NativeArrayOptions.UninitializedMemory);
             JOrderArrayByChunkIndex<byte> job = new JOrderArrayByChunkIndex<byte>
@@ -229,8 +226,7 @@ namespace KWUtils
         public static Dictionary<int, T[]> GetGridValueOrderedByChunk<T>(this T[] unorderedIndices, in GridData gridData)
         where T : struct
         {
-            int totalChunk = cmul(gridData.NumChunkXY); //gridData.NumChunkXY.x * gridData.NumChunkXY.y;
-            
+            int totalChunk = Sq(gridData.ChunkCellWidth);
             using NativeArray<T> nativeUnOrderedIndices = unorderedIndices.ToNativeArray();
             using NativeArray<T> nativeOrderedIndices = new (unorderedIndices.Length, Allocator.TempJob, NativeArrayOptions.UninitializedMemory);
             
@@ -246,7 +242,6 @@ namespace KWUtils
             JobHandle.ScheduleBatchedJobs();
             
             Dictionary<int, T[]> chunkCells = new Dictionary<int, T[]>(totalChunk);
-            //int totalChunkCell = Sq(gridData.ChunkSize);
             jobHandle.Complete();
             
             for (int i = 0; i < totalChunk; i++)

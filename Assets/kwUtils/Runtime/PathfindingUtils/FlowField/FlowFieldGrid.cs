@@ -223,8 +223,7 @@ namespace KWUtils.KWGenericGrid
                     for (int i = 0; i < values.Length; i++)
                     {
                         int cellindex = id.GetGridCellIndexFromChunkCellIndex(Grid.gridData, i);
-                        UnityEngine.Debug.Log(cellindex);
-                        float2 test = (float2)cellindex.GetXY2(Grid.gridData.ChunkCellWidth) * CellSize;
+                        float2 test = (float2)cellindex.GetXY2(Grid.gridData.MapSize.x/2) * CellSize;
                         Vector3 cellPos = new Vector3(test.x + 1, 0, test.y + 1);
                         Debug.DrawArrow.ForGizmo(cellPos, Grid.GridArray[i]);
                     }

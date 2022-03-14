@@ -120,8 +120,8 @@ namespace KWUtils.KWGenericGrid
         
         public void UpdateGrid(int chunkIndex, T[] values)
         {
-            int numCellInChunk = Sq(gridData.ChunkCellWidth);
-            for (int i = 0; i < numCellInChunk; i++)
+            //int numCellInChunk = Sq(gridData.ChunkCellWidth);
+            for (int i = 0; i < values.Length; i++)
             {
                 GridArray[chunkIndex.GetGridCellIndexFromChunkCellIndex(gridData, i)] = values[i]; //CALCUL FAUX!!!
             }
@@ -134,10 +134,10 @@ namespace KWUtils.KWGenericGrid
             OnGridChange?.Invoke();
         }
         
-        public void SetValues(int chunkIndex, T[] value)
+        public void SetValues(int chunkIndex, T[] values)
         {
-            ChunkDictionary[chunkIndex] = value;
-            UpdateGrid(chunkIndex, value);
+            ChunkDictionary[chunkIndex] = values;
+            UpdateGrid(chunkIndex, values);
             OnGridChange?.Invoke();
         }
 
