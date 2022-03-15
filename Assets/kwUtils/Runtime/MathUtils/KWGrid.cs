@@ -38,7 +38,7 @@ namespace KWUtils
         {
             int y = (int)floor((float)i/w);
             int x = i - (y * w);
-            return int2(x, y);
+            return new int2(x, y);
         }
         
         /// <summary>

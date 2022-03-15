@@ -2,7 +2,11 @@ using System;
 using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
+using Unity.Mathematics;
+
 using static UnityEngine.Quaternion;
+using static Unity.Mathematics.math;
+using static Unity.Mathematics.quaternion;
 
 namespace KWUtils.Debug
 {
@@ -14,7 +18,8 @@ namespace KWUtils.Debug
         {
             Gizmos.DrawRay(pos, direction);
             //Vector3 trueZero = new Vector3(Vector3.kEpsilon,Vector3.kEpsilon,Vector3.kEpsilon);
-            Quaternion rotation = direction != Vector3.zero ? LookRotation(direction) : identity;
+            if (direction == Vector3.zero) return;
+            Quaternion rotation = LookRotationSafe(direction, up()); // LookRotation(direction);
             
             Vector3 right = rotation * Euler(0, 180 + arrowHeadAngle, 0) * new Vector3(0, 0, 1);
             Vector3 left  = rotation * Euler(0, 180 - arrowHeadAngle, 0) * new Vector3(0, 0, 1);
@@ -27,7 +32,7 @@ namespace KWUtils.Debug
         {
             Gizmos.color = color;
             Gizmos.DrawRay(pos, direction);
-            Quaternion rotation = direction != Vector3.zero ? LookRotation(direction) : identity;
+            Quaternion rotation = direction != Vector3.zero ? LookRotation(direction) : Quaternion.identity;
 
             Vector3 right = rotation * Euler(0, 180 + arrowHeadAngle, 0) * new Vector3(0, 0, 1);
             Vector3 left = rotation * Euler(0, 180 - arrowHeadAngle, 0) * new Vector3(0, 0, 1);
@@ -38,7 +43,7 @@ namespace KWUtils.Debug
         public static void ForDebug(Vector3 pos, Vector3 direction, float arrowHeadLength = 0.25f, float arrowHeadAngle = 20.0f)
         {
             UnityEngine.Debug.DrawRay(pos, direction);
-            Quaternion rotation = direction != Vector3.zero ? LookRotation(direction) : identity;
+            Quaternion rotation = direction != Vector3.zero ? LookRotation(direction) : Quaternion.identity;
             Vector3 right = rotation * Euler(0, 180 + arrowHeadAngle, 0) * new Vector3(0, 0, 1);
             Vector3 left = rotation * Euler(0, 180 - arrowHeadAngle, 0) * new Vector3(0, 0, 1);
             UnityEngine.Debug.DrawRay(pos + direction, right * arrowHeadLength);
@@ -48,7 +53,7 @@ namespace KWUtils.Debug
         public static void ForDebug(Vector3 pos, Vector3 direction, Color color, float arrowHeadLength = 0.25f, float arrowHeadAngle = 20.0f)
         {
             UnityEngine.Debug.DrawRay(pos, direction, color);
-            Quaternion rotation = direction != Vector3.zero ? LookRotation(direction) : identity;
+            Quaternion rotation = direction != Vector3.zero ? LookRotation(direction) : Quaternion.identity;
             Vector3 right = rotation * Euler(0, 180 + arrowHeadAngle, 0) * new Vector3(0, 0, 1);
             Vector3 left = rotation * Euler(0, 180 - arrowHeadAngle, 0) * new Vector3(0, 0, 1);
             UnityEngine.Debug.DrawRay(pos + direction, right * arrowHeadLength, color);

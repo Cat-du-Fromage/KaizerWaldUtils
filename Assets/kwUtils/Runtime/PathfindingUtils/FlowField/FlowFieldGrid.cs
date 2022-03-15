@@ -6,6 +6,7 @@ using KWUtils.KWGenericGrid;
 using Unity.Collections;
 using Unity.Jobs;
 using Unity.Mathematics;
+using UnityEditor;
 using UnityEngine;
 
 using static Unity.Jobs.LowLevel.Unsafe.JobsUtility;
@@ -39,6 +40,8 @@ namespace KWUtils.KWGenericGrid
         private byte[] CostField;
         private int[] BestCostField;
         private Vector3[] directionField;
+
+        private float3[] orderTest;
 
         private bool jobSchedule;
         private JobHandle lastJobScheduled;
@@ -78,6 +81,7 @@ namespace KWUtils.KWGenericGrid
         private void Update()
         {
             if (!jobSchedule) return;
+            if (!lastJobScheduled.IsCompleted) return;
             CompleteJob();
         }
         
@@ -98,32 +102,20 @@ namespace KWUtils.KWGenericGrid
         {
             lastJobScheduled.Complete();
             nativeBestDirection.Reinterpret<Vector3>().CopyTo(directionField);
-            
-            //Grid.GridArray = directionField;
-            int totalChunkCell = KWmath.Sq(Chunksize/CellSize);
-            //UnityEngine.Debug.Log($"totalChunkCell {totalChunkCell}");
+
+            int totalChunkCell = Grid.GridData.TotalCellInChunk;
             for (int i = 0; i < Grid.ChunkDictionary.Count; i++)
             {
-                Vector3[] test = nativeOrderedBestDirection
-                    .Slice(i * totalChunkCell, totalChunkCell)
-                    .SliceConvert<Vector3>()
-                    .ToArray();
-
-                Grid.SetValues(i, test);
-                /*
                 Grid.SetValues(i, nativeOrderedBestDirection
                     .Slice(i * totalChunkCell, totalChunkCell)
                     .SliceConvert<Vector3>()
                     .ToArray());
-                    */
             }
             
 #if UNITY_EDITOR
             nativeCostField.CopyTo(CostField);
             nativeBestCostField.CopyTo(BestCostField);
 #endif
-            
-            UnityEngine.Debug.Log($"Test array length {Grid.GridArray.Length}");
             DisposeAll();
             jobSchedule = false;
         }
@@ -134,19 +126,21 @@ namespace KWUtils.KWGenericGrid
             
             //Cost Field
             nativeWalkableCells = walkableCells.ToNativeArray();
-            nativeCostField = AllocNtvAry<byte>(totalNumCells);
+            int totalCells = Grid.GridData.TotalCells;
+            nativeCostField = AllocNtvAry<byte>(totalCells);
             JobHandle jHCostField = GetCostField();
 
             //Integration Field
-            nativeBestCostField = AllocFillNtvAry<int>(totalNumCells, ushort.MaxValue);
+            nativeBestCostField = AllocFillNtvAry<int>(totalCells, ushort.MaxValue);
             JobHandle jHIntegrationField = GetIntegrationField(targetCell, jHCostField);
         
             //Direction Field
-            nativeBestDirection = AllocNtvAry<float3>(totalNumCells);
+            nativeBestDirection = AllocNtvAry<float3>(totalCells);
             JobHandle jHDirectionField = GetDirectionField(jHIntegrationField);
             
-            nativeOrderedBestDirection = AllocNtvAry<float3>(totalNumCells);
+            nativeOrderedBestDirection = AllocNtvAry<float3>(totalCells);
             lastJobScheduled = nativeOrderedBestDirection.OrderNativeArrayByChunk(nativeBestDirection, Grid.GridData, jHDirectionField);
+            
             JobHandle.ScheduleBatchedJobs();
             jobSchedule = true;
         }
@@ -195,34 +189,40 @@ namespace KWUtils.KWGenericGrid
         
         private void OnDrawGizmos()
         {
-            if (!DebugEnable || Grid.GridArray.IsNullOrEmpty()) return;
-/*
-            for (int i = 0; i < Grid.GridArray.Length; i++)
+            if (!DebugEnable || Grid.GridArray.IsNullOrEmpty() || Grid.ChunkDictionary is null) return;
+            /*
+            Gizmos.color = Color.green;
+            for (int i = 0; i < directionField.Length; i++)
             {
-                Vector3 pos = Grid.GetCellCenter(i);
-                Debug.DrawArrow.ForGizmo(pos, Grid.GridArray[i]);
-                //Handles.Label(pos, flowField.BestCostField[i].ToString());
+                Vector3 cellPos = Grid.GetCellCenter(i);
+                Debug.DrawArrow.ForGizmo(cellPos, directionField[i]);
+                //Handles.Label(cellPos, directionField[i].ToString());
             }
             */
-
             
             foreach ((int id, Vector3[] values)in Grid.ChunkDictionary)
             {
-                //if (id == 0)
-                //{
-                Gizmos.color = Color.red;
-                    Gizmos.DrawWireCube(Grid.GetChunkCenter(id), (Vector3.one * Chunksize).Flat());
-                    Gizmos.color = Color.green;
+                    Gizmos.color = Color.red;
+                    Gizmos.DrawWireCube(Grid.GetChunkCenter(id), new Vector3(Chunksize,0.5f,Chunksize));
+                
                     for (int i = 0; i < values.Length; i++)
                     {
-                        int cellindex = id.GetGridCellIndexFromChunkCellIndex(Grid.GridData, i);
-                        float2 test = (float2)cellindex.GetXY2(Grid.GridData.MapSize.x/2) * CellSize;
-                        Vector3 cellPos = new Vector3(test.x + 1, 0, test.y + 1);
-                        Debug.DrawArrow.ForGizmo(cellPos, Grid.GridArray[i]);
+                        Gizmos.color = Color.green;
+                        Vector3 cellPos = Grid.GetCellCenterFromChunk(id, i);
+                        Gizmos.DrawWireCube(cellPos, (Vector3.one * Grid.GridData.CellSize).Flat());
+                        Debug.DrawArrow.ForGizmo(cellPos, values[i]);
                     }
-                //}
             }
             
+            /*
+            //PROBLEM GETTING INDEX!
+            Gizmos.color = Color.green;
+            for (int i = 0; i < Grid.GridArray.Length; i++)
+            {
+                Vector3 cellPos = Grid.GetCellCenter(i);
+                Debug.DrawArrow.ForGizmo(cellPos, Grid.GridArray[i]);
+            }
+            */
         }
     }
 }

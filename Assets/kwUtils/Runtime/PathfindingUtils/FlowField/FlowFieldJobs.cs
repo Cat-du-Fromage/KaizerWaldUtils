@@ -89,7 +89,7 @@ using float3 = Unity.Mathematics.float3;
     public struct JBestDirection : IJobFor
     {
         [ReadOnly] public int MapSizeX;
-        
+
         [ReadOnly, NativeDisableParallelForRestriction] public NativeArray<int> BestCostField;
         [WriteOnly, NativeDisableParallelForRestriction] public NativeArray<float3> CellBestDirection;
         
@@ -104,29 +104,30 @@ using float3 = Unity.Mathematics.float3;
             }
             
             int2 currentCellCoord = index.GetXY2(MapSizeX);
-            NativeList<int> neighbors = GetNeighborCells(index, currentCellCoord);
+            NativeList<int> neighbors = new NativeList<int>(4,Allocator.Temp);
+            GetNeighborCells( neighbors, index, currentCellCoord);
             
             for (int i = 0; i < neighbors.Length; i++)
             {
-                int currentNeighbor = neighbors.ElementAt(i);
+                int currentNeighbor = neighbors[i];
                 if(BestCostField[currentNeighbor] < currentBestCost)
                 {
                     currentBestCost = BestCostField[currentNeighbor];
                     int2 neighborCoord = currentNeighbor.GetXY2(MapSizeX);
                     int2 bestDirection = neighborCoord - currentCellCoord;
-                    CellBestDirection[index] = float3(bestDirection.x, 0, bestDirection.y);
+                    CellBestDirection[index] = new float3(bestDirection.x, 0, bestDirection.y);
                 }
             }
         }
         
-        private readonly NativeList<int> GetNeighborCells(int index, in int2 coord)
+        private readonly NativeList<int> GetNeighborCells( NativeList<int> neighbors, int index, in int2 coord)
         {
-            NativeList<int> neighbors = new NativeList<int>(4,Allocator.Temp);
+            //NativeList<int> neighbors = new NativeList<int>(4,Allocator.Temp);
             for (int i = 0; i < 4; i++)
             {
                 int neighborId = index.AdjCellFromIndex((1 << i), coord, MapSizeX);
                 if (neighborId == -1) continue;
-                neighbors.Add(neighborId);
+                neighbors.AddNoResize(neighborId);
             }
             return neighbors;
         }

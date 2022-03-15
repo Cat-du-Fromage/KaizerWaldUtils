@@ -69,7 +69,11 @@ namespace KWUtils.KWGenericGrid
             float2 chunkCoord = ((chunkIndex.GetXY2(chunkGridBounds.x) * chunkSize) + new float2(chunkSize/2f));
             return new Vector3(chunkCoord.x, 0, chunkCoord.y);
         }
-        
+        public Vector3 GetCellCenterFromChunk(int chunkIndex, int cellIndexInChunk)
+        {
+            int indexInGrid = chunkIndex.GetGridCellIndexFromChunkCellIndex(GridData, cellIndexInChunk);
+            return GetCellCenter(indexInGrid);
+        }
         //==============================================================================================================
         //Connection between chunk and Grid
         //==============================================================================================================
@@ -111,12 +115,12 @@ namespace KWUtils.KWGenericGrid
             ChunkDictionary[chunkIndex][cellIndexInChunk] = value;
         }
         
-        public void UpdateGrid(int chunkIndex, T[] values)
+        private void UpdateGrid(int chunkIndex, IReadOnlyList<T> values)
         {
-            //int numCellInChunk = Sq(gridData.ChunkCellWidth);
-            for (int i = 0; i < values.Length; i++)
+            for (int i = 0; i < values.Count; i++)
             {
                 GridArray[chunkIndex.GetGridCellIndexFromChunkCellIndex(GridData, i)] = values[i]; //CALCUL FAUX!!!
+                //UnityEngine.Debug.Log($"at chunk {chunkIndex} index:{i} Value = {values[i]}");
             }
         }
         
@@ -127,9 +131,9 @@ namespace KWUtils.KWGenericGrid
             OnGridChange?.Invoke();
         }
         
-        public void SetValues(int chunkIndex, T[] values)
+        public void SetValues(int chunkIndex, IReadOnlyList<T> values)
         {
-            ChunkDictionary[chunkIndex] = values;
+            ChunkDictionary[chunkIndex] = values as T[];
             UpdateGrid(chunkIndex, values);
             OnGridChange?.Invoke();
         }
