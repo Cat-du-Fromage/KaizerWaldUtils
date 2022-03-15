@@ -119,7 +119,7 @@ public class FlowField
         JIntegrationField job = new JIntegrationField
         {
             DestinationCellIndex = targetCellIndex,
-            MapSizeX = gridSize.x,
+            NumCellX = gridSize.x,
             CostField = nativeCostField,
             BestCostField = nativeBestCostField
         };
@@ -130,7 +130,7 @@ public class FlowField
     {
         JBestDirection job = new JBestDirection
         {
-            MapSizeX = gridSize.x,
+            NumCellX = gridSize.x,
             BestCostField = nativeBestCostField,
             CellBestDirection = nativeBestDirection
         };

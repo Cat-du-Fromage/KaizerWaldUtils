@@ -39,6 +39,12 @@ namespace KWUtils
             int y = (int)floor((float)i/w);
             int x = i - (y * w);
             return new int2(x, y);
+            
+            //This method is proposed by many
+            //for now there is no performance difference detected
+            //int x = (int)fmod(i , w);
+            //int y = i / w; 
+            //return new int2((int)fmod(i , w), i / w);
         }
         
         /// <summary>
@@ -53,6 +59,30 @@ namespace KWUtils
             int y = (int)floor((float)i / w);
             int x = i - (y * w);
             return (x, y);
+        }
+        
+        /// <summary>
+        /// USE FOR VOXEL GENERATION TYPE 3D
+        /// </summary>
+        /// <param name="i"></param>
+        /// <param name="w"></param>
+        /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static (int,int,int) GetXYZ(this int i, int w)
+        {
+            int x = i % w;
+            int y = (i % (w * w)) / w;
+            int z = i / (w * w);
+            return (x, y, z);
+        }
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static int3 GetXYZ3(this int i, int w)
+        {
+            int x = i % w;
+            int y = (i % (w * w)) / w;
+            int z = i / (w * w);
+            return new int3(x, y, z);
         }
         
         /// <summary>

@@ -69,7 +69,7 @@ namespace KWUtils.KWGenericGrid
             float2 chunkCoord = ((chunkIndex.GetXY2(chunkGridBounds.x) * chunkSize) + new float2(chunkSize/2f));
             return new Vector3(chunkCoord.x, 0, chunkCoord.y);
         }
-        public Vector3 GetCellCenterFromChunk(int chunkIndex, int cellIndexInChunk)
+        public Vector3 GetChunkCellCenter(int chunkIndex, int cellIndexInChunk)
         {
             int indexInGrid = chunkIndex.GetGridCellIndexFromChunkCellIndex(GridData, cellIndexInChunk);
             return GetCellCenter(indexInGrid);
@@ -115,12 +115,11 @@ namespace KWUtils.KWGenericGrid
             ChunkDictionary[chunkIndex][cellIndexInChunk] = value;
         }
         
-        private void UpdateGrid(int chunkIndex, IReadOnlyList<T> values)
+        private void UpdateGrid(int chunkIndex, T[] values)
         {
-            for (int i = 0; i < values.Count; i++)
+            for (int i = 0; i < values.Length; i++)
             {
-                GridArray[chunkIndex.GetGridCellIndexFromChunkCellIndex(GridData, i)] = values[i]; //CALCUL FAUX!!!
-                //UnityEngine.Debug.Log($"at chunk {chunkIndex} index:{i} Value = {values[i]}");
+                GridArray[chunkIndex.GetGridCellIndexFromChunkCellIndex(GridData, i)] = values[i];
             }
         }
         
@@ -131,9 +130,9 @@ namespace KWUtils.KWGenericGrid
             OnGridChange?.Invoke();
         }
         
-        public void SetValues(int chunkIndex, IReadOnlyList<T> values)
+        public void SetValues(int chunkIndex, T[] values)
         {
-            ChunkDictionary[chunkIndex] = values as T[];
+            ChunkDictionary[chunkIndex] = values;
             UpdateGrid(chunkIndex, values);
             OnGridChange?.Invoke();
         }
@@ -144,5 +143,15 @@ namespace KWUtils.KWGenericGrid
         public T[] GetValues(int index) => ChunkDictionary[index];
         public T[] GetValues(int x, int y) => ChunkDictionary[y * GridBounds.x + x];
         public T[] GetValues(int2 coord) => ChunkDictionary[coord.y * GridBounds.x + coord.x];
+
+        //==============================================================================================================
+        //Get/Set Value By Index
+        //==============================================================================================================
+        
+        public new T[] this[int chunkIndex]
+        {
+            get => ChunkDictionary[chunkIndex];
+            set => SetValues(chunkIndex, value);
+        }
     }
 }

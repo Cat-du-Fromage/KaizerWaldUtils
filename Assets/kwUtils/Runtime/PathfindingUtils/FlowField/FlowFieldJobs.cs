@@ -37,7 +37,7 @@ using float3 = Unity.Mathematics.float3;
     public struct JIntegrationField : IJob
     {
         [ReadOnly] public int DestinationCellIndex;
-        [ReadOnly] public int MapSizeX;
+        [ReadOnly] public int NumCellX;
         
         public NativeArray<byte> CostField;
         public NativeArray<int> BestCostField;
@@ -74,10 +74,10 @@ using float3 = Unity.Mathematics.float3;
         
         private readonly void GetNeighborCells(int index, NativeList<int> curNeighbors)
         {
-            int2 coord = index.GetXY2(MapSizeX);
+            int2 coord = index.GetXY2(NumCellX);
             for (int i = 0; i < 4; i++)
             {
-                int neighborId = index.AdjCellFromIndex((1 << i), coord, MapSizeX);
+                int neighborId = index.AdjCellFromIndex((1 << i), coord, NumCellX);
                 if (neighborId == -1) continue;
                 curNeighbors.AddNoResize(neighborId);
             }
@@ -88,7 +88,7 @@ using float3 = Unity.Mathematics.float3;
 #endif
     public struct JBestDirection : IJobFor
     {
-        [ReadOnly] public int MapSizeX;
+        [ReadOnly] public int NumCellX;
 
         [ReadOnly, NativeDisableParallelForRestriction] public NativeArray<int> BestCostField;
         [WriteOnly, NativeDisableParallelForRestriction] public NativeArray<float3> CellBestDirection;
@@ -102,30 +102,27 @@ using float3 = Unity.Mathematics.float3;
                 CellBestDirection[index] = float3.zero;
                 return;
             }
-            
-            int2 currentCellCoord = index.GetXY2(MapSizeX);
-            NativeList<int> neighbors = new NativeList<int>(4,Allocator.Temp);
-            GetNeighborCells( neighbors, index, currentCellCoord);
-            
+            int2 currentCellCoord = index.GetXY2(NumCellX);
+            NativeList<int> neighbors = GetNeighborCells(index, currentCellCoord);
             for (int i = 0; i < neighbors.Length; i++)
             {
                 int currentNeighbor = neighbors[i];
                 if(BestCostField[currentNeighbor] < currentBestCost)
                 {
                     currentBestCost = BestCostField[currentNeighbor];
-                    int2 neighborCoord = currentNeighbor.GetXY2(MapSizeX);
+                    int2 neighborCoord = currentNeighbor.GetXY2(NumCellX);
                     int2 bestDirection = neighborCoord - currentCellCoord;
                     CellBestDirection[index] = new float3(bestDirection.x, 0, bestDirection.y);
                 }
             }
         }
         
-        private readonly NativeList<int> GetNeighborCells( NativeList<int> neighbors, int index, in int2 coord)
+        private readonly NativeList<int> GetNeighborCells(int index, in int2 coord)
         {
-            //NativeList<int> neighbors = new NativeList<int>(4,Allocator.Temp);
+            NativeList<int> neighbors = new NativeList<int>(4,Allocator.Temp);
             for (int i = 0; i < 4; i++)
             {
-                int neighborId = index.AdjCellFromIndex((1 << i), coord, MapSizeX);
+                int neighborId = index.AdjCellFromIndex((1 << i), coord, NumCellX);
                 if (neighborId == -1) continue;
                 neighbors.AddNoResize(neighborId);
             }

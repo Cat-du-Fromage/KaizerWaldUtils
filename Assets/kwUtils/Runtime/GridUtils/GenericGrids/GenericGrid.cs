@@ -6,6 +6,8 @@ using Unity.Mathematics;
 using UnityEditor;
 using UnityEngine;
 
+using static Unity.Mathematics.math;
+
 namespace KWUtils.KWGenericGrid
 {
     public class GenericGrid<T>
@@ -21,7 +23,7 @@ namespace KWUtils.KWGenericGrid
         public GenericGrid(in int2 mapSize, int cellSize, Func<int, T> createGridObject)
         {
             CellSize = cellSize;
-            MapBounds = mapSize;
+            MapBounds = ceilpow2(mapSize);
 
             GridBounds = mapSize / cellSize;
             GridArray = new T[GridBounds.x * GridBounds.y];
@@ -37,7 +39,7 @@ namespace KWUtils.KWGenericGrid
         {
             CellSize = cellSize;
 
-            MapBounds = mapSize;
+            MapBounds = ceilpow2(mapSize);
             
             GridBounds = mapSize / cellSize;
             GridArray = new T[GridBounds.x * GridBounds.y];
@@ -72,6 +74,12 @@ namespace KWUtils.KWGenericGrid
             return new Vector3(cellCoord.x,0,cellCoord.y);
         }
         
+        public T this[int cellIndex]
+        {
+            get => GridArray[cellIndex];
+            set => SetValue(cellIndex, value);
+        }
+        
         public virtual void SetValue(int index, T value)
         {
             GridArray[index] = value;
@@ -80,24 +88,15 @@ namespace KWUtils.KWGenericGrid
 
         public T GetValue(int index) => GridArray[index];
 
+        //Operation from World Position
+        //==============================================================================================================
+        public int IndexFromPosition(in Vector3 position)
+        {
+            return position.XZ().GetIndexFromPosition(MapBounds, CellSize);
+        }
 
         //==============================================================================================================
         //Adaptation to an other Grid with different Cell
         //==============================================================================================================
-
-        public void SetFromAnOtherGrid<U>(GenericGrid<U> otherGrid, int index) 
-        where U : struct
-        {
-            int cellSizeOtherGrid = otherGrid.CellSize;
-
-            if (cellSizeOtherGrid < this.CellSize)
-            {
-                int numCellAffected = this.CellSize / cellSizeOtherGrid;
-                
-                
-            }
-
-            return;
-        }
     }
 }

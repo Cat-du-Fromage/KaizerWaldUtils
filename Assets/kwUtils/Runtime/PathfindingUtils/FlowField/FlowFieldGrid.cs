@@ -24,24 +24,21 @@ namespace KWUtils.KWGenericGrid
         
         [SerializeField] private int Chunksize = 16;
         [SerializeField] private int CellSize = 2;
-        
-        private int totalNumCells;
-        private int2 gridSize;
-    
+
         //CostField
-        private NativeArray<bool> nativeWalkableCells;
+        private NativeArray<bool> nativeObstacles;
         private NativeArray<byte> nativeCostField;
         //IntegrationField
         private NativeArray<int> nativeBestCostField;
         //FlowField
         private NativeArray<float3> nativeBestDirection;
         private NativeArray<float3> nativeOrderedBestDirection;
-    
+        
+#if UNITY_EDITOR
         private byte[] CostField;
         private int[] BestCostField;
         private Vector3[] directionField;
-
-        private float3[] orderTest;
+#endif
 
         private bool jobSchedule;
         private JobHandle lastJobScheduled;
@@ -51,6 +48,11 @@ namespace KWUtils.KWGenericGrid
         public IGridSystem GridSystem { get; set; }
         public GenericChunkedGrid<Vector3> Grid { get; private set; }
         
+
+        
+
+        
+        
         /// <summary>
         /// Find the position of the target cell then get the corresponding index on the grid
         /// </summary>
@@ -59,22 +61,23 @@ namespace KWUtils.KWGenericGrid
         {
             goalCellIndex = Goal == null ? 0 : Goal.position.XZ().GetIndexFromPosition(terrainBounds, 2);
             Grid = new GenericChunkedGrid<Vector3>(terrainBounds, Chunksize, CellSize);
-            gridSize = terrainBounds / CellSize;
-            totalNumCells = gridSize.x * gridSize.y;
             UnityEngine.Debug.Log($"Grid.ChunkDictionary COUNT {Grid.ChunkDictionary[0].Length}");
         }
 
         private void Start()
         {
-            CostField      = new byte[totalNumCells];
-            BestCostField  = new int[totalNumCells];
-            directionField = new Vector3[totalNumCells];
+#if UNITY_EDITOR
+            //CostField      = new byte[Grid.GridData.TotalCells];
+            //BestCostField  = new int[Grid.GridData.TotalCells];
+            //directionField = new Vector3[Grid.GridData.TotalCells];
+#endif
             GridSystem.SubscribeToGrid(GridType.Obstacles, OnNewObstacles);
             CalculateFlowField(GridSystem.RequestGrid<bool, GridType>(GridType.Obstacles), goalCellIndex);
         }
 
         private void OnDestroy()
         {
+            lastJobScheduled.Complete();
             DisposeAll();
         }
 
@@ -96,13 +99,15 @@ namespace KWUtils.KWGenericGrid
             sw.Stop();
             UnityEngine.Debug.Log($"Path found: {sw.Elapsed} ms");          
 #endif
+
         }
 
         private void CompleteJob()
         {
             lastJobScheduled.Complete();
-            nativeBestDirection.Reinterpret<Vector3>().CopyTo(directionField);
-
+#if UNITY_EDITOR
+            //nativeBestDirection.Reinterpret<Vector3>().CopyTo(directionField);
+#endif
             int totalChunkCell = Grid.GridData.TotalCellInChunk;
             for (int i = 0; i < Grid.ChunkDictionary.Count; i++)
             {
@@ -113,19 +118,19 @@ namespace KWUtils.KWGenericGrid
             }
             
 #if UNITY_EDITOR
-            nativeCostField.CopyTo(CostField);
-            nativeBestCostField.CopyTo(BestCostField);
+            //nativeCostField.CopyTo(CostField);
+            //nativeBestCostField.CopyTo(BestCostField);
 #endif
             DisposeAll();
             jobSchedule = false;
         }
 
-        private void CalculateFlowField(bool[] walkableCells = null, int targetCell = -1)
+        private void CalculateFlowField(bool[] obstacles = null, int targetCell = -1)
         {
             goalCellIndex = targetCell == -1 ? goalCellIndex : targetCell;
             
             //Cost Field
-            nativeWalkableCells = walkableCells.ToNativeArray();
+            nativeObstacles = obstacles.ToNativeArray();
             int totalCells = Grid.GridData.TotalCells;
             nativeCostField = AllocNtvAry<byte>(totalCells);
             JobHandle jHCostField = GetCostField();
@@ -149,10 +154,10 @@ namespace KWUtils.KWGenericGrid
         {
             JCostField job = new JCostField
             {
-                Obstacles = nativeWalkableCells,
+                Obstacles = nativeObstacles,
                 CostField = nativeCostField,
             };
-            return job.ScheduleParallel(totalNumCells, JobWorkerCount - 1, dependency);
+            return job.ScheduleParallel(nativeCostField.Length, JobWorkerCount - 1, dependency);
         }
 
         private JobHandle GetIntegrationField(int targetCellIndex, in JobHandle dependency = default)
@@ -160,7 +165,7 @@ namespace KWUtils.KWGenericGrid
             JIntegrationField job = new JIntegrationField
             {
                 DestinationCellIndex = targetCellIndex,
-                MapSizeX = gridSize.x,
+                NumCellX = Grid.GridData.NumCellXY.x,
                 CostField = nativeCostField,
                 BestCostField = nativeBestCostField
             };
@@ -171,16 +176,16 @@ namespace KWUtils.KWGenericGrid
         {
             JBestDirection job = new JBestDirection
             {
-                MapSizeX = gridSize.x,
+                NumCellX = Grid.GridData.NumCellXY.x,
                 BestCostField = nativeBestCostField,
                 CellBestDirection = nativeBestDirection
             };
-            return job.ScheduleParallel(totalNumCells, JobWorkerCount - 1, dependency);
+            return job.ScheduleParallel(nativeBestCostField.Length, JobWorkerCount - 1, dependency);
         }
 
         private void DisposeAll()
         {
-            if (nativeWalkableCells.IsCreated)        nativeWalkableCells.Dispose();
+            if (nativeObstacles.IsCreated)            nativeObstacles.Dispose();
             if (nativeCostField.IsCreated)            nativeCostField.Dispose();
             if (nativeBestCostField.IsCreated)        nativeBestCostField.Dispose();
             if (nativeBestDirection.IsCreated)        nativeBestDirection.Dispose();
@@ -208,7 +213,7 @@ namespace KWUtils.KWGenericGrid
                     for (int i = 0; i < values.Length; i++)
                     {
                         Gizmos.color = Color.green;
-                        Vector3 cellPos = Grid.GetCellCenterFromChunk(id, i);
+                        Vector3 cellPos = Grid.GetChunkCellCenter(id, i);
                         Gizmos.DrawWireCube(cellPos, (Vector3.one * Grid.GridData.CellSize).Flat());
                         Debug.DrawArrow.ForGizmo(cellPos, values[i]);
                     }
