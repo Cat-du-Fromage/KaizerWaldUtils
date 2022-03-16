@@ -21,8 +21,8 @@ namespace TowerDefense
     {
         [SerializeField] private Transform DestinationGate;
         [SerializeField] private Transform agentStart;
-        //Interfaces
-        private const int CellSize = 2;
+        
+        private const int CellSize = 1; //ADAPTATION NEEDED!
         
         private const int DiagonalCostMove = 14;
         private const int StraightCostMove = 10;
@@ -44,6 +44,7 @@ namespace TowerDefense
         private NativeArray<Node> nodes;
         private NativeList<int> pathList;
 
+        //Interfaces
         public IGridSystem GridSystem { get; set; }
 
         public GenericGrid<Node> Grid { get; private set; }
@@ -188,6 +189,7 @@ namespace TowerDefense
                 while (!openSet.IsEmpty)
                 {
                     int currentNode = GetLowestFCostNodeIndex(openSet);
+                    
                     //Check if we already arrived
                     if (currentNode == EndNodeIndex)
                     {
@@ -215,13 +217,13 @@ namespace TowerDefense
 
             private void CalculatePath()
             {
+                PathList.Add(EndNodeIndex);
                 int currentNode = EndNodeIndex;
                 while(currentNode != StartNodeIndex)
                 {
-                    PathList.Add(currentNode);
                     currentNode = Nodes[currentNode].CameFromNodeIndex;
+                    PathList.Add(currentNode);
                 }
-                PathList.Add(StartNodeIndex);
             }
             
             private void GetNeighborCells(int index, NativeList<int> curNeighbors, NativeHashSet<int> closeSet)
@@ -246,11 +248,10 @@ namespace TowerDefense
 
             private int GetLowestFCostNodeIndex(NativeHashSet<int> openSet)
             {
-                using NativeArray<int> tempOpenSet = openSet.ToNativeArray(Allocator.Temp);
-                int lowest = tempOpenSet[0];
-                for (int i = 1; i < tempOpenSet.Length; i++)
+                int lowest = -1;
+                foreach (int index in openSet)
                 {
-                    int index = tempOpenSet[i];
+                    lowest = lowest == -1 ? index : lowest;
                     lowest = select(lowest, index, Nodes[index].FCost < Nodes[lowest].FCost);
                 }
                 return lowest;
