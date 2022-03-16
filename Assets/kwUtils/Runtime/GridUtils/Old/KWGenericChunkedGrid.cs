@@ -112,7 +112,7 @@ namespace KWUtils.KWGenericGrid
             cachedCellCenter = new float2(x + 0.5f, y + 0.5f);
             int chunkIndex = cachedCellCenter.GetIndexFromPosition(mapWidthHeight, chunkSize);
             int2 chunkCoord = chunkIndex.GetXY2(mapWidthHeight.x);
-            int chunkCellIndex = cachedCellCenter.GetIndexFromPositionOffseted(chunkSize, cellSize, chunkCoord * chunkSize);
+            int chunkCellIndex = cachedCellCenter.GetIndexFromPositionOffset(chunkSize, cellSize, chunkCoord * chunkSize);
         }
 
         public void SetValueFromPosition(Vector3 position, T value)

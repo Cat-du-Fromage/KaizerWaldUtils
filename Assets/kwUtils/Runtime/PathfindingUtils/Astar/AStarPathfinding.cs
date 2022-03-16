@@ -138,7 +138,7 @@ namespace TowerDefense
             //Get Path from Start -> End
             JaStar job = new JaStar
             {
-                NumCellX = Grid.GridBound.x,
+                NumCellX = Grid.NumCellXY.x,
                 StartNodeIndex = startIndex,
                 EndNodeIndex = endIndex,
                 Nodes = nodes,

@@ -13,20 +13,23 @@ namespace KWUtils.KWGenericGrid
     public class GenericGrid<T>
     where T : struct
     {
-        protected int CellSize;
-        protected int2 MapBounds;
-        protected int2 GridBounds;
+        public readonly int CellSize;
+        public readonly int2 MapXY;
+        public readonly int2 NumCellXY;
         
-        public T[] GridArray;
+        public readonly T[] GridArray;
         public event Action OnGridChange;
         
+        //==============================================================================================================
+        //CONSTRUCTOR
+        //==============================================================================================================
         public GenericGrid(in int2 mapSize, int cellSize, Func<int, T> createGridObject)
         {
             CellSize = cellSize;
-            MapBounds = ceilpow2(mapSize);
+            MapXY = ceilpow2(mapSize);
 
-            GridBounds = mapSize / cellSize;
-            GridArray = new T[GridBounds.x * GridBounds.y];
+            NumCellXY = mapSize / cellSize;
+            GridArray = new T[NumCellXY.x * NumCellXY.y];
             
             //Init Grid
             for (int i = 0; i < GridArray.Length; i++)
@@ -39,14 +42,11 @@ namespace KWUtils.KWGenericGrid
         {
             CellSize = cellSize;
 
-            MapBounds = ceilpow2(mapSize);
+            MapXY = ceilpow2(mapSize);
             
-            GridBounds = mapSize / cellSize;
-            GridArray = new T[GridBounds.x * GridBounds.y];
+            NumCellXY = mapSize / cellSize;
+            GridArray = new T[NumCellXY.x * NumCellXY.y];
         }
-        
-        //Accessors
-        public int2 GridBound => GridBounds;
         
         //Clear Events
         public virtual void ClearEvents()
@@ -59,19 +59,22 @@ namespace KWUtils.KWGenericGrid
         }
 
         //==============================================================================================================
-        //ARRAY MANIPULATION
+        //CELLS INFORMATION
         //==============================================================================================================
 
-        //Update all the array at once
+        public Vector3 GetCellCenter(int index)
+        {
+            float2 cellCoord = index.GetXY2(NumCellXY.x) * CellSize + new float2(CellSize/2f);
+            return new Vector3(cellCoord.x,0,cellCoord.y);
+        }
+        
+        //==============================================================================================================
+        //ARRAY MANIPULATION
+        //==============================================================================================================
+        
         public virtual void CopyFrom(T[] otherArray)
         {
             otherArray.CopyTo((Span<T>) GridArray);
-        }
-        
-        public Vector3 GetCellCenter(int index)
-        {
-            float2 cellCoord = index.GetXY2(GridBounds.x) * CellSize + new float2(CellSize/2f);
-            return new Vector3(cellCoord.x,0,cellCoord.y);
         }
         
         public T this[int cellIndex]
@@ -80,23 +83,50 @@ namespace KWUtils.KWGenericGrid
             set => SetValue(cellIndex, value);
         }
         
+        public T GetValue(int index)
+        {
+            return GridArray[index];
+        }
+
         public virtual void SetValue(int index, T value)
         {
             GridArray[index] = value;
             OnGridChange?.Invoke();
         }
-
-        public T GetValue(int index) => GridArray[index];
-
+        
         //Operation from World Position
         //==============================================================================================================
         public int IndexFromPosition(in Vector3 position)
         {
-            return position.XZ().GetIndexFromPosition(MapBounds, CellSize);
+            return position.XZ().GetIndexFromPosition(MapXY, CellSize);
         }
 
         //==============================================================================================================
         //Adaptation to an other Grid with different Cell
         //==============================================================================================================
+
+        //AdaptGrid(GenericGrid<T> grid)
+        public void AdaptGrid<T1>(GenericGrid<T1> otherGrid)
+        where T1 : struct
+        {
+            T1[] beforeConversion = otherGrid.GridArray;
+            T1[] afterConversion;
+            
+            if (otherGrid.CellSize > CellSize)
+            {
+                //We Receive Grid With bigger Cells!
+                afterConversion = new T1[GridArray.Length];
+                return;
+            }
+            else if (otherGrid.CellSize < CellSize)
+            {
+                //We Receive Grid With smaller Cells!
+                afterConversion = new T1[2];
+            }
+            else
+            {
+                //Return otherGrid.GridArray;
+            }
+        }
     }
 }

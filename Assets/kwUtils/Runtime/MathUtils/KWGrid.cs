@@ -144,124 +144,48 @@ namespace KWUtils
         //You need to precompute the hashGrid to use the function
         //may need either : NativeArray<Position> PointInsideHashGrid OR NativeArray<ID> CellId containing the point
         //=====================================
-        
-        /// <summary>
-        /// NEED A HUGE CLEAN UP THIS IS A MESS!!
-        /// </summary>
-
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int2 GetCoordFromPosition(this float3 pointPos, int gridSize, float spacing)
+        public static int GetIndexFromPosition(this float2 pointPos, int2 mapXY, int cellSize)
         {
-            float mapOffset = gridSize / 2f;
-            
-            float percentX = (pointPos.x + mapOffset) / (gridSize * spacing);
-            float percentY = (pointPos.z + mapOffset) / (gridSize * spacing);
-            
-            percentX = clamp(percentX, 0, 1f); //CAREFUL NEED ABS!
-            percentY = clamp(percentY, 0, 1f); //CAREFUL NEED ABS!
- 
-            int x = clamp((int)floor((gridSize) * percentX), 0, gridSize - 1);
-            int y = clamp((int)floor((gridSize) * percentY), 0, gridSize - 1);
-            
-            return int2(x,y);
-        }
-        
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int GetIndexFromPosition(this float3 pointPos, int gridSize, float spacing, bool offset = false)
-        {
-            float mapOffset = offset ? gridSize / 2f : 0;
-            
-            float percentX = (pointPos.x + mapOffset) / (gridSize * spacing);
-            float percentY = (pointPos.z + mapOffset) / (gridSize * spacing);
-            
-            percentX = clamp(percentX, 0, 1f); //CAREFUL NEED ABS!
-            percentY = clamp(percentY, 0, 1f); //CAREFUL NEED ABS!
- 
-            int x = clamp((int)floor(gridSize * percentX), 0, gridSize - 1);
-            int y = clamp((int)floor(gridSize * percentY), 0, gridSize - 1);
-            return mad(y, (int)(gridSize/spacing), x);
-        }
-        
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int GetIndexFromPosition(this float3 pointPos, int2 gridSize, int cellSize)
-        {
-            float percentX = (pointPos.x) / (gridSize.x * cellSize);
-            float percentY = (pointPos.z) / (gridSize.y * cellSize);
-            
-            percentX = clamp(percentX, 0, 1f); //CAREFUL NEED ABS!
-            percentY = clamp(percentY, 0, 1f); //CAREFUL NEED ABS!
- 
-            int x = clamp((int)floor(gridSize.x * percentX), 0, gridSize.x - 1);
-            int y = clamp((int)floor(gridSize.y * percentY), 0, gridSize.y - 1);
-            return mad(y, gridSize.x/cellSize, x);
-        }
-        
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int GetIndexFromPosition(this float2 pointPos, int2 gridSize, int cellSize)
-        {
-            float2 percents = pointPos / (gridSize * cellSize);
+            float2 percents = pointPos / (mapXY * cellSize);
             percents = clamp(percents, 0, 1f);
 
-            int2 xy =  clamp((int2)floor(gridSize * percents), 0, gridSize - 1);
+            int2 xy =  clamp((int2)floor(mapXY * percents), 0, mapXY - 1);
             
-            return mad(xy.y, gridSize.x/cellSize, xy.x);
+            return mad(xy.y, mapXY.x/cellSize, xy.x);
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int GetIndexFromPositionOffseted(this float2 pointPos, int2 gridSize, int cellSize, int2 offset)
+        public static int GetIndexFromPositionOffset(this float2 pointPos, int2 mapXY, int cellSize, int2 offset)
         {
-            float2 percents = (pointPos - offset) / (gridSize * cellSize);
+            float2 percents = (pointPos - offset) / (mapXY * cellSize);
             percents = clamp(percents, 0, 1f);
 
-            int2 xy =  clamp((int2)floor(gridSize * percents), 0, gridSize - 1);
+            int2 xy =  clamp((int2)floor(mapXY * percents), 0, mapXY - 1);
             
-            return mad(xy.y, gridSize.x/cellSize, xy.x);
+            return mad(xy.y, mapXY.x/cellSize, xy.x);
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int GetIndexFromPosition(this float3 pointPos, int2 gridSize, int cellSize, bool offset)
+        public static int GetIndexFromPosition(this float3 pointPos, int2 mapXY, int cellSize)
         {
-            float2 mapOffset = offset ? gridSize / 2 : 0;
+            float2 percents = pointPos.xz / (mapXY * cellSize);
+            percents = clamp(percents, 0, 1f);
+
+            int2 xy =  clamp((int2)floor(mapXY * percents), 0, mapXY - 1);
             
-            float percentX = (pointPos.x + mapOffset.x) / (gridSize.x * cellSize);
-            float percentY = (pointPos.z + mapOffset.y) / (gridSize.y * cellSize);
-            
-            percentX = clamp(percentX, 0, 1f); //CAREFUL NEED ABS!
-            percentY = clamp(percentY, 0, 1f); //CAREFUL NEED ABS!
- 
-            int x = clamp((int)floor(gridSize.x * percentX), 0, gridSize.x - 1);
-            int y = clamp((int)floor(gridSize.y * percentY), 0, gridSize.y - 1);
-            return mad(y, gridSize.x/cellSize, x);
+            return mad(xy.y, mapXY.x/cellSize, xy.x);
         }
-        
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int GetIndexFromPosition(this Vector3 pointPos, int2 gridSize, int cellSize)
+        public static int GetIndexFromPosition(this Vector3 pointPos, int2 mapXY, int cellSize)
         {
-            float percentX = pointPos.x / (gridSize.x * cellSize);
-            float percentY = pointPos.z / (gridSize.y * cellSize);
+            float2 percents = pointPos.XZ() / (mapXY * cellSize);
+            percents = clamp(percents, 0, 1f);
 
-            percentX = Clamp01(percentX); //CAREFUL NEED ABS!
-            percentY = Clamp01(percentY); //CAREFUL NEED ABS!
+            int2 xy =  clamp((int2)floor(mapXY * percents), 0, mapXY - 1);
             
-            int x = Clamp(FloorToInt(gridSize.x * percentX), 0, gridSize.x-1);
-            int y = Clamp(FloorToInt(gridSize.y * percentY), 0, gridSize.y-1);
-
-            return y * (gridSize.x/cellSize) + x;
-        }
-        
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int GetIndexFromPosition(this Vector3 pointPos, int2 gridSize, float cellSize)
-        {
-            float percentX = pointPos.x / (gridSize.x * cellSize);
-            float percentY = pointPos.z / (gridSize.y * cellSize);
-
-            percentX = Clamp01(percentX); //CAREFUL NEED ABS!
-            percentY = Clamp01(percentY); //CAREFUL NEED ABS!
-            
-            int x = Clamp(FloorToInt(gridSize.x * percentX), 0, gridSize.x-1);
-            int y = Clamp(FloorToInt(gridSize.y * percentY), 0, gridSize.y-1);
-
-            return (y * FloorToInt(gridSize.x/cellSize) + x);
+            return mad(xy.y, mapXY.x/cellSize, xy.x);
         }
 
         /// <summary>

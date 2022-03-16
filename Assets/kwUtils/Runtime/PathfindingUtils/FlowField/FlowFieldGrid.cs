@@ -33,12 +33,6 @@ namespace KWUtils.KWGenericGrid
         //FlowField
         private NativeArray<float3> nativeBestDirection;
         private NativeArray<float3> nativeOrderedBestDirection;
-        
-#if UNITY_EDITOR
-        private byte[] CostField;
-        private int[] BestCostField;
-        private Vector3[] directionField;
-#endif
 
         private bool jobSchedule;
         private JobHandle lastJobScheduled;
@@ -47,12 +41,7 @@ namespace KWUtils.KWGenericGrid
         /// </summary>
         public IGridSystem GridSystem { get; set; }
         public GenericChunkedGrid<Vector3> Grid { get; private set; }
-        
 
-        
-
-        
-        
         /// <summary>
         /// Find the position of the target cell then get the corresponding index on the grid
         /// </summary>
@@ -61,16 +50,10 @@ namespace KWUtils.KWGenericGrid
         {
             goalCellIndex = Goal == null ? 0 : Goal.position.XZ().GetIndexFromPosition(terrainBounds, 2);
             Grid = new GenericChunkedGrid<Vector3>(terrainBounds, Chunksize, CellSize);
-            UnityEngine.Debug.Log($"Grid.ChunkDictionary COUNT {Grid.ChunkDictionary[0].Length}");
         }
 
         private void Start()
         {
-#if UNITY_EDITOR
-            //CostField      = new byte[Grid.GridData.TotalCells];
-            //BestCostField  = new int[Grid.GridData.TotalCells];
-            //directionField = new Vector3[Grid.GridData.TotalCells];
-#endif
             GridSystem.SubscribeToGrid(GridType.Obstacles, OnNewObstacles);
             CalculateFlowField(GridSystem.RequestGrid<bool, GridType>(GridType.Obstacles), goalCellIndex);
         }
@@ -97,7 +80,7 @@ namespace KWUtils.KWGenericGrid
             CalculateFlowField(GridSystem.RequestGrid<bool, GridType>(GridType.Obstacles), goalCellIndex);
 #if UNITY_EDITOR
             sw.Stop();
-            UnityEngine.Debug.Log($"Path found: {sw.Elapsed} ms");          
+            UnityEngine.Debug.Log($"Path found: {sw.Elapsed} ms");       
 #endif
 
         }
@@ -105,9 +88,6 @@ namespace KWUtils.KWGenericGrid
         private void CompleteJob()
         {
             lastJobScheduled.Complete();
-#if UNITY_EDITOR
-            //nativeBestDirection.Reinterpret<Vector3>().CopyTo(directionField);
-#endif
             int totalChunkCell = Grid.GridData.TotalCellInChunk;
             for (int i = 0; i < Grid.ChunkDictionary.Count; i++)
             {
@@ -116,11 +96,6 @@ namespace KWUtils.KWGenericGrid
                     .SliceConvert<Vector3>()
                     .ToArray());
             }
-            
-#if UNITY_EDITOR
-            //nativeCostField.CopyTo(CostField);
-            //nativeBestCostField.CopyTo(BestCostField);
-#endif
             DisposeAll();
             jobSchedule = false;
         }
@@ -195,16 +170,6 @@ namespace KWUtils.KWGenericGrid
         private void OnDrawGizmos()
         {
             if (!DebugEnable || Grid.GridArray.IsNullOrEmpty() || Grid.ChunkDictionary is null) return;
-            /*
-            Gizmos.color = Color.green;
-            for (int i = 0; i < directionField.Length; i++)
-            {
-                Vector3 cellPos = Grid.GetCellCenter(i);
-                Debug.DrawArrow.ForGizmo(cellPos, directionField[i]);
-                //Handles.Label(cellPos, directionField[i].ToString());
-            }
-            */
-            
             foreach ((int id, Vector3[] values)in Grid.ChunkDictionary)
             {
                     Gizmos.color = Color.red;
@@ -218,16 +183,6 @@ namespace KWUtils.KWGenericGrid
                         Debug.DrawArrow.ForGizmo(cellPos, values[i]);
                     }
             }
-            
-            /*
-            //PROBLEM GETTING INDEX!
-            Gizmos.color = Color.green;
-            for (int i = 0; i < Grid.GridArray.Length; i++)
-            {
-                Vector3 cellPos = Grid.GetCellCenter(i);
-                Debug.DrawArrow.ForGizmo(cellPos, Grid.GridArray[i]);
-            }
-            */
         }
     }
 }
