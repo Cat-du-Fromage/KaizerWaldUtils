@@ -16,17 +16,25 @@ namespace KWUtils.KWGenericGrid
         public void InitializeGrid(int2 terrainBounds);
     }
 
+    public interface IGridSystemBehaviour<in T>
+    where T : Enum
+    {
+        public void SubscribeToGrid(T gridType, Action action);
+
+        public T1[] RequestGrid<T1>(T gridType) where T1 : struct;
+    }
+
     public interface IGridSystem
     {
+        public IGridSystemBehaviour<T> test<T>() where T : Enum;
+        
         public TerrainData MapData { get; set; }
 
         public int2 MapBounds { get; set; }
         
         public void SubscribeToGrid<T>(T gridType, Action action) where T : Enum;
 
-        public T1[] RequestGrid<T1, T2>(T2 gridType)
-        where T1 : struct
-        where T2 : Enum;
+        public T1[] RequestGrid<T1, T2>(T2 gridType) where T1 : struct where T2 : Enum;
         
         public void InitializeTerrain()
         {
