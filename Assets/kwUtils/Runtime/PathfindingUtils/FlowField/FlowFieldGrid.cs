@@ -54,7 +54,7 @@ namespace KWUtils.KWGenericGrid
 
         private void Start()
         {
-            GridSystem.SubscribeToGrid(GridType.Obstacles, OnNewObstacles);
+            GridSystem. SubscribeToGrid(GridType.Obstacles, OnNewObstacles);
             CalculateFlowField(GridSystem.RequestGrid<bool, GridType>(GridType.Obstacles), goalCellIndex);
         }
 

@@ -1,5 +1,6 @@
 #define EnableBurst
 
+using KWUtils.KWGenericGrid;
 using Unity.Burst;
 using Unity.Collections;
 using Unity.Jobs;
@@ -104,18 +105,21 @@ namespace KWUtils
         }
     }
 
-    public struct JConvertGrid<T> : IJobFor
-    where T : struct
+    public struct JConvertGrid<T1, T2> : IJobFor
+    where T1 : struct
+    where T2 : IGridData
     {
         public int OldCellSize;
         public int OldNumCellX;
         
         public int NewCellSize;
         public int NewNumCellInChunkX;
-        
-        
-        public NativeArray<T> GridToConvert; //Smaller length
-        public NativeArray<T> GridConverted; //Length * (OldCell/NewCell)^2
+
+        public T2 OldGridData;
+        public T2 NewGridData;
+
+        public NativeArray<T1> GridToConvert; //Smaller length
+        public NativeArray<T1> GridConverted; //Length * (OldCell/NewCell)^2
         public void Execute(int index)
         {
             int2 gridCoord = index.GetXY2(OldNumCellX);

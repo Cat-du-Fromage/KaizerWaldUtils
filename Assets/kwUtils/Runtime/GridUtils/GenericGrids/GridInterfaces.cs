@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using KWUtils.KWGenericGrid;
 using Unity.Mathematics;
 using UnityEngine;
@@ -8,26 +9,17 @@ using Object = UnityEngine.Object;
 
 namespace KWUtils.KWGenericGrid
 {
+
     public interface IGridBehaviour
     {
         public IGridSystem GridSystem { get; set; }
         public void SetGridSystem(IGridSystem system) => GridSystem = system;
-
         public void InitializeGrid(int2 terrainBounds);
     }
-
-    public interface IGridSystemBehaviour<in T>
-    where T : Enum
-    {
-        public void SubscribeToGrid(T gridType, Action action);
-
-        public T1[] RequestGrid<T1>(T gridType) where T1 : struct;
-    }
+    
 
     public interface IGridSystem
     {
-        public IGridSystemBehaviour<T> test<T>() where T : Enum;
-        
         public TerrainData MapData { get; set; }
 
         public int2 MapBounds { get; set; }

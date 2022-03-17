@@ -1,19 +1,17 @@
-
+using System.Collections;
 using System.Collections.Generic;
-using UnityEngine;
 using System.Runtime.CompilerServices;
-using Unity.Burst;
 using Unity.Collections;
 using Unity.Jobs;
-using Unity.Jobs.LowLevel.Unsafe;
 using Unity.Mathematics;
+using UnityEngine;
 
 using static Unity.Mathematics.math;
 using static KWUtils.KWmath;
 using static Unity.Jobs.LowLevel.Unsafe.JobsUtility;
 using Debug = UnityEngine.Debug;
 using int2 = Unity.Mathematics.int2;
-/*
+
 namespace KWUtils
 {
     public enum ChunkEnterPoint
@@ -23,7 +21,7 @@ namespace KWUtils
         Top,
         Bottom,
     }
-    
+
     public static class KWChunk
     {
         /// <summary>
@@ -130,6 +128,4 @@ namespace KWUtils
             return chunkCells;
         }
     }
-
 }
-*/
