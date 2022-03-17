@@ -103,7 +103,32 @@ namespace KWUtils
             SortedArray[mad(chunkIndex,totalCellInChunk,indexCellInChunk)] = UnsortedArray[index];
         }
     }
-    
+
+    public struct JConvertGrid<T> : IJobFor
+    where T : struct
+    {
+        public int OldCellSize;
+        public int OldNumCellX;
+        
+        public int NewCellSize;
+        public int NewNumCellInChunkX;
+        
+        
+        public NativeArray<T> GridToConvert; //Smaller length
+        public NativeArray<T> GridConverted; //Length * (OldCell/NewCell)^2
+        public void Execute(int index)
+        {
+            int2 gridCoord = index.GetXY2(OldNumCellX);
+
+            int numIteration = Sq(NewCellSize / OldCellSize);
+            for (int i = 0; i < numIteration; i++)
+            {
+                int2 coordInChunk = i.GetXY2(NewNumCellInChunkX);
+                //int id = index.GetGridCellIndexFromChunkCellIndex();
+            }
+        }
+    }
+
     //==================================================================================================================
     // The Job will "slice" the array and reorder them
     // at the end when we cut the array given the number of cell in one chunk
