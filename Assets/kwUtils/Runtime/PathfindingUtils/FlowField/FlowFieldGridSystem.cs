@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace KWUtils.KWGenericGrid
 {
-    public enum GridType
+    public enum GridType : int
     {
         Obstacles,
         FlowField,
@@ -32,8 +32,11 @@ namespace KWUtils.KWGenericGrid
             goalPosition = Goal.position;
             goalIndex = goalPosition.XZ().GetIndexFromPosition(MapBounds, 2);
             
+            //Implement GridType?
             ObstaclesGrid = GetComponent<ObstaclesGrid>();
             FlowFieldGrid = GetComponent<FlowFieldGrid>();
+            
+            //Want Monobehaviours:Abstract(GridHandler) => so we can make (GridHandler)ObstacleGrid.Grid
 
             this.AsInterface<IGridSystem>().InitializeAllGrids();
         }
@@ -69,5 +72,7 @@ namespace KWUtils.KWGenericGrid
                 _ => throw new ArgumentOutOfRangeException(nameof(gridType), gridType, null)
             };
         }
+
+        public Dictionary<GridType, MonoBehaviour> test { get; set; }
     }
 }

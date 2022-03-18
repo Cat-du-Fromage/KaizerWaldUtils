@@ -26,8 +26,19 @@ namespace KWUtils
             dictionary.Values.CopyTo(array,0);
             return array;
         }
-        
+        //==============================================================================================================
         //GENERIC ARRAY
+        //==============================================================================================================
+        
+        // C# method converted to Extension
+        //==============================================================================================================
+        public static void Resize<T>(this T[] array, int newLength)
+        where T : struct
+        {
+            Array.Resize(ref array, newLength);
+            //return array;
+        }
+        
         public static T[] Reverse<T>(this T[] array)
         where T : struct
         {

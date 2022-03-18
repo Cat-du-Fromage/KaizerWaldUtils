@@ -4,56 +4,33 @@ using KWUtils.KWGenericGrid;
 using Unity.Mathematics;
 using UnityEngine;
 
-namespace KWUtils
+using static Unity.Mathematics.math;
+
+namespace KWUtils.KWGenericGrid
 {
     public readonly struct GridData
     {
         public readonly int CellSize;
         public readonly int ChunkSize;
-        
         public readonly int NumCellInChunkX;
-        
+
         public readonly int2 MapSize;
         public readonly int2 NumCellXY;
         public readonly int2 NumChunkXY;
 
-        public GridData(int cellSize, int chunkSize, in int2 mapSize)
+        public GridData(in int2 mapSize, int cellSize, int chunkSize = 1)
         {
             CellSize = cellSize;
-            ChunkSize = chunkSize;
+            ChunkSize = cellSize > chunkSize ? cellSize : chunkSize;
             MapSize = mapSize;
-            NumCellInChunkX = chunkSize / cellSize;
-            NumChunkXY = MapSize / ChunkSize;
-            NumCellXY = mapSize / cellSize;
+            
+            NumCellInChunkX = ChunkSize >> floorlog2(CellSize);
+            NumChunkXY = MapSize >> floorlog2(ChunkSize);
+            NumCellXY = MapSize >> floorlog2(CellSize);
         }
         public readonly int TotalCells => NumCellXY.x * NumCellXY.y;
         public readonly int TotalChunk => NumChunkXY.x * NumChunkXY.y;
         public readonly int TotalCellInChunk => NumCellInChunkX * NumCellInChunkX;
     }
-    
-    //==================================================================================================================
-    //==================================================================================================================
-    //==================================================================================================================
-    public interface IGridData
-    {
-        public int CellSize   { get; }
-        public int2 MapSize   { get; }
-        public int2 NumCellXY { get; }
-        public int TotalCells();
-    }
-    
-    public readonly struct GridData2 : IGridData
-    {
-        public int CellSize   { get; }
-        public int2 MapSize   { get; }
-        public int2 NumCellXY { get; }
-        public GridData2(int cellSize, in int2 mapSize)
-        {
-            CellSize = cellSize;
-            MapSize = mapSize;
-            NumCellXY = mapSize / cellSize;
-        }
-        public int TotalCells() => NumCellXY.x * NumCellXY.y;
-    }
-    
+
 }

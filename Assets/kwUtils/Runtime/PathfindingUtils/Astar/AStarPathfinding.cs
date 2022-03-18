@@ -1,12 +1,10 @@
 using System;
-using System.Diagnostics;
 using KWUtils;
 using KWUtils.KWGenericGrid;
 using Unity.Burst;
 using Unity.Collections;
 using Unity.Jobs;
 using Unity.Mathematics;
-using UnityEditor;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -15,38 +13,37 @@ using static Unity.Mathematics.math;
 using static KWUtils.InputSystemExtension;
 
 
-namespace TowerDefense
+namespace KWUtils.KWGenericGrid
 {
-    public partial class AStarPathfinding : MonoBehaviour, IGridHandler<Node, GenericGrid<Node>>
+    public class AStarPathfinding : MonoBehaviour, IGridHandler<Node, GenericGrid<Node>>
     {
-        [SerializeField] private Transform DestinationGate;
-        [SerializeField] private Transform agentStart;
-        
         private const int CellSize = 1; //ADAPTATION NEEDED!
         
         private const int DiagonalCostMove = 14;
         private const int StraightCostMove = 10;
         
-        private Vector3 startPosition;
-        private Vector3 destination;
+        [SerializeField] private Transform DestinationCell;
+        [SerializeField] private Transform StartCell;
         
         private int startIndex = -1;
         private int endIndex = -1;
         
+        private Vector3 startPosition;
+        private Vector3 destination;
+        
         private readonly RaycastHit[] hits = new RaycastHit[1];
         
-        private int[] path;
-        private Node grid;
+        private int[] currentPath;
+        //private Node grid;
         
         private bool jobSchedule;
         private JobHandle lastJobScheduled;
 
-        private NativeArray<Node> nodes;
-        private NativeList<int> pathList;
+        private NativeArray<Node> nativeNodes;
+        private NativeList<int> nativePathList;
 
         //Interfaces
         public IGridSystem GridSystem { get; set; }
-
         public GenericGrid<Node> Grid { get; private set; }
         
         public void InitializeGrid(int2 terrainBounds)
@@ -56,7 +53,7 @@ namespace TowerDefense
 
         private void Awake()
         {
-            destination = DestinationGate.position;
+            destination = DestinationCell.position;
             endIndex = Grid.IndexFromPosition(destination);
         }
         
@@ -65,103 +62,85 @@ namespace TowerDefense
             if (!jobSchedule) return;
             if (!lastJobScheduled.IsCompleted) return;
             jobSchedule = CompleteJob();
-
-            if(Keyboard.current.pKey.wasPressedThisFrame && agentStart != null)
-            {
-#if UNITY_EDITOR
-                Stopwatch sw = new Stopwatch();
-                sw.Start();
-#endif
-                startPosition = agentStart.position;
-                startIndex = Grid.IndexFromPosition(startPosition);
-                path = AStarProcess();
-                
-#if UNITY_EDITOR
-                sw.Stop();
-                print($"Path found: {sw.Elapsed} ms");          
-#endif
-                
-            }
         }
 
         private bool CompleteJob()
         {
-            int[] pathToFollow = pathList.ToArray().Reverse();
-
+            lastJobScheduled.Complete();
             DisposeAll();
+            // Path Is Valid
+            if (!nativePathList.IsEmpty) 
+            {
+                if (currentPath.Length != nativePathList.Length)
+                {
+                    currentPath.Resize(nativePathList.Length);
+                }
+                nativePathList
+                    .ToArray()
+                    .Reverse()
+                    .CopyTo((Span<int>)currentPath);
+                
+                return false;
+                //currentPath = nativePathList.ToArray().Reverse();
+            }
+            
+            // NO valid Path
+            
+            //Notify sender there is no Path => callback(true/false)? 
+            //false:dont update // true:update currentPath
             return false;
         }
-
-        public void OnObstacleAdded(int index)
+/*
+        public void OnObstacleAdded(int index, in GridData gridData)
         {
-            //Get the Node affected
-            if (!path.IsNullOrEmpty())
+            //We didn't calculate anyPath
+            if (currentPath.IsNullOrEmpty()) return;
+            
+            for (int pathIndex = 0; pathIndex < currentPath.Length; pathIndex++)
             {
-                for (int pathIndex = 0; pathIndex < path.Length; pathIndex++)
+                if (currentPath[pathIndex] == index)
                 {
-                    if (path[pathIndex] != index) continue;
-                    
-                    startIndex = path[pathIndex-1];
-                    int[] segment = AStarProcess();
-                    
+                    startIndex = currentPath[pathIndex-1];
+                    int[] segment = AStarProcess(gridData);
+                
                     if (segment.IsNullOrEmpty()) return; // CAREFUL IT MEANS THERE IS NOS PATH!
-                    
-                    Array.Resize(ref path, pathIndex + segment.Length);
-                    segment.CopyTo(path, pathIndex);
+
+                    currentPath.Resize(pathIndex + segment.Length);
+                    segment.CopyTo(currentPath, pathIndex);
                     startIndex = Grid.IndexFromPosition(startPosition);
                     break;
                 }
             }
-            
-            //Check if current Path contain the Node Index
         }
+*/
 
-        public (Vector3[], int[]) RequestPath(in Vector3 currentPosition)
-        {
-            startIndex = Grid.IndexFromPosition(currentPosition);
-            path = AStarProcess();
-            Vector3[] nodesPosition = new Vector3[path.Length];
-            for (int i = 0; i < path.Length; i++)
-            {
-                nodesPosition[i] = Grid.GetCellCenter(path[i]);
-            }
-            return (nodesPosition, path);
-        }
-
-        private int[] AStarProcess()
+        private void AStarProcess(in GridData gridData)
         {
             using NativeArray<bool> obstacles = GridSystem.RequestGrid<bool,GridType>(GridType.Obstacles).ToNativeArray();
-            nodes = Grid.GridArray.ToNativeArray();
+            nativeNodes = Grid.GridArray.ToNativeArray();
 
-            pathList = new NativeList<int>(16, Allocator.TempJob);
+            nativePathList = new NativeList<int>(16, Allocator.TempJob);
 
             //Get Path from Start -> End
             JaStar job = new JaStar
             {
-                NumCellX = Grid.NumCellXY.x,
+                NumCellX = gridData.NumCellXY.x,
                 StartNodeIndex = startIndex,
                 EndNodeIndex = endIndex,
-                Nodes = nodes,
+                Nodes = nativeNodes,
                 ObstaclesGrid = obstacles,
-                PathList = pathList
+                PathList = nativePathList
             };
             lastJobScheduled = job.Schedule();
             JobHandle.ScheduleBatchedJobs();
 
             jobSchedule = true;
-            
-            //WWARNING MOVE THIS
-            lastJobScheduled.Complete(); 
-            //WWARNING MOVE THIS
-            DisposeAll();
-            int[] pathToFollow = pathList.ToArray().Reverse();
-            return pathToFollow;
         }
 
         private void DisposeAll()
         {
-            if (nodes.IsCreated)    nodes.Dispose();
-            if (pathList.IsCreated) pathList.Dispose();
+            if (nativeNodes.IsCreated)    nativeNodes.Dispose();
+            if (nativePathList.IsCreated) nativePathList.Dispose();
         }
 
         [BurstCompile(CompileSynchronously = true)]
@@ -172,8 +151,8 @@ namespace TowerDefense
             [ReadOnly] public int EndNodeIndex;
             
             [ReadOnly] public NativeArray<bool> ObstaclesGrid;
-            
             public NativeArray<Node> Nodes;
+            
             [WriteOnly] public NativeList<int> PathList; // if PathNode.Length == 0 means No Path!
             
             public void Execute()

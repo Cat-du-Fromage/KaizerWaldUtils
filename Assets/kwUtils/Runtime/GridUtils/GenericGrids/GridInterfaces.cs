@@ -43,6 +43,29 @@ namespace KWUtils.KWGenericGrid
                 gridBehaviours[i].InitializeGrid(MapBounds);
             }
         }
+/*
+        public Dictionary<GridType, MonoBehaviour> test
+        {
+            get;
+            set;
+        }
+
+        public void GetGridsByType<T1,T2,T3>()
+        where T1 : struct
+        where T2 : GenericGrid<T1>
+        where T3 : Enum
+        {
+            //AbstractGridHandler<T1, T2, T3>[] grids = GameObject.FindObjectsOfType<AbstractGridHandler<T1, T2, T3>>();
+            AbstractGridHandler<T1,T2,T3>[] gridBehaviours = GameObject.FindObjectsOfType<AbstractGridHandler<T1,T2,T3>>();
+            test = new Dictionary<T3, MonoBehaviour>(gridBehaviours.Length);
+            for (int i = 0; i < gridBehaviours.Length; i++)
+            {
+                test.Add(gridBehaviours[i].GridType, gridBehaviours[i]);
+                //gridBehaviours[i].SetGridSystem(this);
+                //gridBehaviours[i].InitializeGrid(MapBounds);
+            }
+        }
+*/
     }
     
     public interface IGridHandler<T1, out T2> : IGridBehaviour

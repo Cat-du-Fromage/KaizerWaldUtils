@@ -13,8 +13,8 @@ using static KWUtils.KWmath;
 using static Unity.Jobs.LowLevel.Unsafe.JobsUtility;
 using Debug = UnityEngine.Debug;
 using int2 = Unity.Mathematics.int2;
-/*
-namespace KWUtils
+
+namespace KWUtils.KWGenericGrid
 {
     public enum ChunkEnterPoint
     {
@@ -30,15 +30,13 @@ namespace KWUtils
         /// Cell is at the constant size of 1!
         /// chunk can only be a square, meaning : width = height
         /// </summary>
-
-        //CHUNK
+        
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int2 GetGridCellCoordFromChunkCellCoord(this in int2 cellInChunkCoord, int chunkCellWidth, in int2 chunkCoord)
         {
             return (chunkCoord * chunkCellWidth) + cellInChunkCoord;
         }
-
-        //CHUNK
+        
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int GetGridCellIndexFromChunkCellIndex(this int chunkIndex, in GridData gridData, int cellIndexInsideChunk)
         {
@@ -47,8 +45,7 @@ namespace KWUtils
             int2 cellGridCoord = cellCoordInChunk.GetGridCellCoordFromChunkCellCoord(gridData.NumCellInChunkX, chunkCoord);
             return (cellGridCoord.y * (gridData.NumCellXY.x)) + cellGridCoord.x;
         }
-
-        //CHUNK
+        
         [MethodImpl(MethodImplOptions.AggressiveInlining)] //May be useful if we dont want to create a gridData
         public static int GetGridCellIndexFromChunkCellIndex(this int chunkIndex, int mapSizeX, int cellSize, int chunkSize, int cellIndexInsideChunk)
         {
@@ -57,8 +54,7 @@ namespace KWUtils
             int2 cellGridCoord = cellCoordInChunk.GetGridCellCoordFromChunkCellCoord(chunkSize/cellSize, chunkCoord);
             return (cellGridCoord.y * mapSizeX) + cellGridCoord.x;
         }
-
-        //CHUNK
+        
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int GetChunkEnterPoint(ChunkEnterPoint point, in GridData gridData) =>
         point switch
@@ -132,4 +128,3 @@ namespace KWUtils
     }
 
 }
-*/

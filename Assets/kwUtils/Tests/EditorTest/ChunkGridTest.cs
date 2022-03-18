@@ -70,7 +70,7 @@ namespace KWUtils.Tests
         [TestCase(chunkSize2,cellSize2, ExpectedResult = 4)]
         public int ChunkGridTest_Are_Parameters_TotalChunk_OK(int chunkSize,int cellSize)
         {
-            GridData gridData = new GridData(cellSize, chunkSize, mapSize);
+            GridData gridData = new GridData(mapSize,cellSize, chunkSize);
             return gridData.TotalChunk;
         }
         
@@ -78,7 +78,7 @@ namespace KWUtils.Tests
         [TestCase(chunkSize2,cellSize2, ExpectedResult = 4)]
         public int ChunkGridTest_Are_Parameters_TotalCellInChunk_OK(int chunkSize,int cellSize)
         {
-            GridData gridData = new GridData(cellSize, chunkSize, mapSize);
+            GridData gridData = new GridData(mapSize, cellSize, chunkSize);
             return gridData.TotalCellInChunk;
         }
         

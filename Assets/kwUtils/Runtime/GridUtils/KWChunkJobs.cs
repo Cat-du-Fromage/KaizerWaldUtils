@@ -10,14 +10,15 @@ using static Unity.Mathematics.math;
 using static KWUtils.KWmath;
 using int2 = Unity.Mathematics.int2;
 
-namespace KWUtils
+namespace KWUtils.KWGenericGrid
 {
         
     // The Job will "slice" the array and reorder them
     // at the end when we cut the array given the number of cell in one chunk
     // we only get the value owned by the chunk
-    // ✂ (chunk0): 4️⃣5️⃣ ✂ (chunk1): 6️⃣7️⃣ 
-    // ✂ (chunk0): 0️⃣1️⃣ ✂ (chunk1): 2️⃣3️⃣
+    // Grid Representation
+    // chunk0: 4️⃣5️⃣ chunk1: 6️⃣7️⃣ 
+    // chunk0: 0️⃣1️⃣ chunk1: 2️⃣3️⃣
     //Before SLice
     // 0️⃣1️⃣2️⃣3️⃣4️⃣5️⃣6️⃣7️⃣ 
     //After Slice
@@ -105,30 +106,33 @@ namespace KWUtils
         }
     }
 
-    public struct JConvertGrid<T1, T2> : IJobFor
-    where T1 : struct
-    where T2 : IGridData
+    public struct JConvertGrid<T> : IJobFor
+    where T : struct
     {
-        public int OldCellSize;
-        public int OldNumCellX;
+        [ReadOnly] private readonly GridData OldGridData;
+        [ReadOnly] private readonly GridData NewGridData;
+
+        [ReadOnly, NativeDisableParallelForRestriction]  private NativeArray<T> GridToConvert; //Smaller length
+        [WriteOnly, NativeDisableParallelForRestriction] private NativeArray<T> GridConverted; //Length * (OldCell/NewCell)^2
         
-        public int NewCellSize;
-        public int NewNumCellInChunkX;
-
-        public T2 OldGridData;
-        public T2 NewGridData;
-
-        public NativeArray<T1> GridToConvert; //Smaller length
-        public NativeArray<T1> GridConverted; //Length * (OldCell/NewCell)^2
-        public void Execute(int index)
+        public JConvertGrid(in GridData oldGridData, in GridData newGridData, NativeArray<T> gridToConvert, NativeArray<T> gridConverted)
         {
-            int2 gridCoord = index.GetXY2(OldNumCellX);
-
-            int numIteration = Sq(NewCellSize / OldCellSize);
+            OldGridData = oldGridData;
+            NewGridData = newGridData;
+            GridToConvert = gridToConvert;
+            GridConverted = gridConverted;
+        }
+        
+        public void Execute(int index) // index = chunk index(GridToConvert)
+        {
+            int numIteration = Sq(NewGridData.CellSize / OldGridData.CellSize);
             for (int i = 0; i < numIteration; i++)
             {
-                int2 coordInChunk = i.GetXY2(NewNumCellInChunkX);
-                //int id = index.GetGridCellIndexFromChunkCellIndex();
+                int2 coordInChunk = i.GetXY2(NewGridData.NumCellInChunkX);
+                int indexInChunk = coordInChunk.GetIndex(NewGridData.NumCellInChunkX);
+                int gridIndex = index.GetGridCellIndexFromChunkCellIndex(OldGridData, indexInChunk);
+
+                GridConverted[gridIndex] = GridToConvert[index];
             }
         }
     }

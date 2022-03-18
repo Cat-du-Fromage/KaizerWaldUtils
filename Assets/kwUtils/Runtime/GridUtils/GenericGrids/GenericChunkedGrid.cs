@@ -14,17 +14,15 @@ namespace KWUtils.KWGenericGrid
     where T : struct
     {
         //Chunk Fields
-        public readonly int ChunkSize;
-        public readonly int2 NumChunkXY;
-        
-        public GridData GridData => new GridData(CellSize, ChunkSize, MapXY);
+        private readonly int ChunkSize;
+        private readonly int2 NumChunkXY;
         public new event Action OnGridChange;
         public Dictionary<int, T[]> ChunkDictionary { get; private set; }
 
         public GenericChunkedGrid(in int2 mapSize, int chunkSize, int cellSize, Func<int, T> createGridObject) : base(in mapSize, cellSize, createGridObject)
         {
             this.ChunkSize = GetChunkSize(chunkSize, cellSize);
-            NumChunkXY = mapSize / chunkSize;
+            NumChunkXY = mapSize >> floorlog2(chunkSize);
 
             ChunkDictionary = new Dictionary<int, T[]>(NumChunkXY.x * NumChunkXY.y);
             ChunkDictionary = GridArray.GetGridValueOrderedByChunk(GridData);
@@ -33,13 +31,14 @@ namespace KWUtils.KWGenericGrid
         public GenericChunkedGrid(in int2 mapSize, int chunkSize, int cellSize = 1, [CanBeNull] Func<T[]> providerFunction = null) : base(in mapSize, cellSize)
         {
             this.ChunkSize = GetChunkSize(chunkSize, cellSize);
-            NumChunkXY = mapSize / chunkSize;
+            NumChunkXY = mapSize >> floorlog2(chunkSize);
 
             providerFunction?.Invoke()?.CopyTo((Span<T>) GridArray); //CAREFULL may switch with Memory<T>!
-            
             ChunkDictionary = new Dictionary<int, T[]>(NumChunkXY.x * NumChunkXY.y);
             ChunkDictionary = GridArray.GetGridValueOrderedByChunk(GridData);
         }
+        
+        public sealed override GridData GridData => new GridData(MapXY, CellSize, ChunkSize);
 
         /// <summary>
         /// Make sur ChunkSize is Greater than cellSize

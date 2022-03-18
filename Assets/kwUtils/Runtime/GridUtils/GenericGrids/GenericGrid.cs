@@ -13,10 +13,10 @@ namespace KWUtils.KWGenericGrid
     public class GenericGrid<T>
     where T : struct
     {
-        public readonly int CellSize;
-        public readonly int2 MapXY;
-        public readonly int2 NumCellXY;
-        
+        protected readonly int CellSize;
+        protected readonly int2 MapXY;
+        protected readonly int2 NumCellXY;
+
         public readonly T[] GridArray;
         public event Action OnGridChange;
         
@@ -47,6 +47,8 @@ namespace KWUtils.KWGenericGrid
             NumCellXY = mapSize / cellSize;
             GridArray = new T[NumCellXY.x * NumCellXY.y];
         }
+        
+        public virtual GridData GridData => new GridData(MapXY, CellSize);
         
         //Clear Events
         public virtual void ClearEvents()

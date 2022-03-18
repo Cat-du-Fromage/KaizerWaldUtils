@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using Unity.Mathematics;
 using UnityEngine;
 
-namespace TowerDefense
+namespace KWUtils
 {
     public readonly struct Node
     {
@@ -14,7 +14,7 @@ namespace TowerDefense
         public readonly int FCost;
         public readonly int2 Coord;
 
-        public Node(int cameFromNodeIndex, int gCost, int hCost, int2 coord)
+        public Node(int cameFromNodeIndex, int gCost, int hCost, in int2 coord)
         {
             CameFromNodeIndex = cameFromNodeIndex;
             GCost = gCost;
@@ -23,7 +23,7 @@ namespace TowerDefense
             Coord = coord;
         }
 
-        public Node(int2 coord)
+        public Node(in int2 coord)
         {
             CameFromNodeIndex = -1;
             GCost = int.MaxValue;
