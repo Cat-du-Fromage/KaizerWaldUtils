@@ -7,9 +7,11 @@ namespace KWUtils
     where T : Component
     {
         protected static T instance;
+        private static readonly object lockInstance = new object();
 
         public static T Instance
         {
+            /*
             get
             {
                 if (instance != null) return instance;
@@ -18,6 +20,19 @@ namespace KWUtils
                 if (objects?.Length > 1) UnityEngine.Debug.LogError($"there is more than one {typeof(T).Name} in the scene");
                 if (instance == null)
                 {
+                    instance = new GameObject(typeof(T).Name).AddComponent<T>();
+                    DontDestroyOnLoad(instance);
+                }
+                return instance;
+            }
+            */
+            get
+            {
+                if (instance != null) return instance;
+                lock (lockInstance)
+                {
+                    if (instance != null) return instance;
+                    
                     instance = new GameObject(typeof(T).Name).AddComponent<T>();
                     DontDestroyOnLoad(instance);
                 }

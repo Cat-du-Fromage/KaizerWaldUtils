@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using JetBrains.Annotations;
+using Unity.Collections;
 using Unity.Mathematics;
 using UnityEngine;
 
@@ -18,7 +19,10 @@ namespace KWUtils.KWGenericGrid
         private readonly int2 NumChunkXY;
         public new event Action OnGridChange;
         public Dictionary<int, T[]> ChunkDictionary { get; private set; }
-
+        public sealed override GridData GridData => new GridData(MapXY, CellSize, ChunkSize);
+        //==============================================================================================================
+        //Constructors
+        //============
         public GenericChunkedGrid(in int2 mapSize, int chunkSize, int cellSize, Func<int, T> createGridObject) : base(in mapSize, cellSize, createGridObject)
         {
             this.ChunkSize = GetChunkSize(chunkSize, cellSize);
@@ -38,18 +42,15 @@ namespace KWUtils.KWGenericGrid
             ChunkDictionary = GridArray.GetGridValueOrderedByChunk(GridData);
         }
         
-        public sealed override GridData GridData => new GridData(MapXY, CellSize, ChunkSize);
-
-        /// <summary>
         /// Make sur ChunkSize is Greater than cellSize
-        /// </summary>
         private int GetChunkSize(int chunksSize ,int cellSize)
         {
             int value = ceilpow2(chunksSize);
             while (value <= cellSize) { value *= 2; }
             return value;
         }
-        
+        //==============================================================================================================
+
         //Clear Events
         public sealed override void ClearEvents()
         {
@@ -62,7 +63,7 @@ namespace KWUtils.KWGenericGrid
 
         //==============================================================================================================
         //Cell Data
-        //==============================================================================================================
+        //==========
         public Vector3 GetChunkCenter(int chunkIndex)
         {
             float2 chunkCoord = ((chunkIndex.GetXY2(NumChunkXY.x) * ChunkSize) + new float2(ChunkSize/2f));
@@ -74,8 +75,10 @@ namespace KWUtils.KWGenericGrid
             return GetCellCenter(indexInGrid);
         }
         //==============================================================================================================
-        //Connection between chunk and Grid
+        
         //==============================================================================================================
+        //Connection between chunk and Grid
+        //==================================
         public int ChunkIndexFromGridIndex(int gridIndex)
         {
             int2 cellCoord = gridIndex.GetXY2(MapXY.x);
@@ -90,17 +93,23 @@ namespace KWUtils.KWGenericGrid
             int2 cellCoordInChunk = cellCoord - (chunkCoord * ChunkSize);
             return cellCoordInChunk.GetIndex(ChunkSize);
         }
-
-        //==============================================================================================================
-        //Set both grid value and Chunk Value
         //==============================================================================================================
         
+        //==============================================================================================================
+        //Set both grid value and Chunk Value
+        //====================================
         public sealed override void CopyFrom(T[] otherArray)
         {
             base.CopyFrom(otherArray);
-            ChunkDictionary = GridArray.GetGridValueOrderedByChunk(GridData);
+            ChunkDictionary.PopulateChunkedGrid(GridArray, GridData);
         }
-
+        //==============================================================================================================
+        
+        //==============================================================================================================
+        //Update Chunk or Array according to the type of value set
+        //=========================================================
+        
+        /// Chunk : Update made after the Array was modified
         private void UpdateChunk(int gridIndex, T value)
         {
             int2 cellCoord = gridIndex.GetXY2(MapXY.x);
@@ -114,43 +123,57 @@ namespace KWUtils.KWGenericGrid
             ChunkDictionary[chunkIndex][cellIndexInChunk] = value;
         }
         
+        /// Array : Update made after a Chunk was modified
         private void UpdateGrid(int chunkIndex, T[] values)
         {
             for (int i = 0; i < values.Length; i++)
-            {
                 GridArray[chunkIndex.GetGridCellIndexFromChunkCellIndex(GridData, i)] = values[i];
-            }
         }
         
+        private void UpdateGrid(int chunkIndex, NativeSlice<T> values)
+        {
+            for (int i = 0; i < values.Length; i++)
+                GridArray[chunkIndex.GetGridCellIndexFromChunkCellIndex(GridData, i)] = values[i];
+        }
+        //==============================================================================================================
+        
+        //==============================================================================================================
+        //Set Values inside a chunk
         public sealed override void SetValue(int index, T value)
         {
             GridArray[index] = value;
             UpdateChunk(index, value);
             OnGridChange?.Invoke();
         }
-        
         public void SetValues(int chunkIndex, T[] values)
         {
-            ChunkDictionary[chunkIndex] = values;
+            values.CopyTo((Span<T>)ChunkDictionary[chunkIndex]);
             UpdateGrid(chunkIndex, values);
             OnGridChange?.Invoke();
         }
-
+        
+        public void SetValues(int chunkIndex, NativeSlice<T> values)
+        {
+            values.CopyTo(ChunkDictionary[chunkIndex]);
+            UpdateGrid(chunkIndex, values);
+            OnGridChange?.Invoke();
+        }
+        //==============================================================================================================
+        
         //==============================================================================================================
         //Get Values inside a chunk
-        //==============================================================================================================
         public T[] GetValues(int index) => ChunkDictionary[index];
         public T[] GetValues(int x, int y) => ChunkDictionary[y * NumCellXY.x + x];
         public T[] GetValues(int2 coord) => ChunkDictionary[coord.y * NumCellXY.x + coord.x];
-
-        //==============================================================================================================
-        //Get/Set Value By Index
         //==============================================================================================================
         
+        //==============================================================================================================
+        //Get/Set Value By Index
         public new T[] this[int chunkIndex]
         {
             get => ChunkDictionary[chunkIndex];
             set => SetValues(chunkIndex, value);
         }
+        //==============================================================================================================
     }
 }

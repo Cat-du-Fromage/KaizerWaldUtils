@@ -53,7 +53,7 @@ public class FlowField
         totalNumCells = gridSize.x * gridSize.y;
     }
 
-    public Vector3[] GetFlowField(int targetCell, IGridHandler<bool, GenericGrid<bool>> obstacleGrid)
+    public Vector3[] GetFlowField(int targetCell, IGridHandler<GridType, bool, GenericGrid<bool>> obstacleGrid)
     {
         return CalculateFlowField(obstacleGrid.Grid.GridArray, targetCell);
     }

@@ -4,10 +4,10 @@
     "references": [
         "UnityEngine.TestRunner",
         "UnityEditor.TestRunner",
-        "NewAssembly",
         "Unity.Mathematics",
         "Unity.Collections",
-        "Unity.Burst"
+        "Unity.Burst",
+        "KaizerWaldUtils"
     ],
     "includePlatforms": [
         "Editor"

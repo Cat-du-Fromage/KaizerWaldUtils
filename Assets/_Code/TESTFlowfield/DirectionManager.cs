@@ -8,7 +8,7 @@ using Unity.Mathematics;
 using UnityEditor;
 using UnityEngine;
 
-public class DirectionManager : MonoBehaviour, IGridHandler<Vector3, GenericChunkedGrid<Vector3>>
+public class DirectionManager : MonoBehaviour, IGridHandler<GridType,Vector3, GenericChunkedGrid<Vector3>>
 {
     public bool DebugEnable;
 
@@ -16,7 +16,7 @@ public class DirectionManager : MonoBehaviour, IGridHandler<Vector3, GenericChun
     private int goalIndex;
     
     private FlowField flowField;
-    public IGridSystem GridSystem { get; set; }
+    public IGridSystem<GridType> GridSystem { get; set; }
     public GenericChunkedGrid<Vector3> Grid { get; private set; }
     
     public void InitializeGrid(int2 terrainBounds)
@@ -28,7 +28,7 @@ public class DirectionManager : MonoBehaviour, IGridHandler<Vector3, GenericChun
     {
         goalIndex = Goal.position.XZ().GetIndexFromPosition(GridSystem.MapBounds, 2);
         flowField = new FlowField(GridSystem.MapBounds/2, 16); //CARFEULL CELL SIZE
-        flowField.GetFlowField(goalIndex, GridSystem.RequestGrid<bool,GridType>(GridType.Obstacles));
+        flowField.GetFlowField(goalIndex, GridSystem.RequestGridArray<bool>(GridType.Obstacles));
         
         Grid.CopyFrom(flowField.directionField);
         GridSystem.SubscribeToGrid(GridType.Obstacles, OnNewObstacles);
@@ -40,7 +40,7 @@ public class DirectionManager : MonoBehaviour, IGridHandler<Vector3, GenericChun
         Stopwatch sw = new Stopwatch();
         sw.Start();
 #endif
-        flowField.GetFlowField(goalIndex, GridSystem.RequestGrid<bool,GridType>(GridType.Obstacles));
+        flowField.GetFlowField(goalIndex, GridSystem.RequestGridArray<bool>(GridType.Obstacles));
         Grid.CopyFrom(flowField.directionField);
 #if UNITY_EDITOR
         sw.Stop();

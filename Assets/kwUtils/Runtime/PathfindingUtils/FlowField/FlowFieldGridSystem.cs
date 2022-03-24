@@ -12,12 +12,16 @@ namespace KWUtils.KWGenericGrid
         FlowField,
     }
     
-    public class FlowFieldGridSystem : MonoBehaviour, IGridSystem
+    [RequireComponent(typeof(FlowFieldGrid))]
+    [RequireComponent(typeof(ObstaclesGrid))]
+    public class FlowFieldGridSystem : MonoBehaviour, IGridSystem<GridType>
     {
-        [SerializeField] private Transform Goal;
-        public int goalIndex;
-        public Vector3 goalPosition;
+        private const int CellSize = 1;
         
+        [SerializeField] private Transform Goal;
+        
+        private int goalIndex;
+
         public TerrainData MapData { get; set; }
         public int2 MapBounds { get; set; }
         
@@ -26,19 +30,16 @@ namespace KWUtils.KWGenericGrid
         
         private void Awake()
         {
-            this.AsInterface<IGridSystem>().InitializeTerrain();
+            this.AsInterface<IGridSystem<GridType>>().InitializeTerrain();
         
             if (Goal == null) return;
-            goalPosition = Goal.position;
-            goalIndex = goalPosition.XZ().GetIndexFromPosition(MapBounds, 2);
+            goalIndex = Goal.position.XZ().GetIndexFromPosition(MapBounds, CellSize);
             
             //Implement GridType?
             ObstaclesGrid = GetComponent<ObstaclesGrid>();
             FlowFieldGrid = GetComponent<FlowFieldGrid>();
-            
-            //Want Monobehaviours:Abstract(GridHandler) => so we can make (GridHandler)ObstacleGrid.Grid
 
-            this.AsInterface<IGridSystem>().InitializeAllGrids();
+            this.AsInterface<IGridSystem<GridType>>().InitializeAllGrids();
         }
         
         private void OnDestroy()
@@ -47,8 +48,7 @@ namespace KWUtils.KWGenericGrid
             FlowFieldGrid.Grid.ClearEvents();
         }
 
-        public void SubscribeToGrid<T>(T gridType, Action action) 
-        where T : Enum
+        public void SubscribeToGrid(GridType gridType, Action action)
         {
             switch (gridType)
             {
@@ -61,9 +61,20 @@ namespace KWUtils.KWGenericGrid
             }
         }
 
-        public T1[] RequestGrid<T1, T2>(T2 gridType) 
-        where T1 : struct 
-        where T2 : Enum
+        public T2 RequestGrid<T1, T2>(GridType gridType) 
+        where T1 : struct
+        where T2 : GenericGrid<T1>
+        {
+            return gridType switch
+            {
+                GridType.Obstacles => ObstaclesGrid.Grid as T2,
+                GridType.FlowField => FlowFieldGrid.Grid as T2,
+                _ => throw new ArgumentOutOfRangeException(nameof(gridType), gridType, null)
+            };
+        }
+
+        public T1[] RequestGridArray<T1>(GridType gridType) 
+            where T1 : struct
         {
             return gridType switch
             {
@@ -72,7 +83,5 @@ namespace KWUtils.KWGenericGrid
                 _ => throw new ArgumentOutOfRangeException(nameof(gridType), gridType, null)
             };
         }
-
-        public Dictionary<GridType, MonoBehaviour> test { get; set; }
     }
 }

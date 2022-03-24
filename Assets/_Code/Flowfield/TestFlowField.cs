@@ -5,12 +5,12 @@ using KWUtils.KWGenericGrid;
 using Unity.Mathematics;
 using UnityEngine;
 
-public class TestFlowField : MonoBehaviour, IGridHandler<bool, GenericGrid<bool>>
+public class TestFlowField : MonoBehaviour, IGridHandler<GridType,bool, GenericGrid<bool>>
 {
     private FlowField flowField;
     public GenericGrid<bool> Grid { get; private set; }
 
-    public IGridSystem GridSystem { get; set; }
+    public IGridSystem<GridType> GridSystem { get; set; }
 
     public void InitializeGrid(int2 terrainBounds)
     {

@@ -1,12 +1,13 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using Codice.CM.SEIDInfo;
+using Unity.Collections;
 using Unity.Mathematics;
 using UnityEditor;
 using UnityEngine;
 
 using static Unity.Mathematics.math;
+using static KWUtils.KWmath;
 
 namespace KWUtils.KWGenericGrid
 {
@@ -27,11 +28,12 @@ namespace KWUtils.KWGenericGrid
         {
             CellSize = cellSize;
             MapXY = ceilpow2(mapSize);
-
-            NumCellXY = mapSize / cellSize;
+            NumCellXY = mapSize >> floorlog2(cellSize);
             GridArray = new T[NumCellXY.x * NumCellXY.y];
             
             //Init Grid
+            //Example: new GenericGrid(int2(8,8), 2, (i) => i)
+            //Will populate the grid like so: {0, 1, 2, 3....}
             for (int i = 0; i < GridArray.Length; i++)
             {
                 GridArray[i] = createGridObject(i);
@@ -41,10 +43,8 @@ namespace KWUtils.KWGenericGrid
         public GenericGrid(in int2 mapSize, int cellSize)
         {
             CellSize = cellSize;
-
             MapXY = ceilpow2(mapSize);
-            
-            NumCellXY = mapSize / cellSize;
+            NumCellXY = mapSize >> floorlog2(cellSize);
             GridArray = new T[NumCellXY.x * NumCellXY.y];
         }
         
@@ -96,6 +96,18 @@ namespace KWUtils.KWGenericGrid
             OnGridChange?.Invoke();
         }
         
+        //TODO : ADD TO DLL
+        public virtual void SetValueFromGreaterGrid(int bigGridCellIndex, int otherCellSize, T value)
+        {
+            GridData fakeChunk = new GridData(MapXY, CellSize, otherCellSize);
+            for (int i = 0; i < fakeChunk.TotalCellInChunk; i++)
+            {
+                int index = bigGridCellIndex.GetGridCellIndexFromChunkCellIndex(fakeChunk, i);
+                GridArray[index] = value;
+            }
+            OnGridChange?.Invoke();
+        }
+        
         //Operation from World Position
         //==============================================================================================================
         public int IndexFromPosition(in Vector3 position)
@@ -108,26 +120,53 @@ namespace KWUtils.KWGenericGrid
         //==============================================================================================================
 
         //AdaptGrid(GenericGrid<T> grid)
-        public void AdaptGrid<T1>(GenericGrid<T1> otherGrid)
+        /// <summary>
+        /// CAREFULL WITH FAKE CHUNK! CHUNKSIZE == 1!!!
+        /// </summary>
+        
+        public T[] AdaptGrid<T1>(GenericGrid<T1> otherGrid)
         where T1 : struct
         {
-            T1[] beforeConversion = otherGrid.GridArray;
-            T1[] afterConversion;
-            
-            if (otherGrid.CellSize > CellSize)
+            if (CellSize < otherGrid.CellSize)
             {
                 //We Receive Grid With bigger Cells!
-                afterConversion = new T1[GridArray.Length];
-                return;
+                //TO MUCH REFLECTION! if V3 => moyenne des vecteurs? si int moyenne de valeur?
+                //GridData fakeChunk = new GridData(MapXY, CellSize, otherGrid.CellSize);
+                //return GridArray.AdaptBigToSmallGrid(GridData, fakeChunk);
+                return GridArray;
             }
-            else if (otherGrid.CellSize < CellSize)
+            else if (CellSize > otherGrid.CellSize)
             {
                 //We Receive Grid With smaller Cells!
-                afterConversion = new T1[2];
+                GridData fakeChunk = new GridData(MapXY, otherGrid.CellSize, CellSize);
+                return GridArray.AdaptToSmallerGrid(otherGrid.GridData, fakeChunk);
             }
             else
             {
-                //Return otherGrid.GridArray;
+                return GridArray;
+            }
+        }
+        
+        public NativeArray<T> NativeAdaptGrid<T1>(GenericGrid<T1> otherGrid)
+            where T1 : struct
+        {
+            if (CellSize < otherGrid.CellSize)
+            {
+                //We Receive Grid With bigger Cells!
+                //TO MUCH REFLECTION! if V3 => moyenne des vecteurs? si int moyenne de valeur?
+                //GridData fakeChunk = new GridData(MapXY, CellSize, otherGrid.CellSize);
+                //return GridArray.AdaptBigToSmallGrid(GridData, fakeChunk);
+                return GridArray.ToNativeArray();
+            }
+            else if (CellSize > otherGrid.CellSize)
+            {
+                //We Receive Grid With smaller Cells!
+                GridData fakeChunk = new GridData(MapXY, otherGrid.CellSize, CellSize);
+                return GridArray.NativeAdaptToSmallerGrid(otherGrid.GridData, fakeChunk);
+            }
+            else
+            {
+                return GridArray.ToNativeArray();
             }
         }
     }

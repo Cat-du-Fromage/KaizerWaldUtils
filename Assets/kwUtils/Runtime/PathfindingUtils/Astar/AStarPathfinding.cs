@@ -12,10 +12,9 @@ using static KWUtils.KWmath;
 using static Unity.Mathematics.math;
 using static KWUtils.InputSystemExtension;
 
-
 namespace KWUtils.KWGenericGrid
 {
-    public class AStarPathfinding : MonoBehaviour, IGridHandler<Node, GenericGrid<Node>>
+    public class AStarPathfinding : MonoBehaviour, IGridHandler<GridType, Node, GenericGrid<Node>>
     {
         private const int CellSize = 1; //ADAPTATION NEEDED!
         
@@ -42,15 +41,17 @@ namespace KWUtils.KWGenericGrid
         private NativeArray<Node> nativeNodes;
         private NativeList<int> nativePathList;
 
-        //Interfaces
-        public IGridSystem GridSystem { get; set; }
+        //==============================================================================================================
+        /// Grid Interface
+        public IGridSystem<GridType> GridSystem { get; set; }
         public GenericGrid<Node> Grid { get; private set; }
-        
         public void InitializeGrid(int2 terrainBounds)
         {
-            Grid = new GenericGrid<Node>(terrainBounds, CellSize, (coord) => new Node(coord));
+            int numCellX = terrainBounds.x / CellSize;
+            Grid = new GenericGrid<Node>(terrainBounds, CellSize, (index) => new Node(index.GetXY2(numCellX)));
         }
-
+        //==============================================================================================================
+        
         private void Awake()
         {
             destination = DestinationCell.position;
@@ -73,7 +74,7 @@ namespace KWUtils.KWGenericGrid
             {
                 if (currentPath.Length != nativePathList.Length)
                 {
-                    currentPath.Resize(nativePathList.Length);
+                    Array.Resize(ref currentPath, nativePathList.Length);
                 }
                 nativePathList
                     .ToArray()
@@ -116,8 +117,8 @@ namespace KWUtils.KWGenericGrid
 
         private void AStarProcess(in GridData gridData)
         {
-            using NativeArray<bool> obstacles = GridSystem.RequestGrid<bool,GridType>(GridType.Obstacles).ToNativeArray();
-            nativeNodes = Grid.GridArray.ToNativeArray();
+            using NativeArray<bool> obstacles = new (GridSystem.RequestGridArray<bool>(GridType.Obstacles), Allocator.Temp);
+            nativeNodes = new NativeArray<Node>(Grid.GridArray, Allocator.TempJob);
 
             nativePathList = new NativeList<int>(16, Allocator.TempJob);
 

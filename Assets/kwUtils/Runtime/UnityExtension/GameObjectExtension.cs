@@ -1,5 +1,3 @@
-using System.Buffers;
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -7,6 +5,20 @@ namespace KWUtils
 {
     public static class GameObjectExtension
     {
+        public static Transform GetTransformWithComponent<T>(this Transform transf) 
+        where T : Component
+        {
+            if (transf == null) transf = GameObject.FindObjectOfType<T>().transform;
+            return transf;
+        }
+    
+        public static T GetCheckNullComponent<T>(this T component) 
+        where T : Component
+        {
+            if (component == null) component = GameObject.FindObjectOfType<T>();
+            return component;
+        }
+        
         public static I GetInterfaceComponent<I>(this GameObject gameObject) 
         where I : class
         {

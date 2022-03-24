@@ -10,9 +10,9 @@ using UnityEngine.InputSystem;
 
 using static KWUtils.InputSystemExtension;
 
-public class ObstacleManager : MonoBehaviour, IGridHandler<bool, GenericGrid<bool>>
+public class ObstacleManager : MonoBehaviour, IGridHandler<GridType,bool, GenericGrid<bool>>
 {
-    public IGridSystem GridSystem { get; set; }
+    public IGridSystem<GridType> GridSystem { get; set; }
     public GenericGrid<bool> Grid { get; private set; }
 
     public void InitializeGrid(int2 terrainBounds)

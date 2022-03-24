@@ -30,6 +30,24 @@ namespace KWUtils
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Vector3 SetX(this Vector3 target, float value)
+        {
+            return new Vector3(value,target.y,target.z);
+        }
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Vector3 SetY(this Vector3 target, float value)
+        {
+            return new Vector3(target.x,value,target.z);
+        }
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Vector3 SetZ(this Vector3 target, float value)
+        {
+            return new Vector3(target.x,target.y,value);
+        }
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Vector3 SetAxis(this Vector3 target, Axis axis, float val)
         {
             Vector3 newPos = Vector3.zero;

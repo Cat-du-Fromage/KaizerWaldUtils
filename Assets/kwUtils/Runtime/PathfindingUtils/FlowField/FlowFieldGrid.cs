@@ -14,15 +14,14 @@ using static KWUtils.NativeCollectionExt;
 
 namespace KWUtils.KWGenericGrid
 {
-    [RequireComponent(typeof(FlowFieldGridSystem))]
-    public class FlowFieldGrid : MonoBehaviour, IGridHandler<Vector3, GenericChunkedGrid<Vector3>>
+    public class FlowFieldGrid : MonoBehaviour, IGridHandler<GridType, Vector3, GenericChunkedGrid<Vector3>>
     {
         public bool DebugEnable;
         
         [SerializeField] private Transform Goal;
         private int goalCellIndex;
         
-        [SerializeField] private int Chunksize = 16;
+        [SerializeField] private int ChunkSize = 16;
         [SerializeField] private int CellSize = 2;
 
         //CostField
@@ -36,10 +35,11 @@ namespace KWUtils.KWGenericGrid
 
         private bool jobSchedule;
         private JobHandle lastJobScheduled;
-        /// <summary>
+        
+        //==============================================================================================================
         /// Grid Interface
-        /// </summary>
-        public IGridSystem GridSystem { get; set; }
+        //==============================================================================================================
+        public IGridSystem<GridType> GridSystem { get; set; }
         public GenericChunkedGrid<Vector3> Grid { get; private set; }
 
         /// <summary>
@@ -49,13 +49,13 @@ namespace KWUtils.KWGenericGrid
         public void InitializeGrid(int2 terrainBounds)
         {
             goalCellIndex = Goal == null ? 0 : Goal.position.XZ().GetIndexFromPosition(terrainBounds, 2);
-            Grid = new GenericChunkedGrid<Vector3>(terrainBounds, Chunksize, CellSize);
+            Grid = new GenericChunkedGrid<Vector3>(terrainBounds, ChunkSize, CellSize);
         }
 
         private void Start()
         {
-            GridSystem. SubscribeToGrid(GridType.Obstacles, OnNewObstacles);
-            CalculateFlowField(GridSystem.RequestGrid<bool, GridType>(GridType.Obstacles), goalCellIndex);
+            GridSystem.SubscribeToGrid(GridType.Obstacles, OnNewObstacles);
+            CalculateFlowField(GridSystem.RequestGridArray<bool>(GridType.Obstacles), goalCellIndex);
         }
 
         private void OnDestroy()
@@ -77,7 +77,7 @@ namespace KWUtils.KWGenericGrid
             Stopwatch sw = new Stopwatch();
             sw.Start();
 #endif
-            CalculateFlowField(GridSystem.RequestGrid<bool, GridType>(GridType.Obstacles), goalCellIndex);
+            CalculateFlowField(GridSystem.RequestGridArray<bool>(GridType.Obstacles), goalCellIndex);
 #if UNITY_EDITOR
             sw.Stop();
             UnityEngine.Debug.Log($"Path found: {sw.Elapsed} ms");       
@@ -173,7 +173,7 @@ namespace KWUtils.KWGenericGrid
             foreach ((int id, Vector3[] values)in Grid.ChunkDictionary)
             {
                     Gizmos.color = Color.red;
-                    Gizmos.DrawWireCube(Grid.GetChunkCenter(id), new Vector3(Chunksize,0.5f,Chunksize));
+                    Gizmos.DrawWireCube(Grid.GetChunkCenter(id), new Vector3(ChunkSize,0.5f,ChunkSize));
                 
                     for (int i = 0; i < values.Length; i++)
                     {

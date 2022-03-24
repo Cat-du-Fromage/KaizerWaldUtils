@@ -188,6 +188,19 @@ namespace KWUtils
             return mad(xy.y, mapXY.x/cellSize, xy.x);
         }
 
+        public static Vector3 GetCellCenterFromPosition(this Vector3 positionInWorld, int2 mapXY, int cellSize)
+        {
+            int index = positionInWorld.XZ().GetIndexFromPosition(mapXY, cellSize);
+            float2 cellCoord = index.GetXY2(mapXY.x/cellSize) * cellSize + new float2(cellSize/2f);
+            return new Vector3(cellCoord.x,0,cellCoord.y);
+        }
+        
+        public static Vector3 GetCellCenterFromIndex(this int index, int2 mapXY, int cellSize)
+        {
+            float2 cellCoord = index.GetXY2(mapXY.x/cellSize) * cellSize + new float2(cellSize/2f);
+            return new Vector3(cellCoord.x,0,cellCoord.y);
+        }
+
         /// <summary>
         /// Find the index of the cells a point belongs to
         /// </summary>

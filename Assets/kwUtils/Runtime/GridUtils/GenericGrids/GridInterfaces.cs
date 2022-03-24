@@ -10,68 +10,73 @@ using Object = UnityEngine.Object;
 namespace KWUtils.KWGenericGrid
 {
 
-    public interface IGridBehaviour
+    public interface IGridBehaviour<E>
+    where E : Enum
     {
-        public IGridSystem GridSystem { get; set; }
-        public void SetGridSystem(IGridSystem system) => GridSystem = system;
+        public IGridSystem<E> GridSystem { get; set; }
+        public void SetGridSystem(IGridSystem<E> system) => GridSystem = system;
         public void InitializeGrid(int2 terrainBounds);
     }
     
 
-    public interface IGridSystem
+    public interface IGridSystem<in E>
+    where E : Enum
     {
         public TerrainData MapData { get; set; }
 
         public int2 MapBounds { get; set; }
         
-        public void SubscribeToGrid<T>(T gridType, Action action) where T : Enum;
+        public void SubscribeToGrid(E gridType, Action action);
 
-        public T1[] RequestGrid<T1, T2>(T2 gridType) where T1 : struct where T2 : Enum;
-        
+        public T2 RequestGrid<T1, T2>(E gridType) 
+            where T1 : struct
+            where T2 : GenericGrid<T1>;
+
+        public T1[] RequestGridArray<T1>(E gridType) where T1 : struct;
+
+        /// <summary>
+        /// Gather terrain Datas
+        /// </summary>
         public void InitializeTerrain()
         {
             MapData = Object.FindObjectOfType<Terrain>().terrainData;
             MapBounds = (int2)MapData.size.XZ();
         }
         
+        /// <summary>
+        /// Tie all GridHandlers to the GridSystem(According to the Enum constrained)
+        /// Initialize all of them into
+        /// </summary>
         public void InitializeAllGrids()
         {
-            IGridBehaviour[] gridBehaviours = GameObjectExtension.FindObjectsOfInterface<IGridBehaviour>().ToArray();
+            IGridBehaviour<E>[] gridBehaviours = GameObjectExtension.FindObjectsOfInterface<IGridBehaviour<E>>().ToArray();
             for (int i = 0; i < gridBehaviours.Length; i++)
             {
                 gridBehaviours[i].SetGridSystem(this);
                 gridBehaviours[i].InitializeGrid(MapBounds);
             }
         }
-/*
-        public Dictionary<GridType, MonoBehaviour> test
-        {
-            get;
-            set;
-        }
 
-        public void GetGridsByType<T1,T2,T3>()
-        where T1 : struct
-        where T2 : GenericGrid<T1>
-        where T3 : Enum
+        public void Initialize()
         {
-            //AbstractGridHandler<T1, T2, T3>[] grids = GameObject.FindObjectsOfType<AbstractGridHandler<T1, T2, T3>>();
-            AbstractGridHandler<T1,T2,T3>[] gridBehaviours = GameObject.FindObjectsOfType<AbstractGridHandler<T1,T2,T3>>();
-            test = new Dictionary<T3, MonoBehaviour>(gridBehaviours.Length);
-            for (int i = 0; i < gridBehaviours.Length; i++)
-            {
-                test.Add(gridBehaviours[i].GridType, gridBehaviours[i]);
-                //gridBehaviours[i].SetGridSystem(this);
-                //gridBehaviours[i].InitializeGrid(MapBounds);
-            }
+            InitializeTerrain();
+            InitializeAllGrids();
         }
-*/
     }
-    
-    public interface IGridHandler<T1, out T2> : IGridBehaviour
+
+    public interface IGridHandler<E, T1, out T2> : IGridBehaviour<E>
+    where E : Enum
     where T1 : struct
     where T2 : GenericGrid<T1>
     {
         public T2 Grid { get; }
     }
+
+    public interface IGridSubject<out E>
+    where E : Enum
+    {
+        public E GridRelated { get; }
+        
+    }
+
 }

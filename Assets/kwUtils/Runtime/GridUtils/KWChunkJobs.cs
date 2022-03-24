@@ -10,7 +10,7 @@ using static Unity.Mathematics.math;
 using static KWUtils.KWmath;
 using int2 = Unity.Mathematics.int2;
 
-namespace KWUtils.KWGenericGrid
+namespace KWUtils
 {
         
     // The Job will "slice" the array and reorder them
@@ -23,9 +23,9 @@ namespace KWUtils.KWGenericGrid
     // 0️⃣1️⃣2️⃣3️⃣4️⃣5️⃣6️⃣7️⃣ 
     //After Slice
     // ✂ (chunk0): 0️⃣1️⃣4️⃣5️⃣ ✂ (chunk1): 2️⃣3️⃣6️⃣7️⃣ 
-#if EnableBurst
-    [BurstCompile]
-#endif
+    #if EnableBurst
+        [BurstCompile(CompileSynchronously = true)]
+    #endif
     public struct JOrderArrayByChunkIndex<T> : IJobFor
     where T : struct
     {
@@ -105,34 +105,31 @@ namespace KWUtils.KWGenericGrid
             SortedArray[mad(chunkIndex,totalCellInChunk,indexCellInChunk)] = UnsortedArray[index];
         }
     }
-
-    public struct JConvertGrid<T> : IJobFor
+    
+    #if EnableBurst
+    //[BurstCompile(CompileSynchronously = true)]
+    #endif
+    public struct JConvertGridBigToSmall<T> : IJobFor
     where T : struct
     {
-        [ReadOnly] private readonly GridData OldGridData;
-        [ReadOnly] private readonly GridData NewGridData;
+        [ReadOnly] private readonly GridData BiggerGridData;
 
-        [ReadOnly, NativeDisableParallelForRestriction]  private NativeArray<T> GridToConvert; //Smaller length
+        [ReadOnly, NativeDisableParallelForRestriction]  private NativeArray<T> BigGridToConvert; //Smaller length
         [WriteOnly, NativeDisableParallelForRestriction] private NativeArray<T> GridConverted; //Length * (OldCell/NewCell)^2
-        
-        public JConvertGrid(in GridData oldGridData, in GridData newGridData, NativeArray<T> gridToConvert, NativeArray<T> gridConverted)
+
+        public JConvertGridBigToSmall(in GridData biggerGridData, NativeArray<T> bigGridToConvert, NativeArray<T> gridConverted)
         {
-            OldGridData = oldGridData;
-            NewGridData = newGridData;
-            GridToConvert = gridToConvert;
+            BiggerGridData = biggerGridData;
+            BigGridToConvert = bigGridToConvert;
             GridConverted = gridConverted;
         }
         
         public void Execute(int index) // index = chunk index(GridToConvert)
         {
-            int numIteration = Sq(NewGridData.CellSize / OldGridData.CellSize);
-            for (int i = 0; i < numIteration; i++)
+            for (int i = 0; i < BiggerGridData.TotalCellInChunk; i++)
             {
-                int2 coordInChunk = i.GetXY2(NewGridData.NumCellInChunkX);
-                int indexInChunk = coordInChunk.GetIndex(NewGridData.NumCellInChunkX);
-                int gridIndex = index.GetGridCellIndexFromChunkCellIndex(OldGridData, indexInChunk);
-
-                GridConverted[gridIndex] = GridToConvert[index];
+                int indexSmall = index.GetGridCellIndexFromChunkCellIndex(BiggerGridData, i);
+                GridConverted[indexSmall] = BigGridToConvert[index];
             }
         }
     }

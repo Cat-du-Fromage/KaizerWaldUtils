@@ -12,7 +12,7 @@ using static KWUtils.KWmath;
 namespace KWUtils.Tests
 {
     [TestFixture]
-    public class ChunkGridTest
+    public partial class ChunkGridTest
     {
         private int2 mapSize = new int2(8, 8);
 
@@ -189,10 +189,10 @@ namespace KWUtils.Tests
         [TestCase(15, 1, ExpectedResult = 55)]
         [TestCase(15, 2, ExpectedResult = 62)]
         [TestCase(15, 3, ExpectedResult = 63)]
-        public int ChunkGridTest_ChunkCellIndexToGridIndex_CaseCell1(int chunkIndex, int CellInChunkIndex)
+        public int ChunkGridTest_ChunkCellIndexToGridIndex_CaseCell1(int chunkIndex, int cellInChunkIndex)
         {
             chunkedGrid = new GenericChunkedGrid<int>(mapSize, chunkSize, cellSize, (index) => index);
-            return chunkIndex.GetGridCellIndexFromChunkCellIndex(chunkedGrid.GridData, CellInChunkIndex);
+            return chunkIndex.GetGridCellIndexFromChunkCellIndex(chunkedGrid.GridData, cellInChunkIndex);
         }
         
         //Test Case 2 : ChunkCellIndexToGridIndex
@@ -216,13 +216,13 @@ namespace KWUtils.Tests
         [TestCase(3, 1, ExpectedResult = 11)]
         [TestCase(3, 2, ExpectedResult = 14)]
         [TestCase(3, 3, ExpectedResult = 15)]
-        public int ChunkGridTest_ChunkCellIndexToGridIndex_CaseCell2(int chunkIndex, int CellInChunkIndex)
+        public int ChunkGridTest_ChunkCellIndexToGridIndex_CaseCell2(int chunkIndex, int cellInChunkIndex)
         {
             chunkedGrid = new GenericChunkedGrid<int>(mapSize, chunkSize2, cellSize2, (index) => index);
-            return chunkIndex.GetGridCellIndexFromChunkCellIndex(chunkedGrid.GridData, CellInChunkIndex);
+            return chunkIndex.GetGridCellIndexFromChunkCellIndex(chunkedGrid.GridData, cellInChunkIndex);
         }
 
-        
+
     }
 }
 

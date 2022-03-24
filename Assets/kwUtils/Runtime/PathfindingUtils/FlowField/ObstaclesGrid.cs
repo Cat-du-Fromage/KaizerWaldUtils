@@ -9,14 +9,15 @@ using static KWUtils.InputSystemExtension;
 
 namespace KWUtils.KWGenericGrid
 {
-    [RequireComponent(typeof(FlowFieldGridSystem))]
-    public class ObstaclesGrid : MonoBehaviour, IGridHandler<bool, GenericGrid<bool>>
+    public class ObstaclesGrid : MonoBehaviour, IGridHandler<GridType, bool, GenericGrid<bool>>
     {
-        public IGridSystem GridSystem { get; set; }
+        private const int CellSize = 2;
+        public IGridSystem<GridType> GridSystem { get; set; }
         public GenericGrid<bool> Grid { get; private set; }
+
         public void InitializeGrid(int2 terrainBounds)
         {
-            Grid = new GenericGrid<bool>(terrainBounds, 2);
+            Grid = new GenericGrid<bool>(terrainBounds, CellSize);
         }
 
         private void Update()
@@ -36,7 +37,7 @@ namespace KWUtils.KWGenericGrid
         private void OnDrawGizmos()
         {
             if(Grid == null) return;
-            Vector3 cubeBounds = (Vector3.one * 2).SetAxis(Axis.Y, 0.5f);
+            Vector3 cubeBounds = (Vector3.one * CellSize).SetAxis(Axis.Y, 0.5f);
             Gizmos.color = Color.red;
             for (int i = 0; i < Grid.GridArray.Length; i++)
             {
