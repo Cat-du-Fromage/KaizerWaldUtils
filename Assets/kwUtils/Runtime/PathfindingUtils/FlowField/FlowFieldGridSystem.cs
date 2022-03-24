@@ -25,6 +25,8 @@ namespace KWUtils.KWGenericGrid
         public TerrainData MapData { get; set; }
         public int2 MapBounds { get; set; }
         
+        [SerializeField] private MonoBehaviour[] test;
+        
         [SerializeField] private FlowFieldGrid  FlowFieldGrid;
         [SerializeField] private ObstaclesGrid  ObstaclesGrid;
         
@@ -39,7 +41,26 @@ namespace KWUtils.KWGenericGrid
             ObstaclesGrid = GetComponent<ObstaclesGrid>();
             FlowFieldGrid = GetComponent<FlowFieldGrid>();
 
+            Test<FlowFieldGrid>();
+            
             this.AsInterface<IGridSystem<GridType>>().InitializeAllGrids();
+        }
+
+        private Dictionary<GridType, MonoBehaviour> test2 = new Dictionary<GridType, MonoBehaviour>(2);
+
+        private T Test<T>()
+        where T : MonoBehaviour
+        {
+            for (int i = 0; i < test.Length; i++)
+            {
+                if (test[i] is T)
+                {
+                    UnityEngine.Debug.Log($"flowfield {(T)test[i]}");
+                    return (T)test[i];
+                }
+            }
+
+            return null;
         }
         
         private void OnDestroy()

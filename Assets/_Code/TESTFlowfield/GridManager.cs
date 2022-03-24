@@ -26,7 +26,7 @@ public class GridManager : MonoBehaviour, IGridSystem<GridType>
     [SerializeField] private Transform Goal;
     public int goalIndex;
     public Vector3 goalPosition;
-    
+
     //private FlowField flowField;
     [SerializeField] private FlowFieldGrid    FlowFieldGrid;
     [SerializeField] private ObstacleManager  ObstacleGrid; //cell = 2

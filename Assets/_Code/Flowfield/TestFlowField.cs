@@ -5,7 +5,7 @@ using KWUtils.KWGenericGrid;
 using Unity.Mathematics;
 using UnityEngine;
 
-public class TestFlowField : MonoBehaviour, IGridHandler<GridType,bool, GenericGrid<bool>>
+public class TestFlowField : MonoBehaviour, IGridHandler<GridType, bool, GenericGrid<bool>>
 {
     private FlowField flowField;
     public GenericGrid<bool> Grid { get; private set; }

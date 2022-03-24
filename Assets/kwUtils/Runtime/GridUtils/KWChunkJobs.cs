@@ -133,45 +133,4 @@ namespace KWUtils
             }
         }
     }
-
-    //==================================================================================================================
-    // The Job will "slice" the array and reorder them
-    // at the end when we cut the array given the number of cell in one chunk
-    // we only get the value owned by the chunk
-    // ✂ 1️⃣2️⃣3️⃣ ✂ 4️⃣5️⃣6️⃣ ✂ 7️⃣8️⃣9️⃣
-    /*
-#if EnableBurst
-    [BurstCompile]
-#endif
-    public struct JOrderArrayByChunkIndex2<T> : IJobFor
-    where T : struct
-    {
-        [ReadOnly] public int CellSize;
-        [ReadOnly] public int ChunkSize;
-        [ReadOnly] public int NumCellX;
-        [ReadOnly] public int NumChunkX;
-        
-        [NativeDisableParallelForRestriction]
-        [ReadOnly] public NativeArray<T> UnsortedArray;
-        
-        [NativeDisableParallelForRestriction]
-        [WriteOnly] public NativeArray<T> SortedArray;
-        public void Execute(int index)
-        {
-            int chunkCellWidth = ChunkSize / CellSize;
-            
-            int2 cellCoord = index.GetXY2(NumCellX);
-            float ratioChunkCell = CellSize / (float)ChunkSize;
-            
-            int2 chunkCoord = (int2)floor((float2)cellCoord * ratioChunkCell);
-            int2 coordInChunk = cellCoord - (int2)floor((float2)chunkCoord * chunkCellWidth);
-
-            int indexInChunk = mad(coordInChunk.y, chunkCellWidth, coordInChunk.x);
-            int chunkIndex = mad(chunkCoord.y, NumChunkX, chunkCoord.x);
-            int totalCellInChunk = Sq(chunkCellWidth);
-
-            SortedArray[chunkIndex * totalCellInChunk + indexInChunk] = UnsortedArray[index];
-        }
-    }
-    */
 }

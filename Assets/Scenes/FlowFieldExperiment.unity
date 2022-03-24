@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 0}
-  m_IndirectSpecularColor: {r: 0.17051832, g: 0.16541284, b: 0.1600448, a: 1}
+  m_IndirectSpecularColor: {r: 0.17053787, g: 0.16542515, b: 0.1600636, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -861,7 +861,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   DebugEnable: 0
   Goal: {fileID: 1124078300}
-  Chunksize: 16
+  ChunkSize: 16
   CellSize: 2
 --- !u!114 &2078732660
 MonoBehaviour:
@@ -888,7 +888,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Goal: {fileID: 1124078300}
-  goalIndex: 0
-  goalPosition: {x: 0, y: 0, z: 0}
+  test:
+  - {fileID: 2078732659}
   FlowFieldGrid: {fileID: 0}
   ObstaclesGrid: {fileID: 0}
