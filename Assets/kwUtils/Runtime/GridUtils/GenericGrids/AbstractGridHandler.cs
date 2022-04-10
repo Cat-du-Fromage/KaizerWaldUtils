@@ -1,13 +1,10 @@
 using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Runtime.CompilerServices;
 using KWUtils.KWGenericGrid;
 using Unity.Mathematics;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
-namespace KWUtils.KWGenericGrid
+namespace KWUtils
 {
     public abstract class GridSystemBehaviour<E> : MonoBehaviour
     where E : Enum

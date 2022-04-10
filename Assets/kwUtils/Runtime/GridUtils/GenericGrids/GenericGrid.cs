@@ -3,13 +3,12 @@ using System.Collections;
 using System.Collections.Generic;
 using Unity.Collections;
 using Unity.Mathematics;
-using UnityEditor;
 using UnityEngine;
 
 using static Unity.Mathematics.math;
 using static KWUtils.KWmath;
 
-namespace KWUtils.KWGenericGrid
+namespace KWUtils
 {
     public class GenericGrid<T>
     where T : struct
@@ -34,6 +33,7 @@ namespace KWUtils.KWGenericGrid
             //Init Grid
             //Example: new GenericGrid(int2(8,8), 2, (i) => i)
             //Will populate the grid like so: {0, 1, 2, 3....}
+            //Example: new GenericGrid(int2(8,8), 2, (i.GetXY) => int2(x,y))
             for (int i = 0; i < GridArray.Length; i++)
             {
                 GridArray[i] = createGridObject(i);

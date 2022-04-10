@@ -1,12 +1,10 @@
-using System.Collections;
-using System.Collections.Generic;
-using KWUtils.KWGenericGrid;
+
 using Unity.Mathematics;
-using UnityEngine;
+
 
 using static Unity.Mathematics.math;
 
-namespace KWUtils.KWGenericGrid
+namespace KWUtils
 {
     public readonly struct GridData
     {

@@ -9,7 +9,7 @@ using UnityEngine;
 using static Unity.Mathematics.math;
 using static KWUtils.KWmath;
 
-namespace KWUtils.KWGenericGrid
+namespace KWUtils
 {
     public sealed class GenericChunkedGrid<T> : GenericGrid<T>
     where T : struct
@@ -73,6 +73,17 @@ namespace KWUtils.KWGenericGrid
         {
             int indexInGrid = chunkIndex.GetGridCellIndexFromChunkCellIndex(GridData, cellIndexInChunk);
             return GetCellCenter(indexInGrid);
+        }
+
+        public Vector3[] GetChunkCellsCenter(int chunkIndex)
+        {
+            int totalCells = cmul(NumCellXY);
+            Vector3[] centers = new Vector3[totalCells];
+            for (int i = 0; i < totalCells; i++)
+            {
+                centers[i] = GetChunkCellCenter(chunkIndex, i);
+            }
+            return centers;
         }
         //==============================================================================================================
         

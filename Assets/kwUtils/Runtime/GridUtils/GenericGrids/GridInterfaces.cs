@@ -1,15 +1,10 @@
 using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Runtime.CompilerServices;
-using KWUtils.KWGenericGrid;
 using Unity.Mathematics;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
-namespace KWUtils.KWGenericGrid
+namespace KWUtils
 {
-
     public interface IGridBehaviour<E>
     where E : Enum
     {
@@ -28,9 +23,13 @@ namespace KWUtils.KWGenericGrid
         
         public void SubscribeToGrid(E gridType, Action action);
 
+        //ALL REQUEST TYPE
+        //public T RequestBoolGrid<T>(E gridType) where T : GenericGrid<bool>;
+        
+        
         public T2 RequestGrid<T1, T2>(E gridType) 
-            where T1 : struct
-            where T2 : GenericGrid<T1>;
+        where T1 : struct
+        where T2 : GenericGrid<T1>;
 
         public T1[] RequestGridArray<T1>(E gridType) where T1 : struct;
 
@@ -71,12 +70,4 @@ namespace KWUtils.KWGenericGrid
     {
         public T2 Grid { get; }
     }
-
-    public interface IGridSubject<out E>
-    where E : Enum
-    {
-        public E GridRelated { get; }
-        
-    }
-
 }

@@ -14,7 +14,7 @@ using static Unity.Jobs.LowLevel.Unsafe.JobsUtility;
 using Debug = UnityEngine.Debug;
 using int2 = Unity.Mathematics.int2;
 
-namespace KWUtils.KWGenericGrid
+namespace KWUtils
 {
     public enum ChunkEnterPoint
     {

@@ -1,4 +1,4 @@
-namespace KWUtils.kwUtils.Runtime.GridUtils
+namespace KWUtils
 {
     public enum GenericGridType
     {
