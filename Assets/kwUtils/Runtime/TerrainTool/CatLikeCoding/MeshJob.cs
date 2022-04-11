@@ -1,6 +1,7 @@
 using Unity.Burst;
 using Unity.Collections;
 using Unity.Jobs;
+using Unity.Jobs.LowLevel.Unsafe;
 using UnityEngine;
 
 namespace KWUtils.ProceduralMeshes
@@ -28,7 +29,7 @@ namespace KWUtils.ProceduralMeshes
                 job.Generator.VertexCount,
                 job.Generator.IndexCount
             );
-            return job.ScheduleParallel(job.Generator.JobLength, 1, dependency);
+            return job.ScheduleParallel(job.Generator.JobLength, JobsUtility.JobWorkerCount - 1, dependency);
         }
     }
     

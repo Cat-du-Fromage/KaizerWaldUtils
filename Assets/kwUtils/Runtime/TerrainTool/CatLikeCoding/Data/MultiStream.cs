@@ -11,16 +11,19 @@ namespace KWUtils.ProceduralMeshes
     public struct MultiStream : IMeshStreams
     {
         [NativeDisableContainerSafetyRestriction]
-        private NativeArray<float3> stream0, stream1;
-
-        [NativeDisableContainerSafetyRestriction]
-        private NativeArray<float4> stream2;
-
-        [NativeDisableContainerSafetyRestriction]
-        private NativeArray<float2> stream3;
+        public NativeArray<float3> stream0;
         
         [NativeDisableContainerSafetyRestriction]
-        private NativeArray<TriangleUInt16> triangles;
+        public NativeArray<float3> stream1;
+        
+        [NativeDisableContainerSafetyRestriction]
+        public NativeArray<float4> stream2;
+
+        [NativeDisableContainerSafetyRestriction]
+        public NativeArray<float2> stream3;
+        
+        [NativeDisableContainerSafetyRestriction]
+        public NativeArray<TriangleUInt16> triangles;
         
         public void Setup(Mesh.MeshData meshData, Bounds bounds, int vertexCount, int indexCount)
         {

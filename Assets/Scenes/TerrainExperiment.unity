@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 1265308533}
-  m_IndirectSpecularColor: {r: 0.0032013855, g: 0.0063153747, b: 0.014413998, a: 1}
+  m_IndirectSpecularColor: {r: 0.003204829, g: 0.0063439845, b: 0.014498586, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -141,7 +141,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!64 &1260601585
 MeshCollider:
   m_ObjectHideFlags: 0
@@ -417,6 +417,7 @@ GameObject:
   - component: {fileID: 1796011244}
   - component: {fileID: 1796011243}
   - component: {fileID: 1796011242}
+  - component: {fileID: 1796011245}
   m_Layer: 0
   m_Name: ProceduralGridMesh
   m_TagString: Untagged
@@ -451,6 +452,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9a8587f2c491fd04a9c0d9333a7a7ca5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  meshType: 0
   resolution: 1
 --- !u!23 &1796011243
 MeshRenderer:
@@ -502,3 +504,18 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1796011240}
   m_Mesh: {fileID: 0}
+--- !u!114 &1796011245
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1796011240}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9344cd0683ef0a44196e97af742587e8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  MapSize:
+    x: 0
+    y: 0
