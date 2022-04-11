@@ -14,7 +14,7 @@ namespace KWUtils.ProceduralMeshes
         public int VertexCount => 4 * (Resolution * Resolution);
         public int IndexCount => 6 * (Resolution * Resolution);
         public int JobLength => Resolution;
-        public Bounds Bounds => new (Vector3.zero, new Vector3(1f, 0f, 1f));
+        public Bounds Bounds => new (Vector3.zero, new Vector3(256f, 0f, 256f));
 
         public void Execute<S>(int z, S streams) 
         where S : struct, IMeshStreams
@@ -45,7 +45,7 @@ namespace KWUtils.ProceduralMeshes
                 streams.SetVertex(vi + 2, vertex);
 
                 vertex.position.x = xCoordinates.y;
-                vertex.texCoord0 = 1f;
+                vertex.texCoord0 = float2(1f);
                 streams.SetVertex(vi + 3, vertex);
 
                 streams.SetTriangle(ti + 0, vi + int3(0, 2, 1));

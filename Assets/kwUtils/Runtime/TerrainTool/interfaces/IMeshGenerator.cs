@@ -12,6 +12,6 @@ namespace KWUtils.ProceduralMeshes
         public int JobLength { get; }
         public Bounds Bounds { get; }
         
-        public void Execute<S> (int i, S streams) where S : struct, IMeshStreams;
+        public void Execute<S> (int z, S streams) where S : struct, IMeshStreams;
     }
 }

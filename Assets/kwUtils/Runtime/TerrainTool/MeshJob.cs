@@ -31,4 +31,6 @@ namespace KWUtils.ProceduralMeshes
             return job.ScheduleParallel(job.Generator.JobLength, 1, dependency);
         }
     }
+    
+    public delegate JobHandle MeshJobScheduleDelegate (Mesh mesh, Mesh.MeshData meshData, int resolution, JobHandle dependency);
 }

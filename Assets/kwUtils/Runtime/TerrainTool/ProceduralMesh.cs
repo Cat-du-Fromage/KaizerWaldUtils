@@ -7,6 +7,21 @@ namespace KWUtils.ProceduralMeshes
     [RequireComponent(typeof(MeshFilter), typeof(MeshRenderer))]
     public class ProceduralMesh : MonoBehaviour
     {
+        private static MeshJobScheduleDelegate[] jobs = 
+        {
+            MeshJob<SquareGrid, SingleStream>.ScheduleParallel,
+            MeshJob<SharedSquareGrid, SingleStream>.ScheduleParallel
+        };
+
+        public enum MeshType : int
+        {
+            SquareGrid       = 0, 
+            SharedSquareGrid = 1
+        };
+
+        [SerializeField]
+        MeshType meshType;
+        
         [SerializeField, Range(1, 10)]
         private int resolution = 1;
         
@@ -18,7 +33,6 @@ namespace KWUtils.ProceduralMeshes
             {
                 name = "Procedural Mesh"
             };
-            //GenerateMesh();
             GetComponent<MeshFilter>().mesh = mesh;
         }
         
@@ -38,8 +52,8 @@ namespace KWUtils.ProceduralMeshes
             Mesh.MeshDataArray meshDataArray = Mesh.AllocateWritableMeshData(1);
             Mesh.MeshData meshData = meshDataArray[0];
 
-            MeshJob<SquareGrid, MultiStream>.ScheduleParallel(mesh, meshData, resolution, default).Complete();
-
+            //MeshJob<SquareGrid, MultiStream>.ScheduleParallel(mesh, meshData, resolution, default).Complete();
+            jobs[(int)meshType](mesh, meshData, resolution, default).Complete();
             Mesh.ApplyAndDisposeWritableMeshData(meshDataArray, mesh);
         }
 
