@@ -16,26 +16,22 @@ namespace KWUtils.KwTerrain
     [BurstCompile(CompileSynchronously = true)]
     public struct JVerticesPosition : IJobFor
     {
-        [ReadOnly] private int MapSize;
-        [ReadOnly] private int PointPerAxis;
-        [ReadOnly] private float Spacing;
+        [ReadOnly] private int MapSizeX;
         [NativeDisableParallelForRestriction]
         [WriteOnly] private NativeArray<float3> Vertices;
 
-        public JVerticesPosition(in MapSettings mapSettings, NativeArray<float3> vertices)
+        public JVerticesPosition(int mapSize, NativeArray<float3> vertices)
         {
-            MapSize = mapSettings.mapSize;
-            PointPerAxis = mapSettings.mapPointPerAxis;
-            Spacing = mapSettings.pointSpacing;
+            MapSizeX = mapSize;
             Vertices = vertices;
         }
         
         public void Execute(int index)
         {
-            int z = index / PointPerAxis;
-            int x = index - (z * PointPerAxis);
+            int z = index / MapSizeX;
+            int x = index - (z * MapSizeX);
             
-            float3 pointPosition = float3(x, 0, z) * float3(Spacing) + float3(MapSize*-0.5f,0,MapSize*-0.5f);
+            float3 pointPosition = float3(x, 0, z);
             Vertices[index] = pointPosition;
         }
     }
@@ -45,22 +41,22 @@ namespace KWUtils.KwTerrain
     [BurstCompile(CompileSynchronously = true)]
     public struct JUvs : IJobFor
     {
-        [ReadOnly] private int MapPointPerAxis;
+        [ReadOnly] private int MapSizeX;
         
         [NativeDisableParallelForRestriction, WriteOnly]
         private NativeArray<float2> Uvs;
 
-        public JUvs(in MapSettings mapSettings, NativeArray<float2> uvs)
+        public JUvs(int mapSizeX, NativeArray<float2> uvs)
         {
-            MapPointPerAxis = mapSettings.mapPointPerAxis;
+            MapSizeX = mapSizeX;
             Uvs = uvs;
         }
         
         public void Execute(int index)
         {
-            float z = floor((float)index / MapPointPerAxis);
-            float x = index - (z * MapPointPerAxis);
-            Uvs[index] = float2(x / MapPointPerAxis, z / MapPointPerAxis);
+            float z = floor((float)index / MapSizeX);
+            float x = index - (z * MapSizeX);
+            Uvs[index] = float2(x / MapSizeX, z / MapSizeX);
         }
     }
     
@@ -69,26 +65,26 @@ namespace KWUtils.KwTerrain
     [BurstCompile(CompileSynchronously = true)]
     public struct JTriangles : IJobFor
     {
-        [ReadOnly] private int MapPointPerAxis;
+        [ReadOnly] private int MapSizeX;
         [NativeDisableParallelForRestriction]
         [WriteOnly] private NativeArray<int> Triangles;
 
-        public JTriangles(in MapSettings mapSettings, NativeArray<int> triangles)
+        public JTriangles(int mapSizeX, NativeArray<int> triangles)
         {
-            MapPointPerAxis = mapSettings.mapPointPerAxis;
+            MapSizeX = mapSizeX;
             Triangles = triangles;
         }
         
         public void Execute(int index)
         {
-            int mapPoints = MapPointPerAxis - 1;
+            int mapPoints = MapSizeX - 1;
             
-            int z = (int)floor((float)index / mapPoints);
+            int z = index / mapPoints;
             int x = index - (z * mapPoints);
             int baseTriIndex = index * 6;
             
             int vertexIndex = index + select(z,1 + z, x > mapPoints);
-            int4 trianglesVertex = int4(vertexIndex, vertexIndex + MapPointPerAxis + 1, vertexIndex + MapPointPerAxis, vertexIndex + 1);
+            int4 trianglesVertex = int4(vertexIndex, vertexIndex + MapSizeX + 1, vertexIndex + MapSizeX, vertexIndex + 1);
 
             Triangles[baseTriIndex] = trianglesVertex.z;
             Triangles[baseTriIndex + 1] = trianglesVertex.y;

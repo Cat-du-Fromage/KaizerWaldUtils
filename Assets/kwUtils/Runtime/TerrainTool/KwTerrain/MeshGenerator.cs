@@ -39,7 +39,7 @@ namespace KWUtils.KwTerrain
         public static float3[] GetVertices(MapSettings mapSettings, JobHandle dependency = default)
         {
             using NativeArray<float3> verticesTemp = AllocNtvAry<float3>(mapSettings.totalMapPoints);
-            JVerticesPosition job = new JVerticesPosition(in mapSettings, verticesTemp);
+            JVerticesPosition job = new JVerticesPosition(mapSettings.mapSize, verticesTemp);
             JobHandle jobHandle = job.ScheduleParallel(mapSettings.totalMapPoints, JobsUtility.JobWorkerCount - 1, dependency);
             jobHandle.Complete();
             return verticesTemp.ToArray();
@@ -48,7 +48,7 @@ namespace KWUtils.KwTerrain
         private static float2[] GetUvs(MapSettings mapSettings, JobHandle dependency = default)
         {
             using NativeArray<float2> uvsTemp = AllocNtvAry<float2>(mapSettings.totalMapPoints);
-            JUvs job = new JUvs(in mapSettings, uvsTemp);
+            JUvs job = new JUvs(mapSettings.mapSize, uvsTemp);
             JobHandle jobHandle = job.ScheduleParallel(mapSettings.totalMapPoints, JobWorkerCount - 1, dependency);
             jobHandle.Complete();
             return uvsTemp.ToArray();
@@ -58,7 +58,7 @@ namespace KWUtils.KwTerrain
         {
             int trianglesBufferSize = Sq(mapSettings.mapPointPerAxis - 1) * 6;
             using NativeArray<int> trianglesTemp = AllocNtvAry<int>(trianglesBufferSize);
-            JTriangles job = new JTriangles(in mapSettings, trianglesTemp);
+            JTriangles job = new JTriangles(mapSettings.mapSize, trianglesTemp);
             JobHandle jobHandle = job.ScheduleParallel(Sq(mapSettings.mapPointPerAxis-1), JobWorkerCount - 1, dependency);
             jobHandle.Complete();
             return trianglesTemp.ToArray();
