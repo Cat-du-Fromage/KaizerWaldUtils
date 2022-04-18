@@ -83,6 +83,23 @@ namespace KWUtils
             return jobHandle;
         }
         
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static JobHandle OrderNativeArrayByChunk<T>(this NativeArray<T> orderedIndices, NativeArray<T> unorderedIndices, in GridData gridData, JobHandle dependency = default)
+        where T : struct
+        {
+            JOrderArrayByChunkIndex<T> job = new (gridData, unorderedIndices, orderedIndices);
+            JobHandle jobHandle = job.ScheduleParallel(orderedIndices.Length, JobWorkerCount - 1, dependency);
+            return jobHandle;
+        }
+        
+        //USE FOR IL2CPP
+        private static void GenericGeneration()
+        {
+            using NativeArray<float2> f21 = new NativeArray<float2>(); 
+            using NativeArray<float2> f22 = new NativeArray<float2>();
+            f21.OrderNativeArrayByChunk<float2>(f22, new GridData()).Complete();
+        }
+
         //==============================================================================================================
         // ORDER AND PACK ARRAYS INTO DICTIONARY
         //==============================================================================================================
@@ -112,7 +129,7 @@ namespace KWUtils
             using NativeArray<T> nativeUnOrderedIndices = unorderedIndices.ToNativeArray();
             using NativeArray<T> nativeOrderedIndices = new (unorderedIndices.Length, Allocator.TempJob, NativeArrayOptions.UninitializedMemory);
 
-            JGenericOrderArrayByChunkIndex<T> job = new(gridData, nativeUnOrderedIndices, nativeOrderedIndices);
+            JOrderArrayByChunkIndex<T> job = new(gridData, nativeUnOrderedIndices, nativeOrderedIndices);
             JobHandle jobHandle = job.ScheduleParallel(unorderedIndices.Length, JobWorkerCount - 1, default);
             JobHandle.ScheduleBatchedJobs();
             
@@ -132,7 +149,7 @@ namespace KWUtils
             using NativeArray<T> nativeUnOrderedIndices = unorderedIndices.ToNativeArray();
             using NativeArray<T> nativeOrderedIndices = new (unorderedIndices.Length, Allocator.TempJob, NativeArrayOptions.UninitializedMemory);
 
-            JGenericOrderArrayByChunkIndex<T> job = new(gridData, nativeUnOrderedIndices, nativeOrderedIndices);
+            JOrderArrayByChunkIndex<T> job = new(gridData, nativeUnOrderedIndices, nativeOrderedIndices);
             JobHandle jobHandle = job.ScheduleParallel(unorderedIndices.Length, JobWorkerCount - 1, default);
             JobHandle.ScheduleBatchedJobs();
             

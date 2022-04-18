@@ -1,5 +1,13 @@
 #define EnableBurst
 
+
+/*
+#pragma warning disable 0168 // variable declared but not used.
+#pragma warning disable 0219 // variable assigned but not used.
+#pragma warning disable 0414 // private field assigned but not used.
+*/
+
+using UnityEngine;
 using Unity.Burst;
 using Unity.Collections;
 using Unity.Jobs;
@@ -11,7 +19,38 @@ using int2 = Unity.Mathematics.int2;
 
 namespace KWUtils
 {
-        
+#pragma warning disable 0219
+    internal class KwChunkJobsGenericGeneration
+    {
+
+        private KwChunkJobsGenericGeneration()
+        {
+            
+        }
+
+        private void GenJOrderArrayByChunkIndex()
+        {
+            JOrderArrayByChunkIndex<bool>    jbool    = new ();
+            JOrderArrayByChunkIndex<int>     jint     = new ();
+            JOrderArrayByChunkIndex<float>   jfloat   = new ();
+            JOrderArrayByChunkIndex<float2>  jfloat2  = new ();
+            JOrderArrayByChunkIndex<float3>  jfloat3  = new ();
+            JOrderArrayByChunkIndex<Vector2> jVector2 = new ();
+            JOrderArrayByChunkIndex<Vector3> jVector3 = new ();
+        }
+
+        private void GenJConvertGridBigToSmall()
+        {
+            JConvertGridBigToSmall<bool>    jbool    = new ();
+            JConvertGridBigToSmall<int>     jint     = new ();
+            JConvertGridBigToSmall<float>   jfloat   = new ();
+            JConvertGridBigToSmall<float2>  jfloat2  = new ();
+            JConvertGridBigToSmall<float3>  jfloat3  = new ();
+            JConvertGridBigToSmall<Vector2> jVector2 = new ();
+            JConvertGridBigToSmall<Vector3> jVector3 = new ();
+        }
+    }
+#pragma warning restore 0219
     // The Job will "slice" the array and reorder them
     // at the end when we cut the array given the number of cell in one chunk
     // we only get the value owned by the chunk
@@ -22,9 +61,7 @@ namespace KWUtils
     // 0️⃣1️⃣2️⃣3️⃣4️⃣5️⃣6️⃣7️⃣ 
     //After Slice
     // ✂ (chunk0): 0️⃣1️⃣4️⃣5️⃣ ✂ (chunk1): 2️⃣3️⃣6️⃣7️⃣ 
-    #if EnableBurst
-        [BurstCompile(CompileSynchronously = true)]
-    #endif
+    [BurstCompile(CompileSynchronously = true)]
     public struct JOrderArrayByChunkIndex<T> : IJobFor
     where T : struct
     {
@@ -105,9 +142,7 @@ namespace KWUtils
         }
     }
     
-    #if EnableBurst
-    //[BurstCompile(CompileSynchronously = true)]
-    #endif
+    [BurstCompile(CompileSynchronously = true)]
     public struct JConvertGridBigToSmall<T> : IJobFor
     where T : struct
     {

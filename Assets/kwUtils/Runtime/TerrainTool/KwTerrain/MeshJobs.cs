@@ -59,7 +59,7 @@ namespace KWUtils.KwTerrain
             Uvs[index] = float2(x / MapSizeX, z / MapSizeX);
         }
     }
-    
+
     //TRIANGLES
     //==================================================================================================================
     [BurstCompile(CompileSynchronously = true)]
@@ -81,18 +81,105 @@ namespace KWUtils.KwTerrain
             
             int z = index / mapPoints;
             int x = index - (z * mapPoints);
+            if (z < MapSizeX - 1 && x < MapSizeX - 1)
+            {
+                int baseTriIndex = index * 6;
+                
+                int vertexIndex = index + select(z,1 + z, x > mapPoints);
+                int4 trianglesVertex = int4(vertexIndex, vertexIndex + MapSizeX + 1, vertexIndex + MapSizeX, vertexIndex + 1);
+
+                Triangles[baseTriIndex] = trianglesVertex.z;
+                Triangles[baseTriIndex + 1] = trianglesVertex.y;
+                Triangles[baseTriIndex + 2] = trianglesVertex.x;
+                baseTriIndex += 3;
+                Triangles[baseTriIndex] = trianglesVertex.w;
+                Triangles[baseTriIndex + 1] = trianglesVertex.x;
+                Triangles[baseTriIndex + 2] = trianglesVertex.y;
+            }
+        }
+    }
+    
+    //==================================================================================================================
+    //SECOND SOLUTION
+    //==================================================================================================================
+    [BurstCompile(CompileSynchronously = true)]
+    public struct JVerticesPosition2 : IJobFor
+    {
+        [ReadOnly] private int NumVerticesX;
+        [NativeDisableParallelForRestriction]
+        [WriteOnly] private NativeArray<float3> Vertices;
+
+        public JVerticesPosition2(int numVerticesX, NativeArray<float3> vertices)
+        {
+            NumVerticesX = numVerticesX;
+            Vertices = vertices;
+        }
+        
+        public void Execute(int index)
+        {
+            int z = index / NumVerticesX;
+            int x = index - (z * NumVerticesX);
+            
+            float3 pointPosition = float3(x, 0, z);
+            Vertices[index] = pointPosition;
+        }
+    }
+    
+    [BurstCompile(CompileSynchronously = true)]
+    public struct JUvs2 : IJobFor
+    {
+        [ReadOnly] private int NumVerticesX;
+        [NativeDisableParallelForRestriction, WriteOnly]
+        private NativeArray<float2> Uvs;
+
+        public JUvs2(int numVerticesX, NativeArray<float2> uvs)
+        {
+            NumVerticesX = numVerticesX;
+            Uvs = uvs;
+        }
+        
+        public void Execute(int index)
+        {
+            int z = index / NumVerticesX;
+            int x = index - (z * NumVerticesX);
+            Uvs[index] = float2((float)x / NumVerticesX, (float)z / NumVerticesX);
+        }
+    }
+    
+    [BurstCompile(CompileSynchronously = true)]
+    public struct JTriangles2 : IJobFor
+    {
+        [ReadOnly] private int NumQuadsX;
+        [ReadOnly] private int NumVerticesX;
+        [NativeDisableParallelForRestriction]
+        [WriteOnly] private NativeArray<int> Triangles;
+
+        public JTriangles2(int quadsX, int verticesX, NativeArray<int> triangles)
+        {
+            NumQuadsX = quadsX;
+            NumVerticesX = verticesX;
+            Triangles = triangles;
+        }
+        
+        public void Execute(int index)
+        {
+            //Coord of the quad we are currently in
+            int z = index / NumQuadsX;
+            //int x = index - (z * MapNumQuadsX);
+
             int baseTriIndex = index * 6;
             
-            int vertexIndex = index + select(z,1 + z, x > mapPoints);
-            int4 trianglesVertex = int4(vertexIndex, vertexIndex + MapSizeX + 1, vertexIndex + MapSizeX, vertexIndex + 1);
-
+            //Each increment of z offset the values between Quads and vertices by the value of z
+            int vertexIndex = index + z;//select(z,1 + z, x > MapNumQuadsX);
+            int4 trianglesVertex = int4(vertexIndex, vertexIndex + 1, vertexIndex + NumVerticesX, vertexIndex + NumVerticesX + 1);
+            
             Triangles[baseTriIndex] = trianglesVertex.z;
             Triangles[baseTriIndex + 1] = trianglesVertex.y;
             Triangles[baseTriIndex + 2] = trianglesVertex.x;
-            baseTriIndex += 3;
-            Triangles[baseTriIndex] = trianglesVertex.w;
-            Triangles[baseTriIndex + 1] = trianglesVertex.x;
-            Triangles[baseTriIndex + 2] = trianglesVertex.y;
+            
+            Triangles[baseTriIndex + 3] = trianglesVertex.z;
+            Triangles[baseTriIndex + 4] = trianglesVertex.w;
+            Triangles[baseTriIndex + 5] = trianglesVertex.y;
         }
     }
 }
