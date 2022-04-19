@@ -140,9 +140,9 @@ namespace KWUtils.KwTerrain
         
         public void Execute(int index)
         {
-            int z = index / NumVerticesX;
-            int x = index - (z * NumVerticesX);
-            Uvs[index] = float2((float)x / NumVerticesX, (float)z / NumVerticesX);
+            float z = floor((float)index / NumVerticesX);
+            float x = index - (z * NumVerticesX);
+            Uvs[index] = float2(x / NumVerticesX, z / NumVerticesX);
         }
     }
     

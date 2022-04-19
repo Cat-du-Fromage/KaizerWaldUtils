@@ -437,7 +437,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b97ad53782b29754eb9fb9aa278e71f5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  defaultChunkMaterial: {fileID: 2100000, guid: 31321ba15b8f8eb4c954353edc038b1d,
+  defaultChunkMaterial: {fileID: 2100000, guid: 13a85d040502e234988398a6ff2cd57e,
     type: 2}
   MapSize:
     x: 4

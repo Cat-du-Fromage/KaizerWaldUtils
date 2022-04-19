@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using Unity.Collections;
 using Unity.Jobs;
 using Unity.Mathematics;
@@ -76,7 +77,7 @@ namespace KWUtils.KwTerrain
             CreateChunks();
             
             GenerateBigMap();
-            GetAndAssignMeshDatas();
+            GenerateChunks();
         }
 
         private void CreateChunks()
@@ -161,17 +162,15 @@ namespace KWUtils.KwTerrain
             
         }
 */
-        public void GetAndAssignMeshDatas()
+        public void GenerateChunks()
         {
             int numVertices = cmul(kwTerrainData.TerrainNumVerticesXZ);
-            int totalChunkVertices = cmul(kwTerrainData.ChunkNumVerticesXZ);
             int totalChunkQuads = cmul(kwTerrainData.ChunkNumQuadsXZ);
-            UnityEngine.Debug.Log(numVertices);
             
-            UnityEngine.Debug.Log($"TotalNumQuadsXZ = {cmul(kwTerrainData.ChunkNumQuadsXZ)}");
-            UnityEngine.Debug.Log($"TotalNumVerticesXZ = {cmul(kwTerrainData.ChunkNumVerticesXZ)}");
-            UnityEngine.Debug.Log($"chunkQuad = {MapSize / ChunkSize}");
-            
+            int numChunk = cmul(kwTerrainData.TerrainNumQuadsXZ / kwTerrainData.ChunkSize);
+            int totalChunkVertices = cmul(kwTerrainData.ChunkNumVerticesXZ);
+            int numSharedVertices = cmul(kwTerrainData.ChunkNumVerticesXZ) * numChunk;
+
             //Vertices
             using NativeArray<float3> verticesTemp = AllocNtvAry<float3>(totalChunkVertices);
             JVerticesPosition2 vJob = new (kwTerrainData.ChunkNumVerticesXZ.x, verticesTemp);
@@ -188,18 +187,19 @@ namespace KWUtils.KwTerrain
             JobHandle uJobHandle = uJob.ScheduleParallel(numVertices, JobWorkerCount - 1, tJobHandle);
 
             //Ordered Array by Chunks
-            GridData gridData = new (kwTerrainData.TerrainNumQuadsXZ, 1, kwTerrainData.ChunkSize);
-            using NativeArray<float2> uvsOrdered = AllocNtvAry<float2>(numVertices);
-            JobHandle uvsOrderJobHandle = uvsOrdered.OrderNativeArrayByChunk(uvs, gridData, uJobHandle);
+            //GridData gridData = new (kwTerrainData.TerrainNumVerticesXZ, 1, kwTerrainData.ChunkSize);
+            using NativeArray<float2> uvsOrdered = AllocNtvAry<float2>(numSharedVertices);
+            JobHandle uvsOrderJobHandle = uvsOrdered.SharedOrderNativeArrayByChunk(uvs, kwTerrainData, uJobHandle);
             uvsOrderJobHandle.Complete();
 
-            int numChunk = cmul(kwTerrainData.TerrainNumQuadsXZ / kwTerrainData.ChunkSize);
+            
             UnityEngine.Debug.Log($"Vertices per chunk = {totalChunkVertices}");
             
             int[] tri = triangles.ToArray();
+            Mesh chunkMesh;
             for (int i = 0; i < numChunk; i++)
             {
-                Mesh chunkMesh = chunks[i].GetComponent<MeshFilter>().mesh;
+                chunkMesh = chunks[i].GetComponent<MeshFilter>().mesh;
                 
                 chunkMesh.SetVertices(verticesTemp.Reinterpret<Vector3>());
                 chunkMesh.SetTriangles(tri,0);

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using System.Runtime.CompilerServices;
+using KWUtils.KwTerrain;
 using Unity.Burst;
 using Unity.Collections;
 using Unity.Jobs;
@@ -92,6 +93,15 @@ namespace KWUtils
             return jobHandle;
         }
         
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static JobHandle OrderNativeArrayByChunk<T>(this NativeArray<T> orderedIndices, NativeArray<T> unorderedIndices, in KwTerrainData data, JobHandle dependency = default)
+            where T : struct
+        {
+            JOrderArrayByChunkIndex<T> job = new (data, unorderedIndices, orderedIndices);
+            JobHandle jobHandle = job.ScheduleParallel(orderedIndices.Length, JobWorkerCount - 1, dependency);
+            return jobHandle;
+        }
+        
         //USE FOR IL2CPP
         private static void GenericGeneration()
         {
@@ -99,7 +109,24 @@ namespace KWUtils
             using NativeArray<float2> f22 = new NativeArray<float2>();
             f21.OrderNativeArrayByChunk<float2>(f22, new GridData()).Complete();
         }
+        
+        //==============================================================================================================
+        // ORDER ARRAY WITH Shared Indices
+        //==============================================================================================================
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static JobHandle SharedOrderNativeArrayByChunk<T>(this NativeArray<T> orderedIndices, NativeArray<T> unorderedIndices, in KwTerrainData data, JobHandle dependency = default)
+        where T : struct
+        {
+            //get numchunk * chunkVertices
+            int numChunk = cmul(data.TerrainNumQuadsXZ / data.ChunkSize);
+            int numSharedVertices = cmul(data.ChunkNumVerticesXZ) * numChunk;
+
+            JSharedOrderArrayByChunkIndex<T> job = new (data, unorderedIndices, orderedIndices);
+            JobHandle jobHandle = job.ScheduleParallel(unorderedIndices.Length, JobWorkerCount - 1, dependency);
+            return jobHandle;
+        }
+        
         //==============================================================================================================
         // ORDER AND PACK ARRAYS INTO DICTIONARY
         //==============================================================================================================

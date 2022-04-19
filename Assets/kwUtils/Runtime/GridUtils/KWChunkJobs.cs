@@ -7,6 +7,7 @@
 #pragma warning disable 0414 // private field assigned but not used.
 */
 
+using KWUtils.KwTerrain;
 using UnityEngine;
 using Unity.Burst;
 using Unity.Collections;
@@ -49,6 +50,17 @@ namespace KWUtils
             JConvertGridBigToSmall<Vector2> jVector2 = new ();
             JConvertGridBigToSmall<Vector3> jVector3 = new ();
         }
+        
+        private void GenJSharedOrderArrayByChunkIndex()
+        {
+            JSharedOrderArrayByChunkIndex<bool>    jbool    = new ();
+            JSharedOrderArrayByChunkIndex<int>     jint     = new ();
+            JSharedOrderArrayByChunkIndex<float>   jfloat   = new ();
+            JSharedOrderArrayByChunkIndex<float2>  jfloat2  = new ();
+            JSharedOrderArrayByChunkIndex<float3>  jfloat3  = new ();
+            JSharedOrderArrayByChunkIndex<Vector2> jVector2 = new ();
+            JSharedOrderArrayByChunkIndex<Vector3> jVector3 = new ();
+        }
     }
 #pragma warning restore 0219
     // The Job will "slice" the array and reorder them
@@ -61,7 +73,7 @@ namespace KWUtils
     // 0️⃣1️⃣2️⃣3️⃣4️⃣5️⃣6️⃣7️⃣ 
     //After Slice
     // ✂ (chunk0): 0️⃣1️⃣4️⃣5️⃣ ✂ (chunk1): 2️⃣3️⃣6️⃣7️⃣ 
-    [BurstCompile(CompileSynchronously = true)]
+    //[BurstCompile(CompileSynchronously = true)]
     public struct JOrderArrayByChunkIndex<T> : IJobFor
     where T : struct
     {
@@ -85,43 +97,13 @@ namespace KWUtils
             SortedArray = sortedArray;
         }
         
-        public void Execute(int index)
+        public JOrderArrayByChunkIndex (in KwTerrainData data, NativeArray<T> unsortedArray, NativeArray<T> sortedArray)
         {
-            int2 cellCoord = index.GetXY2(NumCellX);
-            
-            float ratio = CellSize / (float)ChunkSize; //CAREFULL! NOT ChunkCellWidth but Cell compare to Chunk!
-            int2 chunkCoord = (int2)floor((float2)cellCoord * ratio);
-            int2 coordInChunk = cellCoord - (chunkCoord * NumCellInChunkX);
-
-            int indexCellInChunk = coordInChunk.GetIndex(NumCellInChunkX);
-            int chunkIndex = chunkCoord.GetIndex(NumChunkX);
-            int totalCellInChunk = NumCellInChunkX * NumCellInChunkX;
-            
-            SortedArray[mad(chunkIndex,totalCellInChunk,indexCellInChunk)] = UnsortedArray[index];
-        }
-    }
-    
-    //CAREFUL Burst does not support generic call (result in crash)
-    //Only enable if the static function calling it is not a generic type!
-    public struct JGenericOrderArrayByChunkIndex<T> : IJobFor
-    where T : struct
-    {
-        [ReadOnly] private readonly int CellSize;
-        [ReadOnly] private readonly int ChunkSize;
-        [ReadOnly] private readonly int NumCellInChunkX;
-        [ReadOnly] private readonly int NumCellX;
-        [ReadOnly] private readonly int NumChunkX;
-        
-        [ReadOnly, NativeDisableParallelForRestriction]  private NativeArray<T> UnsortedArray;
-        [WriteOnly, NativeDisableParallelForRestriction] private NativeArray<T> SortedArray;
-        
-        public JGenericOrderArrayByChunkIndex (in GridData gridData, NativeArray<T> unsortedArray, NativeArray<T> sortedArray)
-        {
-            CellSize = gridData.CellSize;
-            ChunkSize = gridData.ChunkSize;
-            NumCellInChunkX = gridData.NumCellInChunkX;
-            NumCellX = gridData.NumCellXY.x;
-            NumChunkX = gridData.NumChunkXY.x;
+            CellSize = 1;
+            ChunkSize = data.ChunkSize;
+            NumCellInChunkX = data.ChunkNumVerticesXZ.x;
+            NumCellX = data.TerrainNumQuadsXZ.x;
+            NumChunkX = data.TerrainNumQuadsXZ.x / data.ChunkSize;
             UnsortedArray = unsortedArray;
             SortedArray = sortedArray;
         }
@@ -138,9 +120,13 @@ namespace KWUtils
             int chunkIndex = chunkCoord.GetIndex(NumChunkX);
             int totalCellInChunk = NumCellInChunkX * NumCellInChunkX;
             
+            int indexfinal = mad(chunkIndex, totalCellInChunk, indexCellInChunk);
+            UnityEngine.Debug.Log($"chunk {chunkIndex} ; at index: {indexfinal}");
+            
             SortedArray[mad(chunkIndex,totalCellInChunk,indexCellInChunk)] = UnsortedArray[index];
         }
     }
+    
     
     [BurstCompile(CompileSynchronously = true)]
     public struct JConvertGridBigToSmall<T> : IJobFor
@@ -208,4 +194,99 @@ namespace KWUtils
         }
     }
     */
+    
+    // The Job will "slice" the array and reorder them
+    // at the end when we cut the array given the number of cell in one chunk
+    // we only get the value owned by the chunk
+    // Grid Representation
+    // chunk0: 4️⃣5️⃣ chunk1: 6️⃣7️⃣ 
+    // chunk0: 0️⃣1️⃣ chunk1: 2️⃣3️⃣
+    //Before SLice
+    // 0️⃣1️⃣2️⃣3️⃣4️⃣5️⃣6️⃣7️⃣ 
+    //After Slice
+    // ✂ (chunk0): 0️⃣1️⃣4️⃣5️⃣ ✂ (chunk1): 2️⃣3️⃣6️⃣7️⃣ 
+    [BurstCompile(CompileSynchronously = true)]
+    public struct JSharedOrderArrayByChunkIndex<T> : IJobFor
+    where T : struct
+    {
+        [ReadOnly] private readonly int CellSize;
+        [ReadOnly] private readonly int ChunkSize;
+        [ReadOnly] private readonly int NumCellInChunkX;
+        [ReadOnly] private readonly int NumCellX;
+        [ReadOnly] private readonly int NumChunkX;
+
+        [ReadOnly, NativeDisableParallelForRestriction]  private NativeArray<T> UnsortedArray;
+        [WriteOnly, NativeDisableParallelForRestriction] private NativeArray<T> SortedArray;
+        
+        public JSharedOrderArrayByChunkIndex (in GridData gridData, NativeArray<T> unsortedArray, NativeArray<T> sortedArray)
+        {
+            CellSize = gridData.CellSize;
+            ChunkSize = gridData.ChunkSize;
+            NumCellInChunkX = gridData.NumCellInChunkX;
+            NumCellX = gridData.NumCellXY.x;
+            NumChunkX = gridData.NumChunkXY.x;
+            UnsortedArray = unsortedArray;
+            SortedArray = sortedArray;
+        }
+        
+        public JSharedOrderArrayByChunkIndex (in KwTerrainData data, NativeArray<T> unsortedArray, NativeArray<T> sortedArray)
+        {
+            CellSize = 1;
+            ChunkSize = data.ChunkSize;
+            NumCellInChunkX = data.ChunkNumVerticesXZ.x;
+            NumCellX = data.TerrainNumVerticesXZ.x;
+            NumChunkX = data.TerrainNumQuadsXZ.x / data.ChunkSize;
+            UnsortedArray = unsortedArray;
+            SortedArray = sortedArray;
+        }
+        
+        public void Execute(int index)
+        {
+            int2 cellCoord = index.GetXY2(NumCellX);
+            
+            float ratio = CellSize / (float)ChunkSize; //CAREFULL! NOT ChunkCellWidth but Cell compare to Chunk!
+            int2 chunkCoord = (int2)floor((float2)cellCoord * ratio);
+            
+            //=================================================
+            //Need to offset after Gap
+            //think of shared vertices as "insertion" in the grid
+            int offsetX = select(1,0, chunkCoord.x == 0);
+            int offsetY = select(1,0, chunkCoord.y == 0);
+            chunkCoord -= int2(offsetX, offsetY);
+            //=================================================
+            
+            int2 coordInChunk = cellCoord - (chunkCoord * NumCellInChunkX);
+            
+            int indexCellInChunk = coordInChunk.GetIndex(NumCellInChunkX);
+            int chunkIndex = chunkCoord.GetIndex(NumChunkX);
+            int totalCellInChunk = NumCellInChunkX * NumCellInChunkX;
+
+            int indexFinal = mad(chunkIndex, totalCellInChunk, indexCellInChunk);
+            UnityEngine.Debug.Log($"chunk {chunkIndex} ; chunkCoord: {chunkCoord}");
+            
+            SortedArray[indexFinal] = UnsortedArray[index];
+            
+            //is on CHUNK edge BUT not Grid Edge
+            int cellIndexInNextChunk;
+            
+            if (coordInChunk.x == NumCellInChunkX - 1 && cellCoord.x != NumCellX - 1)
+            {
+                cellIndexInNextChunk = int2(coordInChunk.x,0).GetIndex(NumCellInChunkX);
+                SortedArray[mad(chunkIndex+1,totalCellInChunk,cellIndexInNextChunk)] = UnsortedArray[index];
+            }
+            
+            if (coordInChunk.y == NumCellInChunkX - 1 && cellCoord.y != NumCellX - 1)
+            {
+                cellIndexInNextChunk = int2(0,coordInChunk.y).GetIndex(NumCellInChunkX);
+                SortedArray[mad(chunkIndex+NumChunkX,totalCellInChunk,cellIndexInNextChunk)] = UnsortedArray[index];
+            }
+
+            if (all(coordInChunk == int2(NumCellInChunkX - 1)) && !all(cellCoord == int2(NumCellX - 1)))
+            {
+                cellIndexInNextChunk = 0;
+                SortedArray[mad(chunkIndex+NumChunkX+1,totalCellInChunk,cellIndexInNextChunk)] = UnsortedArray[index];
+            }
+            
+        }
+    }
 }
