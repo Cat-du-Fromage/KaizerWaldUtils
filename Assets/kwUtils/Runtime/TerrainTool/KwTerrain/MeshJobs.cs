@@ -128,21 +128,21 @@ namespace KWUtils.KwTerrain
     [BurstCompile(CompileSynchronously = true)]
     public struct JUvs2 : IJobFor
     {
-        [ReadOnly] private int NumVerticesX;
+        [ReadOnly] private int2 NumVerticesXZ;
         [NativeDisableParallelForRestriction, WriteOnly]
         private NativeArray<float2> Uvs;
 
-        public JUvs2(int numVerticesX, NativeArray<float2> uvs)
+        public JUvs2(in int2 numVerticesX, NativeArray<float2> uvs)
         {
-            NumVerticesX = numVerticesX;
+            NumVerticesXZ = numVerticesX;
             Uvs = uvs;
         }
         
         public void Execute(int index)
         {
-            float z = floor((float)index / NumVerticesX);
-            float x = index - (z * NumVerticesX);
-            Uvs[index] = float2(x / NumVerticesX, z / NumVerticesX);
+            float z = floor((float)index / NumVerticesXZ.x);
+            float x = index - (z * NumVerticesXZ.y);
+            Uvs[index] = float2(x / NumVerticesXZ.x, z / NumVerticesXZ.y);
         }
     }
     

@@ -29,11 +29,13 @@ namespace KWUtils.ProceduralMeshes
 
         private void Awake() 
         {
+            
             mesh = new Mesh 
             {
                 name = "Procedural Mesh"
             };
             GetComponent<MeshFilter>().mesh = mesh;
+            
         }
         
         private void OnValidate()

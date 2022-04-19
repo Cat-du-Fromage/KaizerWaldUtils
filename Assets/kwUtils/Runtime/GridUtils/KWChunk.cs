@@ -119,8 +119,8 @@ namespace KWUtils
         where T : struct
         {
             //get numchunk * chunkVertices
-            int numChunk = cmul(data.TerrainNumQuadsXZ / data.ChunkSize);
-            int numSharedVertices = cmul(data.ChunkNumVerticesXZ) * numChunk;
+            int numChunk = cmul(data.TerrainSizeXZ / data.ChunkSize);
+            int numSharedVertices = cmul(data.ChunkVerticesXZ) * numChunk;
 
             JSharedOrderArrayByChunkIndex<T> job = new (data, unorderedIndices, orderedIndices);
             JobHandle jobHandle = job.ScheduleParallel(unorderedIndices.Length, JobWorkerCount - 1, dependency);

@@ -101,9 +101,9 @@ namespace KWUtils
         {
             CellSize = 1;
             ChunkSize = data.ChunkSize;
-            NumCellInChunkX = data.ChunkNumVerticesXZ.x;
-            NumCellX = data.TerrainNumQuadsXZ.x;
-            NumChunkX = data.TerrainNumQuadsXZ.x / data.ChunkSize;
+            NumCellInChunkX = data.ChunkVerticesXZ.x;
+            NumCellX = data.TerrainSizeXZ.x;
+            NumChunkX = data.TerrainSizeXZ.x / data.ChunkSize;
             UnsortedArray = unsortedArray;
             SortedArray = sortedArray;
         }
@@ -121,7 +121,7 @@ namespace KWUtils
             int totalCellInChunk = NumCellInChunkX * NumCellInChunkX;
             
             int indexfinal = mad(chunkIndex, totalCellInChunk, indexCellInChunk);
-            UnityEngine.Debug.Log($"chunk {chunkIndex} ; at index: {indexfinal}");
+            //UnityEngine.Debug.Log($"chunk {chunkIndex} ; at index: {indexfinal}");
             
             SortedArray[mad(chunkIndex,totalCellInChunk,indexCellInChunk)] = UnsortedArray[index];
         }
@@ -233,9 +233,9 @@ namespace KWUtils
         {
             CellSize = 1;
             ChunkSize = data.ChunkSize;
-            NumCellInChunkX = data.ChunkNumVerticesXZ.x;
-            NumCellX = data.TerrainNumVerticesXZ.x;
-            NumChunkX = data.TerrainNumQuadsXZ.x / data.ChunkSize;
+            NumCellInChunkX = data.ChunkVerticesXZ.x;
+            NumCellX = data.TerrainVerticesXZ.x;
+            NumChunkX = data.TerrainSizeXZ.x / data.ChunkSize;
             UnsortedArray = unsortedArray;
             SortedArray = sortedArray;
         }
@@ -262,7 +262,7 @@ namespace KWUtils
             int totalCellInChunk = NumCellInChunkX * NumCellInChunkX;
 
             int indexFinal = mad(chunkIndex, totalCellInChunk, indexCellInChunk);
-            UnityEngine.Debug.Log($"chunk {chunkIndex} ; chunkCoord: {chunkCoord}");
+            //UnityEngine.Debug.Log($"chunk {chunkIndex} ; chunkCoord: {chunkCoord}");
             
             SortedArray[indexFinal] = UnsortedArray[index];
             

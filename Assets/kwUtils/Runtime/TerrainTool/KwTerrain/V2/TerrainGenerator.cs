@@ -6,6 +6,7 @@ using Unity.Collections;
 using Unity.Jobs;
 using Unity.Mathematics;
 using UnityEngine;
+using UnityEngine.Rendering;
 
 using static UnityEngine.Mesh;
 using static Unity.Mathematics.math;
@@ -16,44 +17,10 @@ using int2 = Unity.Mathematics.int2;
 
 namespace KWUtils.KwTerrain
 {
-    public readonly struct KwTerrainData
-    {
-        public readonly int ChunkSize;
-        public readonly int2 TerrainNumQuadsXZ;
-        public readonly int2 ChunkNumQuadsXZ;
-        
-        public readonly int2 TerrainNumVerticesXZ; //: (TerrainNumQuadsXZ + int2(1,1))
-        public readonly int2 ChunkNumVerticesXZ; //: (ChunkNumQuadsXZ + int2(1,1))
-
-        public KwTerrainData(in int2 numQuadsXZ, int chunkSIze)
-        {
-            ChunkSize = ceilpow2(chunkSIze);
-            TerrainNumQuadsXZ = ceilpow2(numQuadsXZ);
-            
-            while (ChunkSize > cmin(TerrainNumQuadsXZ))
-            {
-                if (ChunkSize == 1) break;
-                ChunkSize >>= 1;
-            }
-            
-            ChunkNumQuadsXZ = TerrainNumQuadsXZ / ChunkSize;
-            TerrainNumVerticesXZ = TerrainNumQuadsXZ + int2(1);
-            ChunkNumVerticesXZ = ChunkNumQuadsXZ + int2(1);
-        }
-    }
-    
     [RequireComponent(typeof(MeshFilter), typeof(MeshRenderer))]
     public class TerrainGenerator : MonoBehaviour
     {
         [SerializeField] private Material defaultChunkMaterial;
-        
-        //Data
-        
-        //private int2 TerrainNumQuadsXZ
-        //private int2 ChunkNumQuadsXZ
-        
-        //private int2 TerrainNumVerticesXZ //: (TerrainNumQuadsXZ + int2(1,1))
-        //private int2 ChunkNumVerticesXZ //: (ChunkNumQuadsXZ + int2(1,1))
         
         //CAREFULL Size NOT EQUAL Vertices : => need + 1
         [SerializeField] private int2 MapSize = int2(1);
@@ -74,10 +41,10 @@ namespace KWUtils.KwTerrain
         {
             kwTerrainData = new KwTerrainData(MapSize, ChunkSize);
             CheckValues();
-            CreateChunks();
+            //CreateChunks();
             
             GenerateBigMap();
-            GenerateChunks();
+            //GenerateChunks();
         }
 
         private void CreateChunks()
@@ -96,7 +63,7 @@ namespace KWUtils.KwTerrain
                     name = $"ChunkMesh_{i}",
                     bounds = new Bounds(new Vector3(center.x,0,center.y), new Vector3(ChunkSize,0,ChunkSize)),
                 };
-                chunks[i].transform.localPosition = new Vector3(PositionInWorld.x*(ChunkSize), 0, PositionInWorld.y*(ChunkSize));
+                chunks[i].transform.position = new Vector3(PositionInWorld.x*(ChunkSize), 0, PositionInWorld.y*(ChunkSize));
                 chunks[i].GetComponent<MeshFilter>().mesh = chunkMesh;
                 chunks[i].GetComponent<Renderer>().material = defaultChunkMaterial;
             }
@@ -114,76 +81,29 @@ namespace KWUtils.KwTerrain
                 ChunkSize >>= 1;
             }
         }
-/*
-        public void GetAndAssignMeshDatas()
-        {
-            int numVertices = cmul((MapSize/ChunkSize) * (ChunkSize));
-            UnityEngine.Debug.Log(numVertices);
-            
-            //Vertices
-            using NativeArray<float3> verticesTemp = AllocNtvAry<float3>(numVertices);
-            JVerticesPosition vJob = new JVerticesPosition(MapSize.x, verticesTemp);
-            JobHandle vJobHandle = vJob.ScheduleParallel(numVertices, JobWorkerCount - 1, default);
 
-            using NativeArray<int> triangles = AllocNtvAry<int>(Sq(ChunkSize-1) * 6);
-            JTriangles tJob = new JTriangles(ChunkSize, triangles);
-            JobHandle tJobHandle = tJob.ScheduleParallel(Sq(ChunkSize), JobWorkerCount - 1, vJobHandle);
-            
-            using NativeArray<float2> uvs = AllocNtvAry<float2>(numVertices);
-            JUvs uJob = new JUvs(MapSize.x, uvs);
-            JobHandle uJobHandle = uJob.ScheduleParallel(numVertices, JobWorkerCount - 1, tJobHandle);
-            //uJobHandle.Complete();
-
-            //Ordered Array by Chunks
-            GridData gridData = new GridData(MapSize, 1, ChunkSize);
-            using NativeArray<float3> verticesOrderedTemp = AllocNtvAry<float3>(numVertices);
-            JobHandle verticesOrderJobHandle = verticesOrderedTemp.OrderNativeArrayByChunk(verticesTemp, gridData, uJobHandle);
-            
-            using NativeArray<float2> uvsOrdered = AllocNtvAry<float2>(numVertices);
-            JobHandle uvsOrderJobHandle = uvsOrdered.OrderNativeArrayByChunk<float2>(uvs, gridData, verticesOrderJobHandle);
-            uvsOrderJobHandle.Complete();
-
-            int numChunk = cmul(MapSize / ChunkSize);
-            int numVerticesChunk = Sq(ChunkSize);
-            UnityEngine.Debug.Log($"Vertices per chunk = {numVerticesChunk}");
-            
-            int[] tri = triangles.ToArray();
-            for (int i = 0; i < numChunk; i++)
-            {
-                Mesh chunkMesh = chunks[i].GetComponent<MeshFilter>().mesh;
-                
-                chunkMesh.SetVertices(verticesOrderedTemp.GetSubArray(0, numVerticesChunk).Reinterpret<Vector3>());
-                chunkMesh.SetTriangles(tri,0);
-                chunkMesh.SetUVs(0,uvsOrdered.GetSubArray(i * numVerticesChunk, numVerticesChunk).Reinterpret<Vector2>());
-                
-                chunkMesh.RecalculateNormals();
-                chunkMesh.RecalculateTangents();
-            }
-            
-        }
-*/
         public void GenerateChunks()
         {
-            int numVertices = cmul(kwTerrainData.TerrainNumVerticesXZ);
-            int totalChunkQuads = cmul(kwTerrainData.ChunkNumQuadsXZ);
+            int numVertices = cmul(kwTerrainData.TerrainVerticesXZ);
+            //int totalChunkQuads = cmul(kwTerrainData.NumChunkXZ);
             
-            int numChunk = cmul(kwTerrainData.TerrainNumQuadsXZ / kwTerrainData.ChunkSize);
-            int totalChunkVertices = cmul(kwTerrainData.ChunkNumVerticesXZ);
-            int numSharedVertices = cmul(kwTerrainData.ChunkNumVerticesXZ) * numChunk;
+            int numChunk = cmul(kwTerrainData.NumChunkXZ);
+            int totalChunkVertices = cmul(kwTerrainData.ChunkVerticesXZ);
+            int numSharedVertices = cmul(kwTerrainData.ChunkVerticesXZ) * numChunk;
 
             //Vertices
             using NativeArray<float3> verticesTemp = AllocNtvAry<float3>(totalChunkVertices);
-            JVerticesPosition2 vJob = new (kwTerrainData.ChunkNumVerticesXZ.x, verticesTemp);
+            JVerticesPosition2 vJob = new (kwTerrainData.ChunkVerticesXZ.x, verticesTemp);
             JobHandle vJobHandle = vJob.ScheduleParallel(totalChunkVertices, JobWorkerCount - 1, default);
 
             //Triangles : Use Quads!
-            using NativeArray<int> triangles = AllocNtvAry<int>(totalChunkQuads * 6);
-            JTriangles2 tJob = new (kwTerrainData.ChunkNumQuadsXZ.x, kwTerrainData.ChunkNumVerticesXZ.x, triangles);
-            JobHandle tJobHandle = tJob.ScheduleParallel(totalChunkQuads, JobWorkerCount - 1, vJobHandle);
+            using NativeArray<int> triangles = AllocNtvAry<int>(numChunk * 6);
+            JTriangles2 tJob = new (kwTerrainData.NumChunkXZ.x, kwTerrainData.ChunkVerticesXZ.x, triangles);
+            JobHandle tJobHandle = tJob.ScheduleParallel(numChunk, JobWorkerCount - 1, vJobHandle);
             
             //Uvs
             using NativeArray<float2> uvs = AllocNtvAry<float2>(numVertices);
-            JUvs2 uJob = new (kwTerrainData.TerrainNumVerticesXZ.x, uvs);
+            JUvs2 uJob = new (kwTerrainData.TerrainVerticesXZ, uvs);
             JobHandle uJobHandle = uJob.ScheduleParallel(numVertices, JobWorkerCount - 1, tJobHandle);
 
             //Ordered Array by Chunks
@@ -214,39 +134,41 @@ namespace KWUtils.KwTerrain
         {
             mesh = new Mesh 
             {
+                indexFormat = IndexFormat.UInt16,
                 name = "Procedural Mesh",
                 bounds = new Bounds(Vector3.zero, new Vector3(MapSize.x,0,MapSize.y)),
             };
             GetComponent<MeshFilter>().mesh = mesh;
-            
-            int numVertices = cmul(kwTerrainData.TerrainNumVerticesXZ);
-            
-            //UnityEngine.Debug.Log($"numVertices = {numVertices}");
-            //UnityEngine.Debug.Log($"total quads = {cmul(kwTerrainData.TerrainNumQuadsXZ)}");
-            //UnityEngine.Debug.Log($"num quads = {kwTerrainData.TerrainNumQuadsXZ}; num Vertices = {kwTerrainData.TerrainNumVerticesXZ}");
+            GetComponent<Renderer>().material = defaultChunkMaterial;
+            int numVertices = cmul(kwTerrainData.TerrainVerticesXZ);
             
             //Vertices
             using NativeArray<float3> verticesTemp = AllocNtvAry<float3>(numVertices);
-            JVerticesPosition2 vJob = new (kwTerrainData.TerrainNumVerticesXZ.x, verticesTemp);
+            JVerticesPosition2 vJob = new (kwTerrainData.TerrainVerticesXZ.x, verticesTemp);
             JobHandle vJobHandle = vJob.ScheduleParallel(numVertices, JobWorkerCount - 1, default);
             
             //Triangles
-            using NativeArray<int> triangles = AllocNtvAry<int>(cmul(kwTerrainData.TerrainNumQuadsXZ) * 6);
-            JTriangles2 tJob = new (kwTerrainData.TerrainNumQuadsXZ.x,kwTerrainData.TerrainNumVerticesXZ.x, triangles);
-            JobHandle tJobHandle = tJob.ScheduleParallel(cmul(kwTerrainData.TerrainNumQuadsXZ), JobWorkerCount - 1, vJobHandle);
+            using NativeArray<int> triangles = AllocNtvAry<int>(cmul(kwTerrainData.TerrainSizeXZ) * 6);
+            JTriangles2 tJob = new (kwTerrainData.TerrainSizeXZ.x,kwTerrainData.TerrainVerticesXZ.x, triangles);
+            JobHandle tJobHandle = tJob.ScheduleParallel(cmul(kwTerrainData.TerrainSizeXZ), JobWorkerCount - 1, vJobHandle);
 
             //Uvs
             using NativeArray<float2> uvs = AllocNtvAry<float2>(numVertices);
-            JUvs2 uJob = new (kwTerrainData.TerrainNumVerticesXZ.x, uvs);
+            JUvs2 uJob = new (kwTerrainData.TerrainVerticesXZ, uvs);
             JobHandle uJobHandle = uJob.ScheduleParallel(numVertices, JobWorkerCount - 1, tJobHandle);
             uJobHandle.Complete();
 
-            mesh.vertices = verticesTemp.Reinterpret<Vector3>().ToArray();
-            mesh.triangles = triangles.ToArray();
-            mesh.uv = uvs.Reinterpret<Vector2>().ToArray();
+            mesh.SetVertices(verticesTemp.Reinterpret<Vector3>());
+            //mesh.vertices = verticesTemp.Reinterpret<Vector3>().ToArray();
+            //mesh.triangles = triangles.ToArray();
+            mesh.SetTriangles(triangles.ToArray(), 0);
+            //mesh.uv = uvs.Reinterpret<Vector2>().ToArray();
+            mesh.SetUVs(0,uvs.Reinterpret<Vector2>());
             
             mesh.RecalculateNormals();
             mesh.RecalculateTangents();
+            
+            
         }
     }
 }

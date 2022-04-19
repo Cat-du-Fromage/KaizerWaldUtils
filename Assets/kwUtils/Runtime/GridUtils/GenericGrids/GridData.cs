@@ -22,9 +22,9 @@ namespace KWUtils
             ChunkSize = cellSize > chunkSize ? cellSize : chunkSize;
             MapSize = mapSize;
             
-            NumCellInChunkX = ChunkSize >> floorlog2(CellSize);
-            NumChunkXY = MapSize >> floorlog2(ChunkSize);
-            NumCellXY = MapSize >> floorlog2(CellSize);
+            NumCellInChunkX = max(1,ChunkSize >> floorlog2(CellSize));
+            NumChunkXY = max(1,MapSize >> floorlog2(ChunkSize));
+            NumCellXY = max(1,MapSize >> floorlog2(CellSize));
         }
         public readonly int TotalCells => NumCellXY.x * NumCellXY.y;
         public readonly int TotalChunk => NumChunkXY.x * NumChunkXY.y;
