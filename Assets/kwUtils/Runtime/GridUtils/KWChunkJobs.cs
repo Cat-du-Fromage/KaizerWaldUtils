@@ -100,10 +100,10 @@ namespace KWUtils
         public JOrderArrayByChunkIndex (in KwTerrainData data, NativeArray<T> unsortedArray, NativeArray<T> sortedArray)
         {
             CellSize = 1;
-            ChunkSize = data.ChunkSize;
+            ChunkSize = data.ChunkSize.x;
             NumCellInChunkX = data.ChunkVerticesXZ.x;
             NumCellX = data.TerrainSizeXZ.x;
-            NumChunkX = data.TerrainSizeXZ.x / data.ChunkSize;
+            NumChunkX = data.TerrainSizeXZ.x / data.ChunkSize.x;
             UnsortedArray = unsortedArray;
             SortedArray = sortedArray;
         }
@@ -232,10 +232,10 @@ namespace KWUtils
         public JSharedOrderArrayByChunkIndex (in KwTerrainData data, NativeArray<T> unsortedArray, NativeArray<T> sortedArray)
         {
             CellSize = 1;
-            ChunkSize = data.ChunkSize;
+            ChunkSize = data.ChunkSize.x;
             NumCellInChunkX = data.ChunkVerticesXZ.x;
             NumCellX = data.TerrainVerticesXZ.x;
-            NumChunkX = data.TerrainSizeXZ.x / data.ChunkSize;
+            NumChunkX = data.TerrainSizeXZ.x / data.ChunkSize.x;
             UnsortedArray = unsortedArray;
             SortedArray = sortedArray;
         }

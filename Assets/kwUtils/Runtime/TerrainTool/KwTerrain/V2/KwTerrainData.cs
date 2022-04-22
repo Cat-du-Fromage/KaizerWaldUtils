@@ -5,29 +5,47 @@ namespace KWUtils.KwTerrain
 {
     public readonly struct KwTerrainData
     {
-        public readonly int ChunkSize;
+        public readonly int2 ChunkSize;
         public readonly int2 TerrainSizeXZ;
         public readonly int2 NumChunkXZ;
         
         public readonly int2 TerrainVerticesXZ; //: (TerrainNumQuadsXZ + int2(1,1))
         public readonly int2 ChunkVerticesXZ; //: (ChunkNumQuadsXZ + int2(1,1))
 
-        public KwTerrainData(in int2 terrainSizeXZ, int chunkSIze)
+        public KwTerrainData(in int2 terrainSizeXZ, int2 chunkSIze)
         {
             ChunkSize = ceilpow2(chunkSIze);
             TerrainSizeXZ = ceilpow2(terrainSizeXZ);
             
-            while (ChunkSize > cmin(TerrainSizeXZ))
+            //Check by X
+            if (ChunkSize.x > TerrainSizeXZ.x || ChunkSize.y > TerrainSizeXZ.y)
             {
-                if (ChunkSize == 1) break;
-                ChunkSize >>= 1;
+                while (ChunkSize.x > TerrainSizeXZ.x)
+                {
+                    if (ChunkSize.x == 1) break;
+                    ChunkSize.x >>= 1;
+                }
+                while (ChunkSize.y > TerrainSizeXZ.y)
+                {
+                    if (ChunkSize.y == 1) break;
+                    ChunkSize.y >>= 1;
+                }
             }
             
-            NumChunkXZ = max(1,TerrainSizeXZ >> floorlog2(ChunkSize));;
+/*
+            while (ChunkSize > cmin(TerrainSizeXZ))
+            {
+                if (ChunkSize.x == 1) break;
+                ChunkSize >>= 1;
+            }
+            */
+
+            //NumChunkXZ.x = max(1,TerrainSizeXZ.x >> floorlog2(ChunkSize.x));
+            //NumChunkXZ.y = max(1,TerrainSizeXZ.y >> floorlog2(ChunkSize.y));
+
+            NumChunkXZ = TerrainSizeXZ / ChunkSize;
             TerrainVerticesXZ = TerrainSizeXZ + int2(1);
             ChunkVerticesXZ = NumChunkXZ + int2(1);
         }
-        
-        //if(any(TerrainSizeXZ > ))
     }
 }
