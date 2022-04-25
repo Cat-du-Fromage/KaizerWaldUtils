@@ -1,12 +1,15 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-
+/*
 namespace KWUtils
 {
+    
     public static class KWRect
     {
         //public static readonly Vector2[] defaultCorners = new Vector2[4] {Vector2.down, Vector2.one, Vector2.up ,Vector2.right};
+        private static readonly Color DefaultBackGround = new Color(0.5f, 1f, 0.4f, 0.2f);
+        private static readonly Color DefaultBorder = new Color(0.5f, 1f, 0.4f);
         
         private static readonly Color defaultUiColor = new Color(0.8f,0.8f,0.95f,0.25f);
         private static readonly Color defaultUiBorderColor = new Color(0.8f, 0.8f, 0.95f);
@@ -27,15 +30,16 @@ namespace KWUtils
             DrawScreenRectBorder(rect, thickness, border ?? defaultUiBorderColor);
         }
     
-        public static void DrawScreenRect(Rect rect, Color color)
+        public static void DrawScreenRect(Rect rect, Color color = default)
         {
-            GUI.color = color;
+            GUI.color = color == default ? DefaultBackGround : color;
             GUI.DrawTexture(rect, WhiteTexture);
             GUI.color = Color.white;
         }
     
-        public static void DrawScreenRectBorder(Rect rect, float thickness, Color color)
+        public static void DrawScreenRectBorder(Rect rect, float thickness, Color color = default)
         {
+            color = color == default ? DefaultBorder : color;
             // Top
             DrawScreenRect(new Rect(rect.xMin, rect.yMin, rect.width, thickness), color);
             // Left
@@ -60,3 +64,4 @@ namespace KWUtils
         }
     }
 }
+*/

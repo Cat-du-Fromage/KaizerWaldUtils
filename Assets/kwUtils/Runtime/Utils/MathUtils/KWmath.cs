@@ -11,19 +11,24 @@ namespace KWUtils
 {
     public static class KWmath
     {
-        public static bool IsLeft(this Vector2 centerPoint, Vector2 otherPoint) => centerPoint.x < otherPoint.x;
         public static bool IsLeft(this float2 centerPoint, float2 otherPoint) => centerPoint.x < otherPoint.x;
-        
-        public static bool IsAbove(this Vector2 centerPoint, Vector2 otherPoint) => centerPoint.y > otherPoint.y;
         public static bool IsAbove(this float2 centerPoint, float2 otherPoint) => centerPoint.y > otherPoint.y;
 
-        
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static float ClampAngle(float lfAngle, float lfMin, float lfMax)
         {
             if (lfAngle < -180f) lfAngle += 360f;
             if (lfAngle > 180) lfAngle -= 360f;
             return Mathf.Clamp(lfAngle, lfMin, lfMax);
+        }
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static float ClampAngles(this float angle, float from, float to)
+        {
+            // accepts e.g. -80, 80
+            if (angle < 0f) angle = 360 + angle;
+            if (angle > 180f) return Mathf.Max(angle, 360+from);
+            return Mathf.Min(angle, to);
         }
         
         //==============================================================================================================
