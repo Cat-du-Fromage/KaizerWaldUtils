@@ -5,6 +5,7 @@ using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
+using static KWUtils.KWGrid;
 using static KWUtils.InputSystemExtension;
 
 namespace KWUtils.KWGenericGrid
@@ -28,7 +29,7 @@ namespace KWUtils.KWGenericGrid
             RaycastHit[] hits = arrayPool.Rent(1);
             if (Physics.RaycastNonAlloc(ray.origin, ray.direction, hits,math.INFINITY, 1<<8) != 0)
             {
-                int currentGridIndex = hits[0].point.GetIndexFromPosition(GridSystem.MapBounds, 2);
+                int currentGridIndex = GetIndexFromPosition(hits[0].point,GridSystem.MapBounds, 2);
                 if(Grid.GetValue(currentGridIndex) == true) return;
                 Grid.SetValue(currentGridIndex, true);
             }

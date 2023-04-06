@@ -8,6 +8,7 @@ using UnityEngine;
 
 using static Unity.Mathematics.math;
 using static KWUtils.KWmath;
+using static KWUtils.KWGrid;
 
 namespace KWUtils
 {
@@ -66,7 +67,7 @@ namespace KWUtils
         //==========
         public Vector3 GetChunkCenter(int chunkIndex)
         {
-            float2 chunkCoord = ((chunkIndex.GetXY2(NumChunkXY.x) * ChunkSize) + new float2(ChunkSize/2f));
+            float2 chunkCoord = (GetXY2(chunkIndex,NumChunkXY.x) * ChunkSize + new float2(ChunkSize/2f));
             return new Vector3(chunkCoord.x, 0, chunkCoord.y);
         }
         public Vector3 GetChunkCellCenter(int chunkIndex, int cellIndexInChunk)
@@ -92,17 +93,17 @@ namespace KWUtils
         //==================================
         public int ChunkIndexFromGridIndex(int gridIndex)
         {
-            int2 cellCoord = gridIndex.GetXY2(MapXY.x);
+            int2 cellCoord = GetXY2(gridIndex,MapXY.x);
             int2 chunkCoord = (int2)floor(cellCoord / ChunkSize);
-            return chunkCoord.GetIndex(NumChunkXY.x);
+            return GetIndex(chunkCoord, NumChunkXY.x);
         }
         
         public int CellChunkIndexFromGridIndex(int gridIndex)
         {
-            int2 cellCoord = gridIndex.GetXY2(MapXY.x);
+            int2 cellCoord = GetXY2(gridIndex,MapXY.x);
             int2 chunkCoord = (int2)floor(cellCoord / ChunkSize);
             int2 cellCoordInChunk = cellCoord - (chunkCoord * ChunkSize);
-            return cellCoordInChunk.GetIndex(ChunkSize);
+            return GetIndex(cellCoordInChunk,ChunkSize);
         }
         //==============================================================================================================
         
@@ -123,13 +124,13 @@ namespace KWUtils
         /// Chunk : Update made after the Array was modified
         private void UpdateChunk(int gridIndex, T value)
         {
-            int2 cellCoord = gridIndex.GetXY2(MapXY.x);
+            int2 cellCoord = GetXY2(gridIndex,MapXY.x);
             //Chunk Index
             int2 chunkCoord = (int2)floor(cellCoord / ChunkSize);
-            int chunkIndex = chunkCoord.GetIndex(NumChunkXY.x);
+            int chunkIndex = GetIndex(chunkCoord,NumChunkXY.x);
             //CellIndex
             int2 cellCoordInChunk = cellCoord - (chunkCoord * ChunkSize);
-            int cellIndexInChunk = cellCoordInChunk.GetIndex(ChunkSize);
+            int cellIndexInChunk = GetIndex(cellCoordInChunk,ChunkSize);
             
             ChunkDictionary[chunkIndex][cellIndexInChunk] = value;
         }

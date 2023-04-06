@@ -9,6 +9,7 @@ using Unity.Mathematics;
 using UnityEditor;
 using UnityEngine;
 
+using static KWUtils.KWGrid;
 using static Unity.Jobs.LowLevel.Unsafe.JobsUtility;
 using static KWUtils.NativeCollectionExt;
 
@@ -48,7 +49,7 @@ namespace KWUtils.KWGenericGrid
         /// <param name="terrainBounds">terrain Bounds</param>
         public void InitializeGrid(int2 terrainBounds)
         {
-            goalCellIndex = Goal == null ? 0 : Goal.position.XZ().GetIndexFromPosition(terrainBounds, 2);
+            goalCellIndex = Goal == null ? 0 : GetIndexFromPosition(Goal.position.XZ(),terrainBounds, 2);
             Grid = new GenericChunkedGrid<Vector3>(terrainBounds, ChunkSize, CellSize);
         }
 

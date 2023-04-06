@@ -6,6 +6,8 @@ using KWUtils.KWGenericGrid;
 using Unity.Mathematics;
 using UnityEngine;
 
+using static KWUtils.KWGrid;
+
 public enum GridType
 {
     Obstacles,
@@ -62,7 +64,7 @@ public class GridManager : MonoBehaviour, IGridSystem<GridType>
     private void InitGoal()
     {
         goalPosition = Goal.position;
-        goalIndex = goalPosition.XZ().GetIndexFromPosition(MapBounds, 2);
+        goalIndex = GetIndexFromPosition(goalPosition.XZ(), MapBounds, 2);
     }
     
     public void SubscribeToGrid(GridType gridType, Action action)

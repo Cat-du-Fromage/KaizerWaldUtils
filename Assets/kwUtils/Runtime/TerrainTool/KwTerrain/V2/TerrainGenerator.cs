@@ -11,6 +11,7 @@ using UnityEngine.Rendering;
 using static UnityEngine.Mesh;
 using static Unity.Mathematics.math;
 using static KWUtils.KWmath;
+using static KWUtils.KWGrid;
 using static KWUtils.NativeCollectionExt;
 using static Unity.Jobs.LowLevel.Unsafe.JobsUtility;
 using int2 = Unity.Mathematics.int2;
@@ -54,7 +55,7 @@ namespace KWUtils.KwTerrain
             
             for (int i = 0; i < numChunk; i++)
             {
-                int2 PositionInWorld = i.GetXY2((MapSize / ChunkSize).x);
+                int2 PositionInWorld = GetXY2(i,(MapSize / ChunkSize).x);
                 chunks.TryAdd(i, new GameObject($"Chunk_{i}", typeof(TerrainChunkComponent)));
 
                 float2 center = (PositionInWorld * ChunkSize) + (ChunkSize / 2);

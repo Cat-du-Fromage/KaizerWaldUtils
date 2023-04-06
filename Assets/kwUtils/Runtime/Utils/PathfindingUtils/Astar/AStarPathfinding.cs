@@ -9,6 +9,7 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 
 using static KWUtils.KWmath;
+using static KWUtils.KWGrid;
 using static Unity.Mathematics.math;
 using static KWUtils.InputSystemExtension;
 
@@ -48,7 +49,8 @@ namespace KWUtils.KWGenericGrid
         public void InitializeGrid(int2 terrainBounds)
         {
             int numCellX = terrainBounds.x / CellSize;
-            Grid = new GenericGrid<Node>(terrainBounds, CellSize, (index) => new Node(index.GetXY2(numCellX)));
+            Grid = new GenericGrid<Node>(terrainBounds, CellSize, (index) 
+                => new Node(GetXY2(index,numCellX)));
         }
         //==============================================================================================================
         
@@ -208,7 +210,7 @@ namespace KWUtils.KWGenericGrid
             
             private void GetNeighborCells(int index, NativeList<int> curNeighbors, NativeHashSet<int> closeSet)
             {
-                int2 coord = index.GetXY2(NumCellX);
+                int2 coord = GetXY2(index,NumCellX);
                 for (int i = 0; i < 8; i++)
                 {
                     int neighborId = index.AdjCellFromIndex((1 << i), coord, NumCellX);

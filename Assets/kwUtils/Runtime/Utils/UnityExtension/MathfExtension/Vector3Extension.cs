@@ -102,6 +102,7 @@ namespace KWUtils
             return new Vector2(source.x, source.z);
         }
         
+        
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static float2 XY(this Vector3 source)
         {
@@ -113,5 +114,6 @@ namespace KWUtils
         {
             return new float2(source.x, source.z);
         }
+        
     }
 }

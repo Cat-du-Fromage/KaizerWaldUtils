@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using Unity.Mathematics;
 using UnityEngine;
+using static KWUtils.KWGrid;
 
 namespace KWUtils.KWGenericGrid
 {
@@ -35,7 +36,7 @@ namespace KWUtils.KWGenericGrid
             this.AsInterface<IGridSystem<GridType>>().InitializeTerrain();
         
             if (Goal == null) return;
-            goalIndex = Goal.position.XZ().GetIndexFromPosition(MapBounds, CellSize);
+            goalIndex = GetIndexFromPosition(Goal.position.XZ(),MapBounds, CellSize);
             
             //Implement GridType?
             ObstaclesGrid = GetComponent<ObstaclesGrid>();

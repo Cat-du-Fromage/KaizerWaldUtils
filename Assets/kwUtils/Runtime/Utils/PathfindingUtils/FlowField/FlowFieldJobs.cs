@@ -8,6 +8,7 @@ using Unity.Jobs;
 using Unity.Mathematics;
 using UnityEngine;
 
+using static KWUtils.KWGrid;
 using static Unity.Mathematics.math;
 using float2 = Unity.Mathematics.float2;
 using float3 = Unity.Mathematics.float3;
@@ -95,7 +96,7 @@ namespace KWUtils.KWGenericGrid
 
         private readonly void GetNeighborCells(int index, NativeList<int> curNeighbors)
         {
-            int2 coord = index.GetXY2(NumCellX);
+            int2 coord = GetXY2(index,NumCellX);
             for (int i = 0; i < 4; i++)
             {
                 int neighborId = index.AdjCellFromIndex((1 << i), coord, NumCellX);
@@ -134,7 +135,7 @@ namespace KWUtils.KWGenericGrid
                 return;
             }
 
-            int2 currentCellCoord = index.GetXY2(NumCellX);
+            int2 currentCellCoord = GetXY2(index,NumCellX);
             NativeList<int> neighbors = GetNeighborCells(index, currentCellCoord);
             for (int i = 0; i < neighbors.Length; i++)
             {
@@ -142,7 +143,7 @@ namespace KWUtils.KWGenericGrid
                 if (BestCostField[currentNeighbor] < currentBestCost)
                 {
                     currentBestCost = BestCostField[currentNeighbor];
-                    int2 neighborCoord = currentNeighbor.GetXY2(NumCellX);
+                    int2 neighborCoord = GetXY2(currentNeighbor,NumCellX);
                     int2 bestDirection = neighborCoord - currentCellCoord;
                     CellBestDirection[index] = new float3(bestDirection.x, 0, bestDirection.y);
                 }

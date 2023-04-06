@@ -8,6 +8,8 @@ using Unity.Mathematics;
 using UnityEditor;
 using UnityEngine;
 
+using static KWUtils.KWGrid;
+
 public class DirectionManager : MonoBehaviour, IGridHandler<GridType,Vector3, GenericChunkedGrid<Vector3>>
 {
     public bool DebugEnable;
@@ -26,7 +28,7 @@ public class DirectionManager : MonoBehaviour, IGridHandler<GridType,Vector3, Ge
 
     private void Start()
     {
-        goalIndex = Goal.position.XZ().GetIndexFromPosition(GridSystem.MapBounds, 2);
+        goalIndex = GetIndexFromPosition(Goal.position.XZ(),GridSystem.MapBounds, 2);
         flowField = new FlowField(GridSystem.MapBounds/2, 16); //CARFEULL CELL SIZE
         flowField.GetFlowField(goalIndex, GridSystem.RequestGridArray<bool>(GridType.Obstacles));
         

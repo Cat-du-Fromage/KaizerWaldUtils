@@ -16,6 +16,7 @@ using Unity.Mathematics;
 
 using static Unity.Mathematics.math;
 using static KWUtils.KWmath;
+using static KWUtils.KWGrid;
 using int2 = Unity.Mathematics.int2;
 
 namespace KWUtils
@@ -110,14 +111,14 @@ namespace KWUtils
         
         public void Execute(int index)
         {
-            int2 cellCoord = index.GetXY2(NumCellX);
+            int2 cellCoord = GetXY2(index,NumCellX);
             
             float ratio = CellSize / (float)ChunkSize; //CAREFULL! NOT ChunkCellWidth but Cell compare to Chunk!
             int2 chunkCoord = (int2)floor((float2)cellCoord * ratio);
             int2 coordInChunk = cellCoord - (chunkCoord * NumCellInChunkX);
 
-            int indexCellInChunk = coordInChunk.GetIndex(NumCellInChunkX);
-            int chunkIndex = chunkCoord.GetIndex(NumChunkX);
+            int indexCellInChunk = GetIndex(coordInChunk, NumCellInChunkX);
+            int chunkIndex = GetIndex(chunkCoord, NumChunkX);
             int totalCellInChunk = NumCellInChunkX * NumCellInChunkX;
             
             int indexfinal = mad(chunkIndex, totalCellInChunk, indexCellInChunk);
@@ -242,7 +243,7 @@ namespace KWUtils
         
         public void Execute(int index)
         {
-            int2 cellCoord = index.GetXY2(NumCellX);
+            int2 cellCoord = GetXY2(index,NumCellX);
             
             float ratio = CellSize / (float)ChunkSize; //CAREFULL! NOT ChunkCellWidth but Cell compare to Chunk!
             int2 chunkCoord = (int2)floor((float2)cellCoord * ratio);
@@ -257,8 +258,8 @@ namespace KWUtils
             
             int2 coordInChunk = cellCoord - (chunkCoord * NumCellInChunkX);
             
-            int indexCellInChunk = coordInChunk.GetIndex(NumCellInChunkX);
-            int chunkIndex = chunkCoord.GetIndex(NumChunkX);
+            int indexCellInChunk = GetIndex(coordInChunk,NumCellInChunkX);
+            int chunkIndex = GetIndex(chunkCoord,NumChunkX);
             int totalCellInChunk = NumCellInChunkX * NumCellInChunkX;
 
             int indexFinal = mad(chunkIndex, totalCellInChunk, indexCellInChunk);
@@ -271,13 +272,13 @@ namespace KWUtils
             
             if (coordInChunk.x == NumCellInChunkX - 1 && cellCoord.x != NumCellX - 1)
             {
-                cellIndexInNextChunk = int2(coordInChunk.x,0).GetIndex(NumCellInChunkX);
+                cellIndexInNextChunk = GetIndex(int2(coordInChunk.x,0),NumCellInChunkX);
                 SortedArray[mad(chunkIndex+1,totalCellInChunk,cellIndexInNextChunk)] = UnsortedArray[index];
             }
             
             if (coordInChunk.y == NumCellInChunkX - 1 && cellCoord.y != NumCellX - 1)
             {
-                cellIndexInNextChunk = int2(0,coordInChunk.y).GetIndex(NumCellInChunkX);
+                cellIndexInNextChunk = GetIndex(int2(0,coordInChunk.y),NumCellInChunkX);
                 SortedArray[mad(chunkIndex+NumChunkX,totalCellInChunk,cellIndexInNextChunk)] = UnsortedArray[index];
             }
 

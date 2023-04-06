@@ -25,7 +25,7 @@ namespace KWUtils
         private void InitializeTerrain()
         {
             MapData = Object.FindObjectOfType<Terrain>().terrainData;
-            MapBounds = (int2)MapData.size.XZ();
+            MapBounds = (int2)(float2)MapData.size.xz();
         }
         
         private void InitializeAllGrids()

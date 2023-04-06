@@ -7,6 +7,7 @@ using UnityEngine;
 
 using static Unity.Mathematics.math;
 using static KWUtils.KWmath;
+using static KWUtils.KWGrid;
 
 namespace KWUtils
 {
@@ -66,7 +67,7 @@ namespace KWUtils
 
         public Vector3 GetCellCenter(int index)
         {
-            float2 cellCoord = index.GetXY2(NumCellXY.x) * CellSize + new float2(CellSize/2f);
+            float2 cellCoord = GetXY2(index,NumCellXY.x) * CellSize + new float2(CellSize/2f);
             return new Vector3(cellCoord.x,0,cellCoord.y);
         }
         
@@ -112,7 +113,7 @@ namespace KWUtils
         //==============================================================================================================
         public int IndexFromPosition(in Vector3 position)
         {
-            return position.XZ().GetIndexFromPosition(MapXY, CellSize);
+            return GetIndexFromPosition(position.XZ(),MapXY, CellSize);
         }
 
         //==============================================================================================================

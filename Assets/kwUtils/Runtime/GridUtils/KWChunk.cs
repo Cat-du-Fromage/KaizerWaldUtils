@@ -11,6 +11,7 @@ using Unity.Mathematics;
 
 using static Unity.Mathematics.math;
 using static KWUtils.KWmath;
+using static KWUtils.KWGrid;
 using static Unity.Jobs.LowLevel.Unsafe.JobsUtility;
 using Debug = UnityEngine.Debug;
 using int2 = Unity.Mathematics.int2;
@@ -40,8 +41,8 @@ namespace KWUtils
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int GetGridCellIndexFromChunkCellIndex(this int chunkIndex, in GridData gridData, int cellIndexInsideChunk)
         {
-            int2 chunkCoord = chunkIndex.GetXY2(gridData.NumChunkXY.x);
-            int2 cellCoordInChunk = cellIndexInsideChunk.GetXY2(gridData.NumCellInChunkX);
+            int2 chunkCoord = GetXY2(chunkIndex,gridData.NumChunkXY.x);
+            int2 cellCoordInChunk = GetXY2(cellIndexInsideChunk,gridData.NumCellInChunkX);
             int2 cellGridCoord = cellCoordInChunk.GetGridCellCoordFromChunkCellCoord(gridData.NumCellInChunkX, chunkCoord);
             return (cellGridCoord.y * (gridData.NumCellXY.x)) + cellGridCoord.x;
         }
@@ -49,9 +50,9 @@ namespace KWUtils
         [MethodImpl(MethodImplOptions.AggressiveInlining)] //May be useful if we dont want to create a gridData
         public static int GetGridCellIndexFromChunkCellIndex(this int chunkIndex, int mapSizeX, int cellSize, int chunkSize, int cellIndexInsideChunk)
         {
-            int2 chunkCoord = chunkIndex.GetXY2(mapSizeX/chunkSize);
-            int2 cellCoordInChunk = cellIndexInsideChunk.GetXY2(chunkSize);
-            int2 cellGridCoord = cellCoordInChunk.GetGridCellCoordFromChunkCellCoord(chunkSize/cellSize, chunkCoord);
+            int2 chunkCoord = GetXY2(chunkIndex,mapSizeX/chunkSize);
+            int2 cellCoordInChunk = GetXY2(cellIndexInsideChunk,chunkSize);
+            int2 cellGridCoord = GetGridCellCoordFromChunkCellCoord(cellCoordInChunk,chunkSize/cellSize, chunkCoord);
             return (cellGridCoord.y * mapSizeX) + cellGridCoord.x;
         }
         
