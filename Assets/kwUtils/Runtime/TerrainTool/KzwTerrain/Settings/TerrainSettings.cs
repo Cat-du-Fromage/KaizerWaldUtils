@@ -25,7 +25,7 @@ namespace KWUtils
         public int NumQuadY => NumChunkHeight * NumQuadPerLine;
 
         public int2 NumQuadsAxis => new int2(NumQuadX, NumQuadY);
-        public int MapQuadCount => NumQuadX * NumQuadY;
+        public int QuadCount => NumQuadX * NumQuadY;
         
         //VERTEX
         public int NumVerticesX => NumQuadX + 1;

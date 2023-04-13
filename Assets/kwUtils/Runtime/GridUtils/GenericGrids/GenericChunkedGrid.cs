@@ -116,6 +116,12 @@ namespace KWUtils
             base.CopyFrom(otherArray);
             PopulateChunkedGrid(ChunkDictionary, GridArray, GridData);
         }
+        
+        public sealed override void CopyFrom(NativeArray<T> otherArray)
+        {
+            base.CopyFrom(otherArray);
+            PopulateChunkedGrid(ChunkDictionary, GridArray, GridData);
+        }
         //==============================================================================================================
         
         //==============================================================================================================
@@ -140,13 +146,13 @@ namespace KWUtils
         private void UpdateGrid(int chunkIndex, T[] values)
         {
             for (int i = 0; i < values.Length; i++)
-                GridArray[KWChunk.GetGridCellIndexFromChunkCellIndex(chunkIndex, GridData, i)] = values[i];
+                GridArray[GetGridCellIndexFromChunkCellIndex(chunkIndex, GridData, i)] = values[i];
         }
         
         private void UpdateGrid(int chunkIndex, NativeSlice<T> values)
         {
             for (int i = 0; i < values.Length; i++)
-                GridArray[KWChunk.GetGridCellIndexFromChunkCellIndex(chunkIndex, GridData, i)] = values[i];
+                GridArray[GetGridCellIndexFromChunkCellIndex(chunkIndex, GridData, i)] = values[i];
         }
         //==============================================================================================================
         

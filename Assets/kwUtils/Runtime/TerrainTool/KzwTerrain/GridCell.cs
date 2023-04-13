@@ -18,27 +18,42 @@ namespace KWUtils
         public float3 Center;
         public FixedList64Bytes<float3> Vertices;
         
-        public GridCell(TerrainSettings settings, int x, int y, NativeArray<float3> cellVertex)
+        public GridCell(in int2 mapNumQuadXY, int x, int y, NativeArray<float3> cellVertex)
         {
             IsBlocked = false;
             Coord = new int2(x, y);
-            Index = GetIndex(Coord, settings.NumQuadsAxis.x);
+            Index = GetIndex(Coord, mapNumQuadXY.x);
             Vertices = new FixedList64Bytes<float3>();
             unsafe { Vertices.AddRange(cellVertex.GetUnsafeReadOnlyPtr(),cellVertex.Length); }
-            float2 coord2D = Coord - (float2)settings.NumQuadsAxis / 2f + float2(0.5f);
+            float2 coord2D = Coord - (float2)mapNumQuadXY / 2f + float2(0.5f);
             float height = (cellVertex[1] + normalize(cellVertex[2] - cellVertex[1]) * (SQRT2/2f)).y;
             Center = new float3(coord2D.x, height, coord2D.y);
         }
         
-        public GridCell(TerrainSettings settings, int2 coord, NativeArray<float3> cellVertex)
+        public GridCell(in int2 mapNumQuadXY, in int2 coord, NativeArray<float3> cellVertex)
         {
             IsBlocked = false;
             Coord = coord;
-            Index = GetIndex(Coord, settings.NumQuadsAxis.x);
+            Index = GetIndex(Coord, mapNumQuadXY.x);
             Vertices = new FixedList64Bytes<float3>();
             unsafe { Vertices.AddRange(cellVertex.GetUnsafeReadOnlyPtr(), cellVertex.Length); }
-            float2 coord2D =coord - (float2)settings.NumQuadsAxis / 2f + float2(0.5f);
+            float2 coord2D =coord - (float2)mapNumQuadXY / 2f + float2(0.5f);
             float height = (cellVertex[1] + normalize(cellVertex[2] - cellVertex[1]) * (SQRT2/2f)).y;
+            Center = new float3(coord2D.x, height, coord2D.y);
+        }
+        
+        public GridCell(in int2 mapNumQuadXY, in int2 coord, float3 vert0, float3 vert1, float3 vert2, float3 vert3)
+        {
+            IsBlocked = false;
+            Coord = coord;
+            Index = GetIndex(Coord, mapNumQuadXY.x);
+            Vertices = new FixedList64Bytes<float3>();
+            Vertices.Add(vert0);
+            Vertices.Add(vert1);
+            Vertices.Add(vert2);
+            Vertices.Add(vert3);
+            float2 coord2D =coord - (float2)mapNumQuadXY / 2f + float2(0.5f);
+            float height = (vert1 + normalize(vert2 - vert1) * (SQRT2/2f)).y;
             Center = new float3(coord2D.x, height, coord2D.y);
         }
         

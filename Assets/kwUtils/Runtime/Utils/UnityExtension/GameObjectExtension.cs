@@ -78,5 +78,26 @@ namespace KWUtils
         {
             return gameObject.TryGetComponent(out T component) ? component : gameObject.AddComponent<T>();
         }
+        
+        public static Mesh[] GetMeshesComponent<T>(this T[] gameObjects) 
+        where T : MonoBehaviour
+        {
+            Mesh[] results = new Mesh[gameObjects.Length];
+            for (int i = 0; i < gameObjects.Length; i++)
+            {
+                results[i] = gameObjects[i].GetComponent<MeshFilter>().mesh;
+            }
+            return results;
+        }
+        
+        public static Mesh[] GetMeshesComponent(this GameObject[] gameObjects)
+        {
+            Mesh[] results = new Mesh[gameObjects.Length];
+            for (int i = 0; i < gameObjects.Length; i++)
+            {
+                results[i] = gameObjects[i].GetComponent<MeshFilter>().mesh;
+            }
+            return results;
+        }
     }
 }

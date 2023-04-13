@@ -38,8 +38,15 @@ namespace KWUtils
         //==============================================================================================================
         
         // Get Chunk Cells
-        private T[] GetChunkCellsAt(int chunkIndex)
+        public NativeArray<T> GetChunkCellsAt(int chunkIndex, Allocator allocator = Allocator.Temp)
         {
+            NativeArray<T> slice = new (Sq(ChunkSize),allocator);
+            for (int i = 0; i < ChunkSize; i++)
+            {
+                int firstIndexRow = i * ChunkSize;
+                int firstIndex = GetGridCellIndexFromChunkCellIndex(chunkIndex, GridData, firstIndexRow);
+                slice.AddRange(GridArray, firstIndexRow, firstIndex, ChunkSize);
+            }
             return default;
         }
     }

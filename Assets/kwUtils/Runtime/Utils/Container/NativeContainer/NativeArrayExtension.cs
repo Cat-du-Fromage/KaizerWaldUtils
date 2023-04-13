@@ -1,4 +1,5 @@
 using System;
+using System.Runtime.CompilerServices;
 using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
 using Unity.IL2CPP.CompilerServices;
@@ -124,6 +125,38 @@ namespace KWUtils
 			{
 				return NativeArrayUnsafeUtility.ConvertExistingDataToNativeArray<T>(p, arr.Length, allocator);
 			}
+		}
+		
+		// =============================================================================================================
+		// Add Range
+		// =============================================================================================================
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static void AddRange<T>(this NativeArray<T> arr, Span<T> items, int startDst, int startSrc, int length) 
+		where T : struct
+		{
+			if (length > items.Length || length > arr.Length - startDst)
+			{
+				throw new ArgumentOutOfRangeException(nameof(NativeArray<T>), arr.Length, "Not enough space to add range");
+				return;
+			}
+			for (int i = 0; i < length; i++)
+			{
+				arr[startDst + i] = items[startSrc + i];
+			}
+		}
+		
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static void AddRange<T>(this NativeArray<T> arr, NativeArray<T> items, int startDst, int startSrc, int length) 
+		where T : struct
+		{
+			arr.AddRange(items.AsSpan(), startDst, startSrc, length);
+		}
+		
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static void AddRange<T>(this NativeArray<T> arr, T[] items, int startDst, int startSrc, int length) 
+		where T : struct
+		{
+			arr.AddRange(items.AsSpan(), startDst, startSrc, length);
 		}
 	}
 }

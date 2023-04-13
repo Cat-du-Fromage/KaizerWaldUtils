@@ -81,6 +81,11 @@ namespace KWUtils
             otherArray.CopyTo((Span<T>) GridArray);
         }
         
+        public virtual void CopyFrom(NativeArray<T> otherArray)
+        {
+            otherArray.CopyTo(GridArray);
+        }
+        
         public T this[int cellIndex]
         {
             get => GridArray[cellIndex];

@@ -106,7 +106,14 @@ namespace KWUtils
             }
             return dst;
         }
-
+        
+        public static void AddRange<T>(this T[] array, T[] items)
+        {
+            int size = array.Length;
+            Array.Resize(ref array, array.Length + items.Length);
+            for (int i = 0; i < items.Length; i++)
+                array[size + i] = items[i];
+        }
         
         /// <summary>
         /// Convert HashSet To Array
