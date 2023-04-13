@@ -33,27 +33,27 @@ namespace KWUtils
         /// chunk can only be a square, meaning : width = height
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int2 GetGridCellCoordFromChunkCellCoord(this in int2 cellInChunkCoord, int chunkCellWidth, in int2 chunkCoord)
+        public static int2 GetGridCellCoordFromChunkCellCoord(in int2 cellInChunkCoord, int chunkCellWidth, in int2 chunkCoord)
         {
             return (chunkCoord * chunkCellWidth) + cellInChunkCoord;
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int GetGridCellIndexFromChunkCellIndex(this int chunkIndex, in GridData gridData, int cellIndexInsideChunk)
+        public static int GetGridCellIndexFromChunkCellIndex(int chunkIndex, in GridData gridData, int cellIndexInsideChunk)
         {
             int2 chunkCoord = GetXY2(chunkIndex,gridData.NumChunkXY.x);
             int2 cellCoordInChunk = GetXY2(cellIndexInsideChunk,gridData.NumCellInChunkX);
-            int2 cellGridCoord = cellCoordInChunk.GetGridCellCoordFromChunkCellCoord(gridData.NumCellInChunkX, chunkCoord);
-            return (cellGridCoord.y * (gridData.NumCellXY.x)) + cellGridCoord.x;
+            int2 cellGridCoord = GetGridCellCoordFromChunkCellCoord(cellCoordInChunk, gridData.NumCellInChunkX, chunkCoord);
+            return GetIndex(cellGridCoord, gridData.NumCellXY.x);//cellGridCoord.y * gridData.NumCellXY.x + cellGridCoord.x;
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)] //May be useful if we dont want to create a gridData
-        public static int GetGridCellIndexFromChunkCellIndex(this int chunkIndex, int mapSizeX, int cellSize, int chunkSize, int cellIndexInsideChunk)
+        public static int GetGridCellIndexFromChunkCellIndex(int chunkIndex, int mapSizeX, int cellSize, int chunkSize, int cellIndexInsideChunk)
         {
             int2 chunkCoord = GetXY2(chunkIndex,mapSizeX/chunkSize);
             int2 cellCoordInChunk = GetXY2(cellIndexInsideChunk,chunkSize);
             int2 cellGridCoord = GetGridCellCoordFromChunkCellCoord(cellCoordInChunk,chunkSize/cellSize, chunkCoord);
-            return (cellGridCoord.y * mapSizeX) + cellGridCoord.x;
+            return GetIndex(cellGridCoord, mapSizeX); //(cellGridCoord.y * mapSizeX) + cellGridCoord.x;
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -68,9 +68,9 @@ namespace KWUtils
         };
         //CHUNK
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int GetCellIndexFromChunkEnterPoint(this int chunkIndex, ChunkEnterPoint point, in GridData gridData)
+        public static int GetCellIndexFromChunkEnterPoint(int chunkIndex, ChunkEnterPoint point, in GridData gridData)
         {
-            return chunkIndex.GetGridCellIndexFromChunkCellIndex(gridData, GetChunkEnterPoint(point, gridData));
+            return GetGridCellIndexFromChunkCellIndex(chunkIndex, gridData, GetChunkEnterPoint(point, gridData));
         }
 
         //==============================================================================================================

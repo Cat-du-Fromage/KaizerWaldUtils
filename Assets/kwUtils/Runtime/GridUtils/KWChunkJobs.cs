@@ -17,6 +17,7 @@ using Unity.Mathematics;
 using static Unity.Mathematics.math;
 using static KWUtils.KWmath;
 using static KWUtils.KWGrid;
+using static KWUtils.KWChunk;
 using int2 = Unity.Mathematics.int2;
 
 namespace KWUtils
@@ -120,11 +121,9 @@ namespace KWUtils
             int indexCellInChunk = GetIndex(coordInChunk, NumCellInChunkX);
             int chunkIndex = GetIndex(chunkCoord, NumChunkX);
             int totalCellInChunk = NumCellInChunkX * NumCellInChunkX;
+            int indexFinal = mad(chunkIndex, totalCellInChunk, indexCellInChunk);
             
-            int indexfinal = mad(chunkIndex, totalCellInChunk, indexCellInChunk);
-            //UnityEngine.Debug.Log($"chunk {chunkIndex} ; at index: {indexfinal}");
-            
-            SortedArray[mad(chunkIndex,totalCellInChunk,indexCellInChunk)] = UnsortedArray[index];
+            SortedArray[indexFinal] = UnsortedArray[index];
         }
     }
     
@@ -149,7 +148,7 @@ namespace KWUtils
         {
             for (int i = 0; i < BiggerGridData.TotalCellInChunk; i++)
             {
-                int indexSmall = index.GetGridCellIndexFromChunkCellIndex(BiggerGridData, i);
+                int indexSmall = GetGridCellIndexFromChunkCellIndex(index, BiggerGridData, i);
                 GridConverted[indexSmall] = BigGridToConvert[index];
             }
         }

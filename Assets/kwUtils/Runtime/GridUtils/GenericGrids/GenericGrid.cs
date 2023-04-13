@@ -8,6 +8,7 @@ using UnityEngine;
 using static Unity.Mathematics.math;
 using static KWUtils.KWmath;
 using static KWUtils.KWGrid;
+using static KWUtils.KWChunk;
 
 namespace KWUtils
 {
@@ -103,7 +104,7 @@ namespace KWUtils
             GridData fakeChunk = new GridData(MapXY, CellSize, otherCellSize);
             for (int i = 0; i < fakeChunk.TotalCellInChunk; i++)
             {
-                int index = bigGridCellIndex.GetGridCellIndexFromChunkCellIndex(fakeChunk, i);
+                int index = KWChunk.GetGridCellIndexFromChunkCellIndex(bigGridCellIndex, fakeChunk, i);
                 GridArray[index] = value;
             }
             OnGridChange?.Invoke();

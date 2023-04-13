@@ -346,17 +346,6 @@ namespace KWUtils
              if (b == 0)
                  return a;
              return gcd(b, a % b);
-             /*
-             while (a != 0 && b != 0)
-             {
-                 if (a > b)
-                     a %= b;
-                 else
-                     b %= a;
-             }
-
-             return a | b;
-             */
          }
 
          /// <summary>
@@ -364,7 +353,6 @@ namespace KWUtils
          /// </summary>
          public static int lcm(int a, int b)
          {
-             //return select((b / gcd(a, b)) * a, (a / gcd(a, b)) * b, a > b);
              return a > b ? (a / gcd(a, b)) * b : (b / gcd(a, b)) * a;
          }
     }

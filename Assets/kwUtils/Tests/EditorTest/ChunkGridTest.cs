@@ -8,6 +8,8 @@ using UnityEngine.TestTools;
 using Unity.Mathematics;
 
 using static KWUtils.KWmath;
+using static KWUtils.KWGrid;
+using static KWUtils.KWChunk;
 
 namespace KWUtils.Tests
 {
@@ -192,7 +194,7 @@ namespace KWUtils.Tests
         public int ChunkGridTest_ChunkCellIndexToGridIndex_CaseCell1(int chunkIndex, int cellInChunkIndex)
         {
             chunkedGrid = new GenericChunkedGrid<int>(mapSize, chunkSize, cellSize, (index) => index);
-            return chunkIndex.GetGridCellIndexFromChunkCellIndex(chunkedGrid.GridData, cellInChunkIndex);
+            return KWChunk.GetGridCellIndexFromChunkCellIndex(chunkIndex, chunkedGrid.GridData, cellInChunkIndex);
         }
         
         //Test Case 2 : ChunkCellIndexToGridIndex
@@ -219,7 +221,7 @@ namespace KWUtils.Tests
         public int ChunkGridTest_ChunkCellIndexToGridIndex_CaseCell2(int chunkIndex, int cellInChunkIndex)
         {
             chunkedGrid = new GenericChunkedGrid<int>(mapSize, chunkSize2, cellSize2, (index) => index);
-            return chunkIndex.GetGridCellIndexFromChunkCellIndex(chunkedGrid.GridData, cellInChunkIndex);
+            return KWChunk.GetGridCellIndexFromChunkCellIndex(chunkIndex, chunkedGrid.GridData, cellInChunkIndex);
         }
 
 

@@ -73,7 +73,7 @@ namespace KWUtils
         }
         public Vector3 GetChunkCellCenter(int chunkIndex, int cellIndexInChunk)
         {
-            int indexInGrid = chunkIndex.GetGridCellIndexFromChunkCellIndex(GridData, cellIndexInChunk);
+            int indexInGrid = KWChunk.GetGridCellIndexFromChunkCellIndex(chunkIndex, GridData, cellIndexInChunk);
             return GetCellCenter(indexInGrid);
         }
 
@@ -140,13 +140,13 @@ namespace KWUtils
         private void UpdateGrid(int chunkIndex, T[] values)
         {
             for (int i = 0; i < values.Length; i++)
-                GridArray[chunkIndex.GetGridCellIndexFromChunkCellIndex(GridData, i)] = values[i];
+                GridArray[KWChunk.GetGridCellIndexFromChunkCellIndex(chunkIndex, GridData, i)] = values[i];
         }
         
         private void UpdateGrid(int chunkIndex, NativeSlice<T> values)
         {
             for (int i = 0; i < values.Length; i++)
-                GridArray[chunkIndex.GetGridCellIndexFromChunkCellIndex(GridData, i)] = values[i];
+                GridArray[KWChunk.GetGridCellIndexFromChunkCellIndex(chunkIndex, GridData, i)] = values[i];
         }
         //==============================================================================================================
         
