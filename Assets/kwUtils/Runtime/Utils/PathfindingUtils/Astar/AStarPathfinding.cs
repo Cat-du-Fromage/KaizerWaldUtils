@@ -213,7 +213,7 @@ namespace KWUtils.KWGenericGrid
                 int2 coord = GetXY2(index,NumCellX);
                 for (int i = 0; i < 8; i++)
                 {
-                    int neighborId = index.AdjCellFromIndex((1 << i), coord, NumCellX);
+                    int neighborId = AdjCellFromIndex(index,(1 << i), coord, NumCellX);
                     if (neighborId == -1 || ObstaclesGrid[neighborId] == true || closeSet.Contains(neighborId)) continue;
 
                     int tentativeCost = Nodes[index].GCost + CalculateDistanceCost(Nodes[index],Nodes[neighborId]);

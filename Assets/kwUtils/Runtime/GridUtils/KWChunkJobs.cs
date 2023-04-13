@@ -74,7 +74,7 @@ namespace KWUtils
     // 0️⃣1️⃣2️⃣3️⃣4️⃣5️⃣6️⃣7️⃣ 
     //After Slice
     // ✂ (chunk0): 0️⃣1️⃣4️⃣5️⃣ ✂ (chunk1): 2️⃣3️⃣6️⃣7️⃣ 
-    //[BurstCompile(CompileSynchronously = true)]
+    [BurstCompile]
     public struct JOrderArrayByChunkIndex<T> : IJobFor
     where T : struct
     {
@@ -129,7 +129,7 @@ namespace KWUtils
     }
     
     
-    [BurstCompile(CompileSynchronously = true)]
+    [BurstCompile]
     public struct JConvertGridBigToSmall<T> : IJobFor
     where T : struct
     {
@@ -206,7 +206,7 @@ namespace KWUtils
     // 0️⃣1️⃣2️⃣3️⃣4️⃣5️⃣6️⃣7️⃣ 
     //After Slice
     // ✂ (chunk0): 0️⃣1️⃣4️⃣5️⃣ ✂ (chunk1): 2️⃣3️⃣6️⃣7️⃣ 
-    [BurstCompile(CompileSynchronously = true)]
+    [BurstCompile]
     public struct JSharedOrderArrayByChunkIndex<T> : IJobFor
     where T : struct
     {
@@ -263,8 +263,7 @@ namespace KWUtils
             int totalCellInChunk = NumCellInChunkX * NumCellInChunkX;
 
             int indexFinal = mad(chunkIndex, totalCellInChunk, indexCellInChunk);
-            //UnityEngine.Debug.Log($"chunk {chunkIndex} ; chunkCoord: {chunkCoord}");
-            
+
             SortedArray[indexFinal] = UnsortedArray[index];
             
             //is on CHUNK edge BUT not Grid Edge

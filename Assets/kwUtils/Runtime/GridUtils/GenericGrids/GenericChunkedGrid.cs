@@ -9,6 +9,7 @@ using UnityEngine;
 using static Unity.Mathematics.math;
 using static KWUtils.KWmath;
 using static KWUtils.KWGrid;
+using static KWUtils.KWChunk;
 
 namespace KWUtils
 {
@@ -30,7 +31,7 @@ namespace KWUtils
             NumChunkXY = mapSize >> floorlog2(chunkSize);
 
             ChunkDictionary = new Dictionary<int, T[]>(NumChunkXY.x * NumChunkXY.y);
-            ChunkDictionary = GridArray.GetGridValueOrderedByChunk(GridData);
+            ChunkDictionary = GetGridValueOrderedByChunk(GridArray, GridData);
         }
         
         public GenericChunkedGrid(in int2 mapSize, int chunkSize, int cellSize = 1, [CanBeNull] Func<T[]> providerFunction = null) : base(in mapSize, cellSize)
@@ -40,7 +41,7 @@ namespace KWUtils
 
             providerFunction?.Invoke()?.CopyTo((Span<T>) GridArray); //CAREFULL may switch with Memory<T>!
             ChunkDictionary = new Dictionary<int, T[]>(NumChunkXY.x * NumChunkXY.y);
-            ChunkDictionary = GridArray.GetGridValueOrderedByChunk(GridData);
+            ChunkDictionary = GetGridValueOrderedByChunk(GridArray, GridData);
         }
         
         /// Make sur ChunkSize is Greater than cellSize
@@ -113,7 +114,7 @@ namespace KWUtils
         public sealed override void CopyFrom(T[] otherArray)
         {
             base.CopyFrom(otherArray);
-            ChunkDictionary.PopulateChunkedGrid(GridArray, GridData);
+            PopulateChunkedGrid(ChunkDictionary, GridArray, GridData);
         }
         //==============================================================================================================
         

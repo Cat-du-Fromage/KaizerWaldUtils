@@ -99,7 +99,7 @@ namespace KWUtils.KWGenericGrid
             int2 coord = GetXY2(index,NumCellX);
             for (int i = 0; i < 4; i++)
             {
-                int neighborId = index.AdjCellFromIndex((1 << i), coord, NumCellX);
+                int neighborId = AdjCellFromIndex(index,(1 << i), coord, NumCellX);
                 if (neighborId == -1) continue;
                 curNeighbors.AddNoResize(neighborId);
             }
@@ -155,7 +155,7 @@ namespace KWUtils.KWGenericGrid
             NativeList<int> neighbors = new NativeList<int>(4, Allocator.Temp);
             for (int i = 0; i < 4; i++)
             {
-                int neighborId = index.AdjCellFromIndex((1 << i), coord, NumCellX);
+                int neighborId = AdjCellFromIndex(index,(1 << i), coord, NumCellX);
                 if (neighborId == -1) continue;
                 neighbors.AddNoResize(neighborId);
             }

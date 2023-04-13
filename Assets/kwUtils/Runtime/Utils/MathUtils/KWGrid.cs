@@ -14,7 +14,7 @@ using float3 = Unity.Mathematics.float3;
 namespace KWUtils
 {
     [Flags]
-    public enum AdjacentCell : byte
+    public enum AdjacentCell : int
     {
         Top         = 1 << 0,
         Right       = 1 << 1,
@@ -24,6 +24,7 @@ namespace KWUtils
         TopRight    = 1 << 5,
         BottomRight = 1 << 6,
         BottomLeft  = 1 << 7,
+        None        = 1 << 8,
     }
     public static class KWGrid
     {
@@ -112,9 +113,6 @@ namespace KWUtils
 */
             for (int i = 0; i < dis.Length; i++)
             {
-                int j = dis.Length - 1 + i;
-                
-                
                 if (dis[i] < minVal)
                 {
                     minIndex = cellIndex[i];
@@ -151,9 +149,7 @@ namespace KWUtils
         {
             float2 percents = pointPos / (mapXY * cellSize);
             percents = clamp(percents, 0, 1f);
-
             int2 xy =  clamp((int2)floor(mapXY * percents), 0, mapXY - 1);
-
             return mad(xy.y, mapXY.x/cellSize, xy.x);
         }
         
@@ -172,9 +168,7 @@ namespace KWUtils
         {
             float2 percents = pointPos.xz / (mapXY * cellSize);
             percents = clamp(percents, 0, 1f);
-
             int2 xy =  clamp((int2)floor(mapXY * percents), 0, mapXY - 1);
-            
             return mad(xy.y, mapXY.x/cellSize, xy.x);
         }
 
@@ -183,9 +177,7 @@ namespace KWUtils
         {
             float2 percents = (float2)pointPos.xz() / (mapXY * cellSize);
             percents = clamp(percents, 0, 1f);
-
             int2 xy =  clamp((int2)floor(mapXY * percents), 0, mapXY - 1);
-            
             return mad(xy.y, mapXY.x/cellSize, xy.x);
         }
 
@@ -275,10 +267,7 @@ namespace KWUtils
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool IsCellOnEdge(int coord, int gridWidth) => coord == 0 || coord == gridWidth - 1;
 
-        
-        
-        
-        
+
 //=====================================================================================================================
 // Methods Below are used for :
 // Get the Index of any cells around them
@@ -290,28 +279,56 @@ namespace KWUtils
         /// <param name="width">width of the grid</param>
         /// <returns>index of the left point, -1 means point is on corner</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int GetLeftIndex(this int2 coords, int width) => select(-1,mad(coords.y, width, coords.x) - 1, coords.x > 0);
-        
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int GetRightIndex(this int2 coords, int width) => select(-1,mad(coords.y, width, coords.x) + 1, coords.x < width - 1);
+        public static int GetLeftIndex(in int2 coords, int width)
+        {
+            return select(-1, mad(coords.y, width, coords.x) - 1, coords.x > 0);
+        }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int GetBottomIndex(this int2 coords, int width) => select(-1,mad(coords.y, width, coords.x) - width, coords.y > 0);
+        public static int GetRightIndex(in int2 coords, int width)
+        {
+            return select(-1, mad(coords.y, width, coords.x) + 1, coords.x < width - 1);
+        }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int GetTopIndex(this int2 coords, int width) => select(-1,mad(coords.y, width, coords.x) + width, coords.y < width - 1);
-        
+        public static int GetBottomIndex(in int2 coords, int width)
+        {
+            return select(-1, mad(coords.y, width, coords.x) - width, coords.y > 0);
+        }
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int GetTopLeftIndex(this int2 coords, int width) => select(-1,mad(coords.y, width, coords.x) + width - 1, coords.y < (width - 1) && coords.x > 0);
-        
+        public static int GetTopIndex(in int2 coords, in int2 bounds)
+        {
+            return select(-1, mad(coords.y, bounds.x, coords.x) + bounds.x, coords.y < bounds.y - 1);
+        }
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int GetTopRightIndex(this int2 coords, int width) => select(-1,mad(coords.y, width, coords.x) + width + 1, coords.y < width - 1 && coords.x < width - 1);
-        
+        public static int GetTopLeftIndex(in int2 coords, in int2 bounds)
+        {
+            bool inBound = coords.y < (bounds.y - 1) && coords.x > 0;
+            return select(-1, mad(coords.y, bounds.x, coords.x) + bounds.x - 1, inBound);
+        }
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int GetBottomLeftIndex(this int2 coords, int width) => select(-1,mad(coords.y, width, coords.x ) - width - 1, coords.y > 0 && coords.x > 0);
-        
+        public static int GetTopRightIndex(in int2 coords, in int2 bounds)
+        {
+            bool inBound = coords.y < bounds.y - 1 && coords.x < bounds.x - 1;
+            return select(-1, mad(coords.y, bounds.x, coords.x) + bounds.x + 1, inBound);
+        }
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int GetBottomRightIndex(this int2 coords, int width) => select(-1,mad(coords.y, width, coords.x) - width + 1, coords.y > 0 && coords.x < width - 1);
+        public static int GetBottomLeftIndex(in int2 coords, int width)
+        {
+            bool inBound = coords.y > 0 && coords.x > 0;
+            return select(-1, mad(coords.y, width, coords.x) - width - 1, inBound);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static int GetBottomRightIndex(in int2 coords, int width)
+        {
+            bool inBound = coords.y > 0 && coords.x < width - 1;
+            return select(-1, mad(coords.y, width, coords.x) - width + 1, inBound);
+        }
 
         /// <summary>
         /// this will replace individual functions (see functions above) when burst will be switch friendly
@@ -323,7 +340,7 @@ namespace KWUtils
         /// <param name="bounds">bounds of the grid, x = width, y = height</param>
         /// <returns></returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int AdjCellFromIndex(this int index, AdjacentCell adjCell, in int2 pos, int2 bounds) 
+        public static int AdjCellFromIndex(int index, AdjacentCell adjCell, in int2 pos, in int2 bounds) 
         => adjCell switch
         {
             AdjacentCell.Left        when pos.x > 0                                    => index - 1,
@@ -331,14 +348,14 @@ namespace KWUtils
             AdjacentCell.Top         when pos.y < bounds.y - 1                         => index + bounds.x,
             AdjacentCell.TopLeft     when pos.y < bounds.y - 1 && pos.x > 0            => (index + bounds.x) - 1,
             AdjacentCell.TopRight    when pos.y < bounds.y - 1 && pos.x < bounds.x - 1 => (index + bounds.x) + 1,
-            AdjacentCell.Bottom      when pos.y > 0                                    => index - bounds.x,
+            AdjacentCell.Bottom      when pos.y > 0                                    => (index - bounds.x),
             AdjacentCell.BottomLeft  when pos.y > 0 && pos.x > 0                       => (index - bounds.x) - 1,
             AdjacentCell.BottomRight when pos.y > 0 && pos.x < bounds.x - 1            => (index - bounds.x) + 1,
             _ => -1,
         };
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int AdjCellFromIndex(this int index, int adjCell, in int2 pos, int2 bounds) 
+        public static int AdjCellFromIndex(int index, int adjCell, in int2 pos, in int2 bounds) 
         => adjCell switch
         {
             (int)AdjacentCell.Left        when pos.x > 0                                    => index - 1,
@@ -346,7 +363,7 @@ namespace KWUtils
             (int)AdjacentCell.Top         when pos.y < bounds.y - 1                         => index + bounds.x,
             (int)AdjacentCell.TopLeft     when pos.y < bounds.y - 1 && pos.x > 0            => (index + bounds.x) - 1,
             (int)AdjacentCell.TopRight    when pos.y < bounds.y - 1 && pos.x < bounds.x - 1 => (index + bounds.x) + 1,
-            (int)AdjacentCell.Bottom      when pos.y > 0                                    => index - bounds.x,
+            (int)AdjacentCell.Bottom      when pos.y > 0                                    => (index - bounds.x),
             (int)AdjacentCell.BottomLeft  when pos.y > 0 && pos.x > 0                       => (index - bounds.x) - 1,
             (int)AdjacentCell.BottomRight when pos.y > 0 && pos.x < bounds.x - 1            => (index - bounds.x) + 1,
             _ => -1,

@@ -132,7 +132,7 @@ namespace KWUtils
         // ORDER AND PACK ARRAYS INTO DICTIONARY
         //==============================================================================================================
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Dictionary<int, Vector3[]> GetArrayOrderedByChunk(this Vector3[] unorderedIndices, in GridData gridData)
+        public static Dictionary<int, Vector3[]> GetArrayOrderedByChunk(Vector3[] unorderedIndices, in GridData gridData)
         {
             using NativeArray<float3> unOrderedIndices = unorderedIndices.ToNativeArray().Reinterpret<float3>(); 
             using NativeArray<float3> orderedIndices = new (unorderedIndices.Length, Allocator.TempJob, NativeArrayOptions.UninitializedMemory);
@@ -151,7 +151,7 @@ namespace KWUtils
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Dictionary<int, T[]> GetGridValueOrderedByChunk<T>(this T[] unorderedIndices, in GridData gridData)
+        public static Dictionary<int, T[]> GetGridValueOrderedByChunk<T>(T[] unorderedIndices, in GridData gridData)
         where T : struct
         {
             using NativeArray<T> nativeUnOrderedIndices = unorderedIndices.ToNativeArray();
@@ -171,7 +171,7 @@ namespace KWUtils
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void PopulateChunkedGrid<T>(this Dictionary<int, T[]> chunkedGrid, T[] unorderedIndices, in GridData gridData)
+        public static void PopulateChunkedGrid<T>(Dictionary<int, T[]> chunkedGrid, T[] unorderedIndices, in GridData gridData)
         where T : struct
         {
             using NativeArray<T> nativeUnOrderedIndices = unorderedIndices.ToNativeArray();
