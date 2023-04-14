@@ -6,17 +6,25 @@ using UnityEngine;
 
 namespace KWUtils
 {
-    public enum ClusterSide : int
+    public enum HPASide : int
     {
         Top    = 0,
         Right  = 1,
         Bottom = 2,
         Left   = 3,
     }
-    public struct Gate
+    public readonly struct Gate
     {
-        public int index1;
-        public int index2;
+        public readonly int Index1;
+        public readonly int Index2;
+
+        public Gate(int index1, int index2)
+        {
+            Index1 = index1;
+            Index2 = index2;
+        }
+        
+        public int this[int index] => index == 0 ? Index1 : Index2;
     }
     public struct GateWay
     {
@@ -52,13 +60,13 @@ namespace KWUtils
         // On utilisera ainsi le cluster pour les futur test de chemin
         private void RegisterGateCluster(int chunkQuadPerLine)
         {
-            GetClustersAt(ClusterSide.Top, chunkQuadPerLine, ref topGates);
-            GetClustersAt(ClusterSide.Right, chunkQuadPerLine, ref rightGates);
-            GetClustersAt(ClusterSide.Bottom, chunkQuadPerLine, ref bottomGates);
-            GetClustersAt(ClusterSide.Left, chunkQuadPerLine, ref leftGates);
+            GetClustersAt(HPASide.Top, chunkQuadPerLine, ref topGates);
+            GetClustersAt(HPASide.Right, chunkQuadPerLine, ref rightGates);
+            GetClustersAt(HPASide.Bottom, chunkQuadPerLine, ref bottomGates);
+            GetClustersAt(HPASide.Left, chunkQuadPerLine, ref leftGates);
         }
         
-        private void GetClustersAt(ClusterSide side, int chunkQuadPerLine, ref List<GateWay> clusterSide)
+        private void GetClustersAt(HPASide side, int chunkQuadPerLine, ref List<GateWay> clusterSide)
         {
             if (!openSides[(int)side]) return;
             int clusterIndex = 0;
@@ -69,10 +77,10 @@ namespace KWUtils
                 {
                     int index = side switch
                     {
-                        ClusterSide.Top    => KWmath.Sq(chunkQuadPerLine) - chunkQuadPerLine + i,
-                        ClusterSide.Right  => (chunkQuadPerLine - 1) + (chunkQuadPerLine * i),
-                        ClusterSide.Bottom => i,
-                        ClusterSide.Left   => chunkQuadPerLine * i,
+                        HPASide.Top    => KWmath.Sq(chunkQuadPerLine) - chunkQuadPerLine + i,
+                        HPASide.Right  => (chunkQuadPerLine - 1) + (chunkQuadPerLine * i),
+                        HPASide.Bottom => i,
+                        HPASide.Left   => chunkQuadPerLine * i,
                         _ => throw new ArgumentOutOfRangeException(nameof(side), side, null)
                     };
                     clusterSide[clusterIndex].Indices.Add(index);

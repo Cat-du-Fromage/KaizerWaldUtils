@@ -1,3 +1,4 @@
+using System;
 using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
 using Unity.Mathematics;
@@ -10,6 +11,7 @@ using static Unity.Mathematics.math;
 
 namespace KWUtils
 {
+    [Serializable]
     public struct GridCell
     {
         public bool IsBlocked;
@@ -30,7 +32,7 @@ namespace KWUtils
             Center = new float3(coord2D.x, height, coord2D.y);
         }
         
-        public GridCell(in int2 mapNumQuadXY, in int2 coord, NativeArray<float3> cellVertex)
+        public unsafe GridCell(in int2 mapNumQuadXY, in int2 coord, NativeArray<float3> cellVertex)
         {
             IsBlocked = false;
             Coord = coord;
