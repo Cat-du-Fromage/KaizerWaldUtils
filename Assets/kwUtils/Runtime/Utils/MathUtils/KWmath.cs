@@ -49,7 +49,7 @@ namespace KWUtils
         //==============================================================================================================
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int cmul(int2 v) => v.x * v.y;
-
+        
         //==============================================================================================================
         /// <summary>
         /// ComponentWise subtraction (x - y)

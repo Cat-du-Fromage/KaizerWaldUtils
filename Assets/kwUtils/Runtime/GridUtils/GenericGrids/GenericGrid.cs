@@ -10,11 +10,14 @@ using static KWUtils.KWmath;
 using static KWUtils.KWGrid;
 using static KWUtils.KWChunk;
 
+using float2 = Unity.Mathematics.float2; 
+
 namespace KWUtils
 {
     public class GenericGrid<T>
     where T : struct
     {
+        protected readonly bool IsCentered;
         protected readonly int CellSize;
         protected readonly int2 MapXY;
         protected readonly int2 NumCellXY;
@@ -25,8 +28,9 @@ namespace KWUtils
         //==============================================================================================================
         //CONSTRUCTOR
         //==============================================================================================================
-        public GenericGrid(in int2 mapSize, int cellSize, Func<int, T> createGridObject)
+        public GenericGrid(in int2 mapSize, int cellSize, Func<int, T> createGridObject, bool isCentered = false)
         {
+            IsCentered = isCentered;
             CellSize = cellSize;
             MapXY = ceilpow2(mapSize);
             NumCellXY = mapSize >> floorlog2(cellSize);
@@ -42,8 +46,9 @@ namespace KWUtils
             }
         }
         
-        public GenericGrid(in int2 mapSize, int cellSize)
+        public GenericGrid(in int2 mapSize, int cellSize, bool isCentered = false)
         {
+            IsCentered = isCentered;
             CellSize = cellSize;
             MapXY = ceilpow2(mapSize);
             NumCellXY = mapSize >> floorlog2(cellSize);
@@ -56,6 +61,7 @@ namespace KWUtils
         public virtual void ClearEvents()
         {
             if (OnGridChange == null) return;
+            //Array.ForEach(OnGridChange.GetInvocationList(), action => OnGridChange -= (Action)action);
             foreach (Delegate action in OnGridChange.GetInvocationList())
             {
                 OnGridChange -= (Action)action;
@@ -68,7 +74,8 @@ namespace KWUtils
 
         public Vector3 GetCellCenter(int index)
         {
-            float2 cellCoord = GetXY2(index,NumCellXY.x) * CellSize + new float2(CellSize/2f);
+            float2 offset = IsCentered ? ((float2)MapXY / 2) : float2.zero;
+            float2 cellCoord = GetXY2(index,NumCellXY.x) * CellSize + float2(CellSize/2f) - offset;
             return new Vector3(cellCoord.x,0,cellCoord.y);
         }
         
@@ -109,7 +116,7 @@ namespace KWUtils
             GridData fakeChunk = new GridData(MapXY, CellSize, otherCellSize);
             for (int i = 0; i < fakeChunk.TotalCellInChunk; i++)
             {
-                int index = KWChunk.GetGridCellIndexFromChunkCellIndex(bigGridCellIndex, fakeChunk, i);
+                int index = GetGridCellIndexFromChunkCellIndex(bigGridCellIndex, fakeChunk, i);
                 GridArray[index] = value;
             }
             OnGridChange?.Invoke();

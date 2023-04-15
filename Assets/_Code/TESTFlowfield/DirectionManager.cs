@@ -23,7 +23,7 @@ public class DirectionManager : MonoBehaviour, IGridHandler<GridType,Vector3, Ge
     
     public void InitializeGrid(int2 terrainBounds)
     {
-        Grid = new GenericChunkedGrid<Vector3>(terrainBounds, 16, 2);
+        Grid = new GenericChunkedGrid<Vector3>(terrainBounds, 16,2);
     }
 
     private void Start()

@@ -48,7 +48,7 @@ namespace KWUtils
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)] //May be useful if we dont want to create a gridData
-        public static int GetGridCellIndexFromChunkCellIndex(int chunkIndex, int mapSizeX, int cellSize, int chunkSize, int cellIndexInsideChunk)
+        public static int GetGridCellIndexFromChunkCellIndex(int chunkIndex, int mapSizeX, int chunkSize, int cellIndexInsideChunk, int cellSize = 1)
         {
             int2 chunkCoord = GetXY2(chunkIndex,mapSizeX/chunkSize);
             int2 cellCoordInChunk = GetXY2(cellIndexInsideChunk,chunkSize);

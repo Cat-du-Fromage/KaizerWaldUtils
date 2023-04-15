@@ -25,7 +25,7 @@ namespace KWUtils
         //==============================================================================================================
         //Constructors
         //============
-        public GenericChunkedGrid(in int2 mapSize, int chunkSize, int cellSize, Func<int, T> createGridObject) : base(in mapSize, cellSize, createGridObject)
+        public GenericChunkedGrid(in int2 mapSize, int chunkSize, int cellSize, Func<int, T> createGridObject, bool centered = false) : base(in mapSize, cellSize, createGridObject, centered)
         {
             this.ChunkSize = GetChunkSize(chunkSize, cellSize);
             NumChunkXY = mapSize >> floorlog2(chunkSize);
@@ -34,7 +34,7 @@ namespace KWUtils
             ChunkDictionary = GetGridValueOrderedByChunk(GridArray, GridData);
         }
         
-        public GenericChunkedGrid(in int2 mapSize, int chunkSize, int cellSize = 1, [CanBeNull] Func<T[]> providerFunction = null) : base(in mapSize, cellSize)
+        public GenericChunkedGrid(in int2 mapSize, int chunkSize, int cellSize = 1, bool centered = false, [CanBeNull] Func<T[]> providerFunction = null) : base(in mapSize, cellSize, centered)
         {
             this.ChunkSize = GetChunkSize(chunkSize, cellSize);
             NumChunkXY = mapSize >> floorlog2(chunkSize);
@@ -73,7 +73,7 @@ namespace KWUtils
         }
         public Vector3 GetChunkCellCenter(int chunkIndex, int cellIndexInChunk)
         {
-            int indexInGrid = KWChunk.GetGridCellIndexFromChunkCellIndex(chunkIndex, GridData, cellIndexInChunk);
+            int indexInGrid = GetGridCellIndexFromChunkCellIndex(chunkIndex, GridData, cellIndexInChunk);
             return GetCellCenter(indexInGrid);
         }
 

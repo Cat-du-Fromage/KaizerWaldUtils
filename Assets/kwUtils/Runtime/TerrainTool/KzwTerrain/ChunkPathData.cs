@@ -13,8 +13,10 @@ namespace KWUtils
         Bottom = 2,
         Left   = 3,
     }
-    public readonly struct Gate
+    
+    public struct Gate
     {
+        //public bool IsClosed;
         public readonly int Index1;
         public readonly int Index2;
 

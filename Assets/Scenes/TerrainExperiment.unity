@@ -133,6 +133,7 @@ GameObject:
   m_Component:
   - component: {fileID: 698576216}
   - component: {fileID: 698576217}
+  - component: {fileID: 698576218}
   m_Layer: 0
   m_Name: V3Terrain
   m_TagString: Untagged
@@ -167,11 +168,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8b2ccc9336274c24aae246117c1c3897, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  DebugMode: 0
+  GridCellVerticesDebug: 0
+  cellsDebug: []
   DefaultMaterial: {fileID: 2100000, guid: aa60dc0f504f8eb41974f50e1528f594, type: 2}
-  <NumQuadPerLine>k__BackingField: 16
+  <NumQuadPerLine>k__BackingField: 8
   <NumChunkXY>k__BackingField:
     x: 4
-    y: 8
+    y: 4
   <NoiseSettings>k__BackingField:
     Seed: 10
     Octaves: 4
@@ -183,9 +187,9 @@ MonoBehaviour:
       x: 0
       y: 0
   <Settings>k__BackingField:
-    <NumQuadPerLine>k__BackingField: 16
+    <NumQuadPerLine>k__BackingField: 8
     <NumChunkWidth>k__BackingField: 4
-    <NumChunkHeight>k__BackingField: 8
+    <NumChunkHeight>k__BackingField: 4
     <Noise>k__BackingField:
       Seed: 10
       Octaves: 4
@@ -196,6 +200,19 @@ MonoBehaviour:
       Offset:
         x: 0
         y: 0
+--- !u!114 &698576218
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 698576214}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 71b475b07cc058e49b185845e5e36025, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  DebugHPA: 0
 --- !u!1 &1048028268
 GameObject:
   m_ObjectHideFlags: 0
