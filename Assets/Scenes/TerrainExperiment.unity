@@ -174,8 +174,8 @@ MonoBehaviour:
   DefaultMaterial: {fileID: 2100000, guid: aa60dc0f504f8eb41974f50e1528f594, type: 2}
   <NumQuadPerLine>k__BackingField: 8
   <NumChunkXY>k__BackingField:
-    x: 4
-    y: 4
+    x: 16
+    y: 8
   <NoiseSettings>k__BackingField:
     Seed: 10
     Octaves: 4
@@ -188,8 +188,8 @@ MonoBehaviour:
       y: 0
   <Settings>k__BackingField:
     <NumQuadPerLine>k__BackingField: 8
-    <NumChunkWidth>k__BackingField: 4
-    <NumChunkHeight>k__BackingField: 4
+    <NumChunkWidth>k__BackingField: 16
+    <NumChunkHeight>k__BackingField: 8
     <Noise>k__BackingField:
       Seed: 10
       Octaves: 4
