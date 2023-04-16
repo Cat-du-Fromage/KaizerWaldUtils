@@ -9,6 +9,11 @@ using UnityEngine;
 using System.Runtime.CompilerServices;
 
 using static Unity.Collections.LowLevel.Unsafe.NativeArrayUnsafeUtility;
+using static Unity.Jobs.LowLevel.Unsafe.JobsUtility;
+using static Unity.Collections.Allocator;
+using static Unity.Collections.NativeArrayOptions;
+
+
 namespace KWUtils
 {
     public static class KwManagedContainerUtils
@@ -65,10 +70,17 @@ namespace KWUtils
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static NativeArray<T> ToNativeArray<T>(this T[] array, Allocator a = Allocator.TempJob) 
+        public static NativeArray<T> ToNativeArray<T>(this T[] array, Allocator allocator = TempJob) 
         where T : struct
         {
-            return new NativeArray<T>(array, a);
+            return new NativeArray<T>(array, allocator);
+        }
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static NativeArray<T> ToNativeArray<T>(this ArraySegment<T> array, Allocator allocator = TempJob) 
+        where T : struct
+        {
+            return array.ToArray().ToNativeArray(allocator);
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -137,7 +149,7 @@ namespace KWUtils
         {
             T[] arr = new T[hashSet.Count];
             hashSet.CopyTo(arr);
-            NativeArray<T> ntvAry = new NativeArray<T>(hashSet.Count, Allocator.TempJob, NativeArrayOptions.UninitializedMemory);
+            NativeArray<T> ntvAry = new (hashSet.Count, Allocator.TempJob, NativeArrayOptions.UninitializedMemory);
             ntvAry.CopyFrom(arr);
             return ntvAry;
         }

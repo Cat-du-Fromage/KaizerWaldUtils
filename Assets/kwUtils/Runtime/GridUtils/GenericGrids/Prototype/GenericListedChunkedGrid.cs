@@ -19,33 +19,40 @@ namespace KWUtils
         private readonly int ChunkSize;
         private readonly int2 NumChunkXY;
         
+        public List<T[]> Chunks { get; private set; }
+        public sealed override GridData GridData => new GridData(MapXY, CellSize, ChunkSize);
+        //==============================================================================================================
+        //Constructors
+        //============
         public GenericListedChunkedGrid(in int2 mapSize, int chunkSize, int cellSize, Func<int, T> createGridObject) : base(in mapSize, cellSize, createGridObject)
         {
             ChunkSize = max(cellSize, ceilpow2(chunkSize));
             NumChunkXY = mapSize >> floorlog2(chunkSize);
-            
-            for (int i = 0; i < GridArray.Length; i++)
-            {
-                GridArray[i] = createGridObject(i);
-            }
+
+            Chunks = new List<T[]>(NumChunkXY.x * NumChunkXY.y);
+            Chunks = GetGridOrderedByListedChunk(GridArray, GridData);
         }
 
         public GenericListedChunkedGrid(in int2 mapSize, int chunkSize, int cellSize = 1, [CanBeNull] Func<T[]> providerFunction = null) : base(in mapSize, cellSize)
         {
             ChunkSize = max(cellSize, ceilpow2(chunkSize));
             NumChunkXY = mapSize >> floorlog2(chunkSize);
+            
+            providerFunction?.Invoke()?.CopyTo((Span<T>) GridArray); //CAREFULL may switch with Memory<T>!
+            Chunks = new List<T[]>(NumChunkXY.x * NumChunkXY.y);
+            Chunks = GetGridOrderedByListedChunk(GridArray, GridData);
         }
         //==============================================================================================================
         
         // Get Chunk Cells
         public NativeArray<T> GetChunkCellsAt(int chunkIndex, Allocator allocator = Allocator.Temp)
         {
-            NativeArray<T> slice = new (Sq(ChunkSize),allocator);
+            NativeArray<T> fragment = new (Sq(ChunkSize),allocator);
             for (int i = 0; i < ChunkSize; i++)
             {
                 int firstIndexRow = i * ChunkSize;
                 int firstIndex = GetGridCellIndexFromChunkCellIndex(chunkIndex, GridData, firstIndexRow);
-                slice.AddRange(GridArray, firstIndexRow, firstIndex, ChunkSize);
+                fragment.AddRange(GridArray, firstIndexRow, firstIndex, ChunkSize);
             }
             return default;
         }

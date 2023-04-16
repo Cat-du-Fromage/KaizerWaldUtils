@@ -126,7 +126,9 @@ namespace KWUtils
         //==============================================================================================================
         public int IndexFromPosition(in Vector3 position)
         {
-            return GetIndexFromPosition(position.XZ(),MapXY, CellSize);
+            return IsCentered 
+                ? GetIndexFromPositionOffset(position.XZ(),MapXY, CellSize) 
+                : GetIndexFromPosition(position.XZ(),MapXY, CellSize);
         }
 
         //==============================================================================================================

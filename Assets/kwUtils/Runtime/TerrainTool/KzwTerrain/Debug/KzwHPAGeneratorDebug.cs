@@ -1,7 +1,6 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using PlasticGui.WorkspaceWindow.CodeReview.Summary;
 using Unity.Collections;
 using Unity.Mathematics;
 using UnityEditor;
