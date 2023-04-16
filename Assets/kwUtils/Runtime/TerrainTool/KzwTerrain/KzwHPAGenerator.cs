@@ -1,5 +1,4 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using Unity.Burst;
 using Unity.Collections;
@@ -7,6 +6,7 @@ using Unity.Jobs;
 using Unity.Mathematics;
 using UnityEngine;
 
+using static System.Array;
 using static Unity.Mathematics.math;
 using static KWUtils.KWmath;
 using static KWUtils.KWGrid;
@@ -20,38 +20,107 @@ using int2 = Unity.Mathematics.int2;
 
 namespace KWUtils
 {
+    [Serializable]
+    public struct Gate
+    {
+        //public bool IsClosed;
+        public int Index1;
+        public int Index2;
+
+        public Gate(int index1, int index2)
+        {
+            Index1 = index1;
+            Index2 = index2;
+        }
+        
+        public int this[int index] => index == 0 ? Index1 : Index2;
+    }
+    
     [RequireComponent(typeof(KzwTerrainGenerator))]
     public partial class KzwHPAGenerator : MonoBehaviour
     {
         private KzwTerrainGenerator terrain;
+        private int2 NumSpaceHV;
+        
         private Gate[] TerrainGates;
+        private List<ArraySegment<Gate>> GroupedGates;
+
+        //On a les portes, MAIS elle ne sont pas attribuées à un chunk
+        public ChunkComponent[] ChunkComponents { get; private set; }
 
         private void Awake()
         {
             bool terrainExist = TryGetComponent(out terrain);
+            
+            int numChunkX = terrain.Settings.NumChunkAxis.x;
+            int numChunkY = terrain.Settings.NumChunkAxis.y;
+            NumSpaceHV = int2(max(0,numChunkX-1) * numChunkY, numChunkX * max(0, numChunkY-1));
         }
 
         private void Start()
         {
             TerrainGates = BuildGates(terrain.Grid.GridData).ToArray();
+
+            CreateGroupedGate();
+            CreateChunkComponents();
+        }
+
+        private void CreateGroupedGate()
+        {
+            int numGroup = csum(NumSpaceHV);
+            int chunkSize = terrain.Settings.ChunkQuadsPerLine;
+            GroupedGates = new List<ArraySegment<Gate>>(csum(NumSpaceHV));
+
+            for (int i = 0; i < numGroup; i++)
+            {
+                int startIndex = chunkSize * i;
+                GroupedGates.Add(new ArraySegment<Gate>(TerrainGates, startIndex, chunkSize));
+            }
+        }
+        
+        private void CreateChunkComponents()
+        {
+            int numChunkX = terrain.Settings.NumChunkAxis.x;
+            int numChunkY = terrain.Settings.NumChunkAxis.y;
+            int arrayOffset = NumSpaceHV.x;
+            
+            ChunkComponents = new ChunkComponent[terrain.Settings.ChunksCount];
+            for (int i = 0; i < ChunkComponents.Length; i++)
+            {
+                (int x, int y) = GetXY(i, numChunkX);
+                bool2 leftRight = bool2(x > 0, x < numChunkX - 1);
+                bool2 bottomTop = bool2(y > 0, y < numChunkY - 1);
+                
+                //Horizontal: start Indexes
+                int2 startLeftRightIndex = int2(i - y - 1, i - y);
+                //Vertical: start Indexes
+                int2 startBotTopIndex = arrayOffset + int2(mad(y-1, numChunkX,x), mad(y,numChunkX,x));
+
+                ChunkComponents[i] = new ChunkComponent
+                {
+                    TopGates    = bottomTop[1] ? GroupedGates[startBotTopIndex[1]]    : Empty<Gate>(),
+                    RightGates  = leftRight[1] ? GroupedGates[startLeftRightIndex[1]] : Empty<Gate>(),
+                    BottomGates = bottomTop[0] ? GroupedGates[startBotTopIndex[0]]    : Empty<Gate>(),
+                    LeftGates   = leftRight[0] ? GroupedGates[startLeftRightIndex[0]] : Empty<Gate>(),
+                };
+            }
         }
 
         private NativeArray<Gate> BuildGates(in GridData gridData)
         {
             int2 numChunkXY = gridData.NumChunkXY;
-            int2 numSpaceHV = int2(max(0,numChunkXY.x-1) * numChunkXY.y, numChunkXY.x * max(0, numChunkXY.y-1));
             int2 startIndexHV = int2(gridData.ChunkSize - 1, Sq(gridData.ChunkSize) - gridData.ChunkSize);
-            NativeArray<Gate> gates = new(csum(numSpaceHV * gridData.ChunkSize), Temp, UninitializedMemory);
+            NativeArray<Gate> gates = new(csum(NumSpaceHV * gridData.ChunkSize), Temp, UninitializedMemory);
             GetGates(gridData.ChunkSize);
             return gates;
 
             void GetGates(int chunkSize)
             {
                 int mapNumQuadX = chunkSize * numChunkXY.x;
-                if(all(numSpaceHV <= int2.zero)) return;
+                if(all(NumSpaceHV <= int2.zero)) return;
                 
                 int arrayOffset = max(0,numChunkXY.x - 1) * numChunkXY.y * chunkSize;
-                int numIteration = cmax(numSpaceHV);
+                int numIteration = cmax(NumSpaceHV);
                 for (int index = 0; index < numIteration; index++)
                 {
                     //Horizontal
@@ -67,7 +136,7 @@ namespace KWUtils
                     
                     for (int gateIndex = 0; gateIndex < chunkSize; gateIndex++)
                     {
-                        if (index < numSpaceHV[0])
+                        if (index < NumSpaceHV[0])
                         {
                             int indexInChunkH = mad(chunkSize, gateIndex, startIndexHV[0]);
                             int indexInGridH = GetGridCellIndexFromChunkCellIndex(chunkIndexH, mapNumQuadX, chunkSize, indexInChunkH);
@@ -75,7 +144,7 @@ namespace KWUtils
                             gates[position] = new Gate(indexInGridH, indexInGridH + 1);
                         }
                         
-                        if (index < numSpaceHV[1])
+                        if (index < NumSpaceHV[1])
                         {
                             int indexInChunkV = startIndexHV[1] + gateIndex; //top left cell on the chunk + index
                             int indexInGridV = GetGridCellIndexFromChunkCellIndex(chunkIndexV, mapNumQuadX, chunkSize, indexInChunkV);
@@ -86,7 +155,6 @@ namespace KWUtils
                 }//end for
             }//end GetGates
         }
-        
     }
 }
 /*

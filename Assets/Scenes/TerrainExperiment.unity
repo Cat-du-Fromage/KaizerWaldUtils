@@ -172,10 +172,10 @@ MonoBehaviour:
   GridCellVerticesDebug: 0
   cellsDebug: []
   DefaultMaterial: {fileID: 2100000, guid: aa60dc0f504f8eb41974f50e1528f594, type: 2}
-  <NumQuadPerLine>k__BackingField: 8
+  <NumQuadPerLine>k__BackingField: 4
   <NumChunkXY>k__BackingField:
-    x: 16
-    y: 8
+    x: 4
+    y: 4
   <NoiseSettings>k__BackingField:
     Seed: 10
     Octaves: 4
@@ -187,9 +187,9 @@ MonoBehaviour:
       x: 0
       y: 0
   <Settings>k__BackingField:
-    <NumQuadPerLine>k__BackingField: 8
-    <NumChunkWidth>k__BackingField: 16
-    <NumChunkHeight>k__BackingField: 8
+    <NumQuadPerLine>k__BackingField: 4
+    <NumChunkWidth>k__BackingField: 4
+    <NumChunkHeight>k__BackingField: 4
     <Noise>k__BackingField:
       Seed: 10
       Octaves: 4
@@ -213,6 +213,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   DebugHPA: 0
+  Enable_TerrainGates_Debug: 0
+  Enable_ChunkComponent_Debug: 0
 --- !u!1 &1048028268
 GameObject:
   m_ObjectHideFlags: 0

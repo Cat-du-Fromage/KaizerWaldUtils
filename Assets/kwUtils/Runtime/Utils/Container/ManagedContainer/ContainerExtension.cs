@@ -14,6 +14,7 @@ namespace KWUtils
     public static class KwManagedContainerUtils
     {
         //DICTIONNARY
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static T[] GetKeysArray<T, U>(this Dictionary<T, U> dictionary)
         {
             T[] array = new T[dictionary.Keys.Count];
@@ -21,6 +22,7 @@ namespace KWUtils
             return array;
         }
         
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static U[] GetValuesArray<T, U>(this Dictionary<T, U> dictionary)
         {
             U[] array = new U[dictionary.Values.Count];
@@ -34,6 +36,7 @@ namespace KWUtils
         
         // C# method converted to Extension
         //==============================================================================================================
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static T[] Reverse<T>(this T[] array)
         where T : struct
         {
@@ -41,6 +44,7 @@ namespace KWUtils
             return array;
         }
         
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static T[] Concat<T>(this T[] x, T[] y)
         where T : struct
         {
@@ -50,6 +54,7 @@ namespace KWUtils
             return x;
         }
         
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static T[] GetFromMerge<T>(this T[] x, T[] y, T[] z)
         where T : struct
         {
@@ -59,21 +64,14 @@ namespace KWUtils
             return x;
         }
         
-        /*
-        public static NativeArray<T> ToNativeArray<T>(this T[] array, Allocator a = Allocator.TempJob , NativeArrayOptions nao = NativeArrayOptions.UninitializedMemory) 
-            where T : struct
-        {
-            NativeArray<T> nA = new NativeArray<T>(array, a);
-            nA.CopyFrom(array);
-            return nA;
-        }
-        */
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static NativeArray<T> ToNativeArray<T>(this T[] array, Allocator a = Allocator.TempJob) 
         where T : struct
         {
             return new NativeArray<T>(array, a);
         }
         
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static unsafe NativeArray<T> ToNativeArray<T>(T* ptr, int length) where T : unmanaged
         {
             NativeArray<T> arr = NativeArrayUnsafeUtility.ConvertExistingDataToNativeArray<T>(ptr, length, Allocator.Invalid);
@@ -83,6 +81,7 @@ namespace KWUtils
             return arr;
         }
         
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static unsafe NativeArray<T> CopyAllData<T>(this T[] array, Allocator allocator = Allocator.TempJob) 
         where T : unmanaged
         {
@@ -95,6 +94,7 @@ namespace KWUtils
             return dst;
         }
         
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static unsafe NativeArray<T> CopyData<T>(this T[] array, int count, int offset = 0, Allocator allocator = Allocator.TempJob) 
         where T : unmanaged
         {
@@ -107,6 +107,7 @@ namespace KWUtils
             return dst;
         }
         
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void AddRange<T>(this T[] array, T[] items)
         {
             int size = array.Length;
@@ -121,6 +122,7 @@ namespace KWUtils
         /// <param name="hashSet"></param>
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static T[] ToArray<T>(this HashSet<T> hashSet)
             where T : unmanaged
         {
@@ -129,6 +131,7 @@ namespace KWUtils
             return arr;
         }
         
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static NativeArray<T> ToNativeArray<T>(this HashSet<T> hashSet)
         where T : unmanaged
         {
@@ -139,6 +142,7 @@ namespace KWUtils
             return ntvAry;
         }
         
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static T[] RemoveDuplicates<T>(this T[] s) 
         where T : struct
         {
@@ -148,6 +152,7 @@ namespace KWUtils
             return result;
         }
         
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static U[] ReinterpretArray<T,U>(this T[] array) 
         where T : struct //from
         where U : struct //to
@@ -157,12 +162,19 @@ namespace KWUtils
             return temp.Reinterpret<U>().ToArray();
         }
         
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool IsNullOrEmpty<T>(this T[] array)
         {
             return array == null || array.Length == 0;
         }
         
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool IsNullOrEmpty<T>(this ArraySegment<T> array)
+        {
+            return array == null || array.Count == 0;
+        }
  
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static unsafe NativeArray<T> ToNativeArray<T>(Span<T> span) 
         where T : unmanaged
         {
@@ -173,6 +185,7 @@ namespace KWUtils
             }
         }
  
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static unsafe NativeArray<T> ToNativeArray<T>(ReadOnlySpan<T> span) 
         where T : unmanaged
         {

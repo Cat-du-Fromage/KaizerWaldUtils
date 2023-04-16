@@ -137,7 +137,6 @@ namespace KWUtils
 			if (length > items.Length || length > arr.Length - startDst)
 			{
 				throw new ArgumentOutOfRangeException(nameof(NativeArray<T>), arr.Length, "Not enough space to add range");
-				return;
 			}
 			for (int i = 0; i < length; i++)
 			{
