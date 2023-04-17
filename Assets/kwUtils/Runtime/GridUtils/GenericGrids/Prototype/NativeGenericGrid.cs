@@ -1,15 +1,11 @@
 using System;
-using System.Collections;
-using System.Collections.Generic;
-using JetBrains.Annotations;
 using Unity.Collections;
 using Unity.Mathematics;
-using UnityEngine;
 
 using static Unity.Mathematics.math;
 using static KWUtils.KWmath;
 using static KWUtils.KWGrid;
-using static KWUtils.KWChunk;
+//using static KWUtils.KWChunk;
 
 using static Unity.Collections.Allocator;
 using static Unity.Collections.NativeArrayOptions;
@@ -37,38 +33,26 @@ namespace KWUtils
         {
             IsCentered = isCentered;
             NumCellXY = ceilpow2(numCellXY);
-            GridArray = new NativeArray<T>(cmul(NumCellXY), Persistent, ClearMemory);
+            GridArray = new NativeArray<T>(NumCellXY.x * NumCellXY.y, Persistent);
         }
         
-        public NativeGenericGrid(in int2 numCellXY, T[] source, bool isCentered = false)
+        public NativeGenericGrid(in int2 numCellXY, T[] source, bool isCentered = false) : this(numCellXY, isCentered)
         {
-            IsCentered = isCentered;
-            NumCellXY = ceilpow2(numCellXY);
-            GridArray = new NativeArray<T>(cmul(NumCellXY), Persistent, ClearMemory);
             GridArray.CopyFrom(source);
         }
         
-        public NativeGenericGrid(in int2 numCellXY, NativeArray<T> source, bool isCentered = false)
+        public NativeGenericGrid(in int2 numCellXY, NativeArray<T> source, bool isCentered = false) : this(numCellXY, isCentered)
         {
-            IsCentered = isCentered;
-            NumCellXY = ceilpow2(numCellXY);
-            GridArray = new NativeArray<T>(cmul(NumCellXY), Persistent, ClearMemory);
             GridArray.CopyFrom(source);
         }
         
-        public NativeGenericGrid(in int2 numCellXY, Func<T[]> providerFunction, bool isCentered = false)
+        public NativeGenericGrid(in int2 numCellXY, Func<T[]> providerFunction, bool isCentered = false) : this(numCellXY, isCentered)
         {
-            IsCentered = isCentered;
-            NumCellXY = ceilpow2(numCellXY);
-            GridArray = new NativeArray<T>(cmul(NumCellXY), Persistent, ClearMemory);
             providerFunction.Invoke().CopyTo(GridArray);
         }
         
-        public NativeGenericGrid(in int2 numCellXY, Func<NativeArray<T>> providerFunction, bool isCentered = false)
+        public NativeGenericGrid(in int2 numCellXY, Func<NativeArray<T>> providerFunction, bool isCentered = false) : this(numCellXY, isCentered)
         {
-            IsCentered = isCentered;
-            NumCellXY = ceilpow2(numCellXY);
-            GridArray = new NativeArray<T>(cmul(NumCellXY), Persistent, ClearMemory);
             providerFunction.Invoke().CopyTo(GridArray);
         }
         
@@ -79,7 +63,7 @@ namespace KWUtils
         public float3 GetCellCenter(int index)
         {
             float2 cellCoord = GetXY2(index,NumCellXY.x) + float2(0.5f) - Offset;
-            return new float3(cellCoord.x,0,cellCoord.y);
+            return float3(cellCoord.x,0,cellCoord.y);
         }
         
         //==============================================================================================================
