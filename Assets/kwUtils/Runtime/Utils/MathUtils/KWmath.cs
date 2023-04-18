@@ -11,7 +11,10 @@ namespace KWUtils
 {
     public static class KWmath
     {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool IsLeft(this float2 centerPoint, float2 otherPoint) => centerPoint.x < otherPoint.x;
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool IsAbove(this float2 centerPoint, float2 otherPoint) => centerPoint.y > otherPoint.y;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

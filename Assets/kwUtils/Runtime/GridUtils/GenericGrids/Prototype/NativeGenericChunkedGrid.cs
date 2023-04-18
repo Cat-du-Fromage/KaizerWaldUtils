@@ -13,7 +13,7 @@ using float2 = Unity.Mathematics.float2;
 
 namespace KWUtils
 {
-    public sealed class NativeGenericChunkedGrid<T> : NativeGenericGrid<T>
+    public class NativeGenericChunkedGrid<T> : NativeGenericGrid<T>
     where T : struct
     {
         private readonly int ChunkSize;
@@ -103,30 +103,30 @@ namespace KWUtils
             return startIndexChunk + GetCellChunkIndexFromGridIndex(cellIndex, ChunkSize, NumChunkXY.x);
         }
         
-        public override float3 GetCellCenter(int cellIndex)
+        public sealed override float3 GetCellCenter(int cellIndex)
         {
             int offsetIndex = GetOffsetIndex(cellIndex);
             return base.GetCellCenter(offsetIndex);
         }
         
-        public override int IndexFromPosition(in float3 position)
+        public sealed override int IndexFromPosition(in float3 position)
         {
             int gridIndex = IsCentered ? GetIndexFromPositionOffset(position, NumCellXY) : GetIndexFromPosition(position, NumCellXY);
             return GetOffsetIndex(gridIndex);
         }
         
-        public override T ElementAt(int cellIndex)
+        public sealed override T ElementAt(int cellIndex)
         {
             int indexOffset = GetOffsetIndex(cellIndex);
             return GridArray[indexOffset];
         }
-        public override T this[int cellIndex]
+        public sealed override T this[int cellIndex]
         {
             get => ElementAt(cellIndex);
             set => SetValue(cellIndex, value);
         }
         
-        public override void SetValue(int index, T value)
+        public sealed override void SetValue(int index, T value)
         {
             GridArray[GetOffsetIndex(index)] = value;
             OnGridChange?.Invoke();

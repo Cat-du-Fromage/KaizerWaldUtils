@@ -33,7 +33,8 @@ namespace KWUtils
         private void TerrainGatesDebug()
         {
             if (!Enable_TerrainGates_Debug) return;
-            if (TerrainGates == null) return;
+            //if (TerrainGates == null) return;
+            if (GatesGridSystem == null) return;
 
             if (DrawAllGateOnly()) return;
             DrawGateByRangeIndex();
@@ -46,9 +47,9 @@ namespace KWUtils
                 drawAllGate = Clavier.tabKey.wasReleasedThisFrame ? !drawAllGate : drawAllGate;
                 if (drawAllGate)
                 {
-                    for (int i = 0; i < TerrainGates.Length; i++)
+                    for (int i = 0; i < GatesGridSystem.TerrainGates.Length; i++)
                     {
-                        DrawGate(TerrainGates[i]);
+                        DrawGate(GatesGridSystem.TerrainGates[i]);
                     }
                     return true;
                 }
@@ -59,23 +60,23 @@ namespace KWUtils
             {
                 //int2 numChunkAxis = terrain.Settings.NumChunkAxis;
                 //int2 numSpaceHV = new (math.max(0,numChunkAxis.x-1) * numChunkAxis.y, numChunkAxis.x * math.max(0, numChunkAxis.y-1));
-                int numRangeGateIndex = math.csum(NumSpaceHV);
+                int numRangeGateIndex = math.csum(GatesGridSystem.NumSpaceHV);
                 int maxRangeGateIndex = numRangeGateIndex - 1;
                 
                 if (Clavier.numpadPlusKey.wasReleasedThisFrame)
                     currentRangeGateIndex = currentRangeGateIndex >= maxRangeGateIndex ? 0 : currentRangeGateIndex+1;
                 if (Clavier.numpadMinusKey.wasReleasedThisFrame)
                     currentRangeGateIndex = currentRangeGateIndex == 0 ? numRangeGateIndex-1 : currentRangeGateIndex-1;
-                for (int i = 0; i < GroupedGates[currentRangeGateIndex].Count; i++)
-                    DrawGate(GroupedGates[currentRangeGateIndex][i]);
+                for (int i = 0; i < GatesGridSystem.GroupedGates[currentRangeGateIndex].Count; i++)
+                    DrawGate(GatesGridSystem.GroupedGates[currentRangeGateIndex][i]);
             }
         }
         
         private void ChunkComponentDebug()
         {
             if (!Enable_ChunkComponent_Debug) return;
-            if (ChunkComponents == null) return;
-            int chunkLastIndex = ChunkComponents.Length - 1;
+            //if (gatesGrid.ChunkComponents == null) return;
+            int chunkLastIndex = GatesGridSystem.ChunkComponents.Length - 1;
             if (Keyboard.current.numpadPlusKey.wasReleasedThisFrame)
             {
                 currentChunkIndex = currentChunkIndex >= chunkLastIndex ? 0 : currentChunkIndex + 1;
@@ -85,7 +86,7 @@ namespace KWUtils
                 currentChunkIndex = currentChunkIndex == 0 ? chunkLastIndex : currentChunkIndex - 1;
             }
             
-            ChunkComponent component = ChunkComponents[currentChunkIndex];
+            ChunkComponent component = GatesGridSystem.ChunkComponents[currentChunkIndex];
             if (!component.TopGates.IsNullOrEmpty())    DrawRangeGate(component.TopGates);
             if (!component.RightGates.IsNullOrEmpty())  DrawRangeGate(component.RightGates);
             if (!component.BottomGates.IsNullOrEmpty()) DrawRangeGate(component.BottomGates);
