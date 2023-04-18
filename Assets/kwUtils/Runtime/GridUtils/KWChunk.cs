@@ -14,6 +14,9 @@ using static Unity.Mathematics.math;
 using static KWUtils.KWmath;
 using static KWUtils.KWGrid;
 using static Unity.Jobs.LowLevel.Unsafe.JobsUtility;
+using static Unity.Collections.Allocator;
+using static Unity.Collections.NativeArrayOptions;
+
 using Debug = UnityEngine.Debug;
 using int2 = Unity.Mathematics.int2;
 
@@ -29,6 +32,25 @@ namespace KWUtils
     
     public static class KWChunk
     {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static int GetChunkIndexFromGridIndex(int gridIndex, int chunkSize, int numChunkX)
+        {
+            int mapSizeX = chunkSize * numChunkX;
+            int2 cellCoord = GetXY2(gridIndex,mapSizeX);
+            int2 chunkCoord = (int2)floor(cellCoord / chunkSize);
+            return GetIndex(chunkCoord, numChunkX);
+        }
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static int GetCellChunkIndexFromGridIndex(int gridIndex, int chunkSize, int numChunkX)
+        {
+            int mapSizeX = chunkSize * numChunkX;
+            int2 cellCoord = GetXY2(gridIndex,mapSizeX);
+            int2 chunkCoord = (int2)floor(cellCoord / chunkSize);
+            int2 cellCoordInChunk = cellCoord - (chunkCoord * chunkSize);
+            return GetIndex(cellCoordInChunk, chunkSize);
+        }
+        
         /// <summary>
         /// Cell is at the constant size of 1!
         /// chunk can only be a square, meaning : width = height
@@ -102,6 +124,29 @@ namespace KWUtils
             JOrderArrayByChunkIndex<T> job = new (data, unorderedIndices, orderedIndices);
             JobHandle jobHandle = job.ScheduleParallel(orderedIndices.Length, JobWorkerCount - 1, dependency);
             return jobHandle;
+        }
+        /*
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static NativeArray<T> OrderNativeArrayByChunk<T>(NativeArray<T> unorderedIndices, in GridData gridData)
+        where T : struct
+        {
+            NativeArray<T> orderedIndices = new (unorderedIndices.Length, TempJob, UninitializedMemory);
+            JOrderArrayByChunkIndex<T> job = new (gridData, unorderedIndices, orderedIndices);
+            JobHandle jobHandle = job.ScheduleParallel(orderedIndices.Length, JobWorkerCount - 1, default);
+            jobHandle.Complete();
+            return orderedIndices;
+        }
+        */
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static NativeArray<T> OrderNativeArrayByChunk<T>(this NativeArray<T> unorderedIndices, in GridData gridData)
+            where T : struct
+        {
+            using NativeArray<T> orderedIndices = new (unorderedIndices.Length, TempJob, UninitializedMemory);
+            JOrderArrayByChunkIndex<T> job = new (gridData, unorderedIndices, orderedIndices);
+            JobHandle jobHandle = job.ScheduleParallel(orderedIndices.Length, JobWorkerCount - 1, default);
+            jobHandle.Complete();
+            unorderedIndices.CopyFrom(orderedIndices);
+            return unorderedIndices;
         }
         
         //USE FOR IL2CPP

@@ -164,24 +164,28 @@ namespace KWUtils
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static int GetIndexFromPositionOffset(in float3 pointPos, in int2 mapXY, int cellSize = 1)
+        {
+            return GetIndexFromPositionOffset(pointPos.xz, mapXY, cellSize);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int GetIndexFromPosition(in float3 pointPos, in int2 mapXY, int cellSize = 1)
         {
-            float2 percents = pointPos.xz / (mapXY * cellSize);
-            percents = clamp(percents, float2.zero, 1f);
-            int2 xy =  clamp((int2)floor(mapXY * percents), 0, mapXY - 1);
-            return mad(xy.y, mapXY.x/cellSize, xy.x);
+            return GetIndexFromPosition(pointPos.xz, mapXY, cellSize);
+            //float2 percents = pointPos.xz / (mapXY * cellSize);
+            //percents = clamp(percents, float2.zero, 1f);
+            //int2 xy =  clamp((int2)floor(mapXY * percents), 0, mapXY - 1);
+            //return mad(xy.y, mapXY.x/cellSize, xy.x);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int GetIndexFromPosition(in Vector3 pointPos, in int2 mapXY, int cellSize = 1)
         {
             return GetIndexFromPosition((float3)pointPos, mapXY, cellSize);
-            //float2 percents = (float2)pointPos.xz() / (mapXY * cellSize);
-            //percents = clamp(percents, 0, 1f);
-            //int2 xy =  clamp((int2)floor(mapXY * percents), 0, mapXY - 1);
-            //return mad(xy.y, mapXY.x/cellSize, xy.x);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Vector3 GetCellCenterFromPosition(in Vector3 positionInWorld, in int2 mapXY, int cellSize = 1)
         {
             int index = GetIndexFromPosition((float2)positionInWorld.xz(), mapXY, cellSize);
@@ -189,6 +193,7 @@ namespace KWUtils
             return new Vector3(cellCoord.x,0,cellCoord.y);
         }
         
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Vector3 GetCellCenterFromIndex(int index, in int2 mapXY, int cellSize = 1)
         {
             float2 cellCoord = GetXY2(index,mapXY.x/cellSize) * cellSize + new float2(cellSize/2f);

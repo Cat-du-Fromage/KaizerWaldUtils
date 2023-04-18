@@ -2,6 +2,7 @@ using System;
 using Unity.Collections;
 using Unity.Mathematics;
 
+using static System.Array;
 using static Unity.Mathematics.math;
 using static KWUtils.KWmath;
 using static KWUtils.KWGrid;
@@ -20,8 +21,7 @@ namespace KWUtils
         protected readonly bool IsCentered;
         protected readonly int2 NumCellXY;
         
-        public NativeArray<T> GridArray;
-        
+        protected NativeArray<T> GridArray;
         public event Action OnGridChange;
         
         protected float2 Offset => IsCentered ? (float2)NumCellXY / 2f : float2.zero;
@@ -60,7 +60,7 @@ namespace KWUtils
         //CELLS INFORMATION
         //==============================================================================================================
 
-        public float3 GetCellCenter(int index)
+        public virtual float3 GetCellCenter(int index)
         {
             float2 cellCoord = GetXY2(index,NumCellXY.x) + float2(0.5f) - Offset;
             return float3(cellCoord.x,0,cellCoord.y);
@@ -75,8 +75,8 @@ namespace KWUtils
         //==============================================================================================================
         //ACCESSOR
         //==============================================================================================================
-        public T ElementAt(int index) => GridArray[index];
-        public T this[int cellIndex]
+        public virtual T ElementAt(int index) => GridArray[index];
+        public virtual T this[int cellIndex]
         {
             get => GridArray[cellIndex];
             set => SetValue(cellIndex, value);
@@ -90,7 +90,7 @@ namespace KWUtils
         //==============================================================================================================
         // Operation from World Position
         //==============================================================================================================
-        public int IndexFromPosition(in float3 position)
+        public virtual int IndexFromPosition(in float3 position)
         {
             float2 pos2D = position.xz;
             return IsCentered ? GetIndexFromPositionOffset(pos2D, NumCellXY) : GetIndexFromPosition(pos2D, NumCellXY);
@@ -99,14 +99,20 @@ namespace KWUtils
         //==============================================================================================================
         // DESTRUCTOR
         //==============================================================================================================
-        public void Dispose()
+        //Clear Events
+        public virtual void ClearEvents()
         {
-            GridArray.Dispose();
+            if (OnGridChange == null) return;
+            ForEach(OnGridChange.GetInvocationList(),action => OnGridChange -= (Action)action);
+            //foreach (Delegate action in OnGridChange.GetInvocationList()) { OnGridChange -= (Action)action; }
         }
         
-        ~NativeGenericGrid()
+        public void Dispose()
         {
-            Dispose();
+            ClearEvents();
+            if(GridArray.IsCreated) GridArray.Dispose();
         }
+        
+        ~NativeGenericGrid() => Dispose();
     }
 }
