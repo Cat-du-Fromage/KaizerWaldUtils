@@ -43,19 +43,7 @@ namespace KWUtils
 
         private void Update()
         {
-            StartToken();
-            EndToken();
-        }
-
-        private void StartToken()
-        {
-            if (Mouse.current.leftButton.wasReleasedThisFrame) return;
-            //if(Physics.Raycast())
-        }
-        
-        private void EndToken()
-        {
-            if (Mouse.current.rightButton.wasReleasedThisFrame) return;
+            
         }
 // =====================================================================================================================
 // --- Cluster Gates ---
