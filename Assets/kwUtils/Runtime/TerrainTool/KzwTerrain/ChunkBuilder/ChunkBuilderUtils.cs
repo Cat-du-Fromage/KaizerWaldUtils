@@ -44,6 +44,7 @@ namespace KWUtils
                         : Object.Instantiate(chunkPrefab, positions[i], Quaternion.identity);
 
                     chunks[i].name = $"Chunk_{i}";
+                    chunks[i].layer = LayerMask.NameToLayer("Terrain");
                 }
                 Object.Destroy(chunkPrefab);
                 return chunks;

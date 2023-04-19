@@ -175,7 +175,7 @@ MonoBehaviour:
   <NumQuadPerLine>k__BackingField: 4
   <NumChunkXY>k__BackingField:
     x: 4
-    y: 4
+    y: 8
   <NoiseSettings>k__BackingField:
     Seed: 10
     Octaves: 4
@@ -189,7 +189,7 @@ MonoBehaviour:
   <Settings>k__BackingField:
     <NumQuadPerLine>k__BackingField: 4
     <NumChunkWidth>k__BackingField: 4
-    <NumChunkHeight>k__BackingField: 4
+    <NumChunkHeight>k__BackingField: 8
     <Noise>k__BackingField:
       Seed: 10
       Octaves: 4

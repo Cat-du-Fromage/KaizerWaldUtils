@@ -18,5 +18,26 @@ namespace KWUtils
         public ArraySegment<Gate> RightGates;
         public ArraySegment<Gate> BottomGates;
         public ArraySegment<Gate> LeftGates;
+
+        public bool IsSideOpen(int side)
+        {
+            return side switch
+            {
+                0 => CheckGate(TopGates),
+                1 => CheckGate(RightGates),
+                2 => CheckGate(BottomGates),
+                3 => CheckGate(LeftGates),
+                _ => false
+            };
+        }
+
+        private bool CheckGate(ArraySegment<Gate> gatesAtSide)
+        {
+            for (int i = 0; i < gatesAtSide.Count; i++)
+            {
+                if (!gatesAtSide[i].IsClosed) return true;
+            }
+            return false;
+        }
     }
 }

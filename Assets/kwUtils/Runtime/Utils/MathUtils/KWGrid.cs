@@ -16,15 +16,15 @@ namespace KWUtils
     [Flags]
     public enum AdjacentCell : int
     {
-        Top         = 1 << 0,
-        Right       = 1 << 1,
-        Left        = 1 << 2,
-        Bottom      = 1 << 3,
-        TopLeft     = 1 << 4,
-        TopRight    = 1 << 5,
-        BottomRight = 1 << 6,
-        BottomLeft  = 1 << 7,
-        None        = 1 << 8,
+        None        = -1,
+        Top         = 0,
+        Right       = 1,
+        Left        = 2,
+        Bottom      = 3,
+        TopLeft     = 4,
+        TopRight    = 5,
+        BottomRight = 6,
+        BottomLeft  = 7,
     }
     public static class KWGrid
     {

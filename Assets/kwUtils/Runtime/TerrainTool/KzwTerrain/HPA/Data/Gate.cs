@@ -5,12 +5,13 @@ namespace KWUtils
     [Serializable]
     public struct Gate
     {
-        //public bool IsClosed;
+        public bool IsClosed;
         public int Index1;
         public int Index2;
 
         public Gate(int index1, int index2)
         {
+            IsClosed = false;
             Index1 = index1;
             Index2 = index2;
         }

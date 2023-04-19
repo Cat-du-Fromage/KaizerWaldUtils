@@ -65,8 +65,8 @@ namespace KWUtils.KWGenericGrid
 
         public void Execute()
         {
-            NativeQueue<int> cellsToCheck = new NativeQueue<int>(Allocator.Temp);
-            NativeList<int> currentNeighbors = new NativeList<int>(4, Allocator.Temp);
+            NativeQueue<int> cellsToCheck = new (Allocator.Temp);
+            NativeList<int> currentNeighbors = new (4, Allocator.Temp);
 
             //Set Destination cell cost at 0
             CostField[DestinationCellIndex] = 0;
@@ -99,7 +99,7 @@ namespace KWUtils.KWGenericGrid
             int2 coord = GetXY2(index,NumCellX);
             for (int i = 0; i < 4; i++)
             {
-                int neighborId = AdjCellFromIndex(index,(1 << i), coord, NumCellX);
+                int neighborId = AdjCellFromIndex(index,i, coord, NumCellX);
                 if (neighborId == -1) continue;
                 curNeighbors.AddNoResize(neighborId);
             }
@@ -152,10 +152,10 @@ namespace KWUtils.KWGenericGrid
 
         private readonly NativeList<int> GetNeighborCells(int index, in int2 coord)
         {
-            NativeList<int> neighbors = new NativeList<int>(4, Allocator.Temp);
+            NativeList<int> neighbors = new (4, Allocator.Temp);
             for (int i = 0; i < 4; i++)
             {
-                int neighborId = AdjCellFromIndex(index,(1 << i), coord, NumCellX);
+                int neighborId = AdjCellFromIndex(index,i, coord, NumCellX);
                 if (neighborId == -1) continue;
                 neighbors.AddNoResize(neighborId);
             }

@@ -5,7 +5,7 @@ using Unity.Collections;
 using Unity.Jobs;
 using Unity.Mathematics;
 using UnityEngine;
-
+using UnityEngine.InputSystem;
 using static System.Array;
 using static Unity.Mathematics.math;
 using static KWUtils.KWmath;
@@ -36,7 +36,26 @@ namespace KWUtils
 
         private void Start()
         {
-            GatesGridSystem = new GateGrid(terrain.Settings.ChunkQuadsPerLine, terrain.Settings.NumChunkAxis);
+            int chunkQuadsPerLine = terrain.Settings.ChunkQuadsPerLine;
+            GatesGridSystem = new GateGrid(chunkQuadsPerLine, terrain.Settings.NumChunkAxis);
+            obstaclesGrid = new GenericChunkedGrid<bool>(terrain.Settings.NumQuadsAxis, chunkQuadsPerLine);
+        }
+
+        private void Update()
+        {
+            StartToken();
+            EndToken();
+        }
+
+        private void StartToken()
+        {
+            if (Mouse.current.leftButton.wasReleasedThisFrame) return;
+            //if(Physics.Raycast())
+        }
+        
+        private void EndToken()
+        {
+            if (Mouse.current.rightButton.wasReleasedThisFrame) return;
         }
 // =====================================================================================================================
 // --- Cluster Gates ---

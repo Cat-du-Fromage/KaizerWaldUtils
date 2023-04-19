@@ -8,7 +8,6 @@ namespace KWUtils
     public readonly struct Node
     {
         public readonly int CameFromNodeIndex;
-        
         public readonly int GCost; //Distance from Start Node
         public readonly int HCost; // distance from End Node
         public readonly int FCost;
