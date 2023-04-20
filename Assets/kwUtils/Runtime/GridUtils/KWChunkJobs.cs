@@ -20,16 +20,38 @@ using static KWUtils.KWGrid;
 using static KWUtils.KWChunk;
 using int2 = Unity.Mathematics.int2;
 
+[assembly: RegisterGenericJobType(typeof(KWUtils.JOrderArrayByChunkIndex<bool>))]
+[assembly: RegisterGenericJobType(typeof(KWUtils.JOrderArrayByChunkIndex<int>))]
+[assembly: RegisterGenericJobType(typeof(KWUtils.JOrderArrayByChunkIndex<float>))]
+[assembly: RegisterGenericJobType(typeof(KWUtils.JOrderArrayByChunkIndex<float2>))]
+[assembly: RegisterGenericJobType(typeof(KWUtils.JOrderArrayByChunkIndex<float3>))]
+[assembly: RegisterGenericJobType(typeof(KWUtils.JOrderArrayByChunkIndex<Vector2>))]
+[assembly: RegisterGenericJobType(typeof(KWUtils.JOrderArrayByChunkIndex<Vector3>))]
+
+[assembly: RegisterGenericJobType(typeof(KWUtils.JConvertGridBigToSmall<bool>))]
+[assembly: RegisterGenericJobType(typeof(KWUtils.JConvertGridBigToSmall<int>))]
+[assembly: RegisterGenericJobType(typeof(KWUtils.JConvertGridBigToSmall<float>))]
+[assembly: RegisterGenericJobType(typeof(KWUtils.JConvertGridBigToSmall<float2>))]
+[assembly: RegisterGenericJobType(typeof(KWUtils.JConvertGridBigToSmall<float3>))]
+[assembly: RegisterGenericJobType(typeof(KWUtils.JConvertGridBigToSmall<Vector2>))]
+[assembly: RegisterGenericJobType(typeof(KWUtils.JConvertGridBigToSmall<Vector3>))]
+
+[assembly: RegisterGenericJobType(typeof(KWUtils.JSharedOrderArrayByChunkIndex<bool>))]
+[assembly: RegisterGenericJobType(typeof(KWUtils.JSharedOrderArrayByChunkIndex<int>))]
+[assembly: RegisterGenericJobType(typeof(KWUtils.JSharedOrderArrayByChunkIndex<float>))]
+[assembly: RegisterGenericJobType(typeof(KWUtils.JSharedOrderArrayByChunkIndex<float2>))]
+[assembly: RegisterGenericJobType(typeof(KWUtils.JSharedOrderArrayByChunkIndex<float3>))]
+[assembly: RegisterGenericJobType(typeof(KWUtils.JSharedOrderArrayByChunkIndex<Vector2>))]
+[assembly: RegisterGenericJobType(typeof(KWUtils.JSharedOrderArrayByChunkIndex<Vector3>))]
+
 namespace KWUtils
 {
+/*
 #pragma warning disable 0219
     internal class KwChunkJobsGenericGeneration
     {
 
-        private KwChunkJobsGenericGeneration()
-        {
-            
-        }
+        private KwChunkJobsGenericGeneration(){ }
 
         private void GenJOrderArrayByChunkIndex()
         {
@@ -63,8 +85,11 @@ namespace KWUtils
             JSharedOrderArrayByChunkIndex<Vector2> jVector2 = new ();
             JSharedOrderArrayByChunkIndex<Vector3> jVector3 = new ();
         }
+        
     }
 #pragma warning restore 0219
+    */
+
     // The Job will "slice" the array and reorder them
     // at the end when we cut the array given the number of cell in one chunk
     // we only get the value owned by the chunk

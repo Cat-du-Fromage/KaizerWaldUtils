@@ -78,11 +78,8 @@ namespace KWUtils.KWGenericGrid
                 {
                     Array.Resize(ref currentPath, nativePathList.Length);
                 }
-                nativePathList
-                    .ToArray()
-                    .Reverse()
-                    .CopyTo((Span<int>)currentPath);
-                
+                nativePathList.AsArray().ToArray().Reverse().CopyTo((Span<int>)currentPath);
+
                 return false;
                 //currentPath = nativePathList.ToArray().Reverse();
             }

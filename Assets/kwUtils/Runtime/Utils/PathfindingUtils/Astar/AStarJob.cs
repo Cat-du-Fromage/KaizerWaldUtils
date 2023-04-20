@@ -121,11 +121,12 @@ namespace KWUtils.KWGenericGrid
     [BurstCompile]
     public struct JCheckPath : IJob
     {
-        [ReadOnly] public int NumCellX;
-        [ReadOnly] public int StartNodeIndex;
-        [ReadOnly] public int EndNodeIndex;
+        [ReadOnly] public int GridWidth;
+        [ReadOnly] public int StartIndex;
+        [ReadOnly] public int EndIndex;
         
-        [ReadOnly] public NativeArray<bool> ObstaclesGrid;
+        [ReadOnly] public NativeArray<bool> ObstaclesGrid; // on aura pas forcément le format bool
+        //il nous faudra les bool4 pour
         public NativeArray<Node> Nodes;
 
         [WriteOnly] public NativeReference<bool> PathExist;
@@ -135,14 +136,14 @@ namespace KWUtils.KWGenericGrid
             NativeHashSet<int> openSet = new (16, Temp);
             NativeHashSet<int> closeSet = new (16, Temp);
             
-            Nodes[StartNodeIndex] = StartNode(Nodes[StartNodeIndex], Nodes[EndNodeIndex]);
-            openSet.Add(StartNodeIndex);
+            Nodes[StartIndex] = StartNode(Nodes[StartIndex], Nodes[EndIndex]);
+            openSet.Add(StartIndex);
 
             NativeList<int> neighbors = new (4,Temp);
             
             int currentNode = GetLowestFCostNodeIndex(openSet);
-            PathExist.Value = currentNode == EndNodeIndex;
-            while (!openSet.IsEmpty || !PathExist.Value)
+            PathExist.Value = currentNode == EndIndex;
+            while (!openSet.IsEmpty && !PathExist.Value) //notEmpty and noPath
             {
                 openSet.Remove(currentNode);
                 closeSet.Add(currentNode);
@@ -156,25 +157,26 @@ namespace KWUtils.KWGenericGrid
                 }
                 neighbors.Clear();
                 currentNode = GetLowestFCostNodeIndex(openSet);
-                PathExist.Value = currentNode == EndNodeIndex;
+                PathExist.Value = currentNode == EndIndex;
             };
         }
 
         private void GetNeighborCells(int index, NativeList<int> curNeighbors, NativeHashSet<int> closeSet)
         {
-            int2 coord = GetXY2(index,NumCellX);
+            int2 coord = GetXY2(index,GridWidth);
             for (int i = 0; i < 4; i++)
             {
-                int neighborIndex = AdjCellFromIndex(index,i, coord, NumCellX);
+                int neighborIndex = AdjCellFromIndex(index,i, coord, GridWidth);
                 if (neighborIndex == -1 || ObstaclesGrid[neighborIndex] || closeSet.Contains(neighborIndex)) continue;
-
-                int tentativeCost = Nodes[index].GCost + CalculateDistanceCost(Nodes[index],Nodes[neighborIndex]);
-                if (tentativeCost < Nodes[neighborIndex].GCost)
+                
+                Node neighborNode = Nodes[neighborIndex];
+                int tentativeCost = Nodes[index].GCost + CalculateDistanceCost(Nodes[index],neighborNode);
+                if (tentativeCost < neighborNode.GCost)
                 {
                     curNeighbors.Add(neighborIndex);
-                    int gCost = CalculateDistanceCost(Nodes[neighborIndex], Nodes[StartNodeIndex]);
-                    int hCost = CalculateDistanceCost(Nodes[neighborIndex], Nodes[EndNodeIndex]);
-                    Nodes[neighborIndex] = new Node(index, gCost, hCost, Nodes[neighborIndex].Coord);
+                    int gCost = CalculateDistanceCost(neighborNode, Nodes[StartIndex]);
+                    int hCost = CalculateDistanceCost(neighborNode, Nodes[EndIndex]);
+                    Nodes[neighborIndex] = new Node(index, gCost, hCost, neighborNode.Coord);
                 }
             }
         }
