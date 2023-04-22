@@ -14,10 +14,10 @@ namespace KWUtils
         //private int2 chunkCoord;
         // Il faudra générer les portes à l'externe, les portes ici seront des références
         // Les changements sur l'array de référence impactera ainsi les chunks concernés
-        public ArraySegment<Gate> TopGates;
-        public ArraySegment<Gate> RightGates;
-        public ArraySegment<Gate> BottomGates;
-        public ArraySegment<Gate> LeftGates;
+        public Memory<Gate> TopGates;
+        public Memory<Gate> RightGates;
+        public Memory<Gate> BottomGates;
+        public Memory<Gate> LeftGates;
 
         public bool IsSideOpen(int side)
         {
@@ -31,11 +31,12 @@ namespace KWUtils
             };
         }
 
-        private bool CheckGate(ArraySegment<Gate> gatesAtSide)
+        private bool CheckGate(Memory<Gate> gatesAtSide)
         {
-            for (int i = 0; i < gatesAtSide.Count; i++)
+            Span<Gate> temp = gatesAtSide.Span;
+            for (int i = 0; i < temp.Length; i++)
             {
-                if (!gatesAtSide[i].IsClosed) return true;
+                if (!temp[i].IsClosed) return true;
             }
             return false;
         }

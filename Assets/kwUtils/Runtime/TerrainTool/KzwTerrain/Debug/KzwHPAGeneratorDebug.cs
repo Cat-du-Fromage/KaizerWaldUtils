@@ -58,8 +58,6 @@ namespace KWUtils
 
             void DrawGateByRangeIndex()
             {
-                //int2 numChunkAxis = terrain.Settings.NumChunkAxis;
-                //int2 numSpaceHV = new (math.max(0,numChunkAxis.x-1) * numChunkAxis.y, numChunkAxis.x * math.max(0, numChunkAxis.y-1));
                 int numRangeGateIndex = math.csum(GatesGridSystem.NumSpaceHV);
                 int maxRangeGateIndex = numRangeGateIndex - 1;
                 
@@ -67,11 +65,14 @@ namespace KWUtils
                     currentRangeGateIndex = currentRangeGateIndex >= maxRangeGateIndex ? 0 : currentRangeGateIndex+1;
                 if (Clavier.numpadMinusKey.wasReleasedThisFrame)
                     currentRangeGateIndex = currentRangeGateIndex == 0 ? numRangeGateIndex-1 : currentRangeGateIndex-1;
-                for (int i = 0; i < GatesGridSystem.GroupedGates[currentRangeGateIndex].Count; i++)
-                    DrawGate(GatesGridSystem.GroupedGates[currentRangeGateIndex][i]);
+                for (int i = 0; i < GatesGridSystem.GroupedGates[currentRangeGateIndex].Length; i++)
+                    DrawGate(GatesGridSystem.GroupedGates[currentRangeGateIndex].Span[i]);
             }
         }
         
+        /*
+         * DRAW CHUNKS COMPONENT: Draw gates connect
+         */
         private void ChunkComponentDebug()
         {
             if (!Enable_ChunkComponent_Debug) return;
@@ -87,17 +88,18 @@ namespace KWUtils
             }
             
             ChunkComponent component = GatesGridSystem.ChunkComponents[currentChunkIndex];
-            if (!component.TopGates.IsNullOrEmpty())    DrawRangeGate(component.TopGates);
-            if (!component.RightGates.IsNullOrEmpty())  DrawRangeGate(component.RightGates);
-            if (!component.BottomGates.IsNullOrEmpty()) DrawRangeGate(component.BottomGates);
-            if (!component.LeftGates.IsNullOrEmpty())   DrawRangeGate(component.LeftGates);
+            if (!component.TopGates.IsEmpty)    DrawRangeGate(component.TopGates);
+            if (!component.RightGates.IsEmpty)  DrawRangeGate(component.RightGates);
+            if (!component.BottomGates.IsEmpty) DrawRangeGate(component.BottomGates);
+            if (!component.LeftGates.IsEmpty)   DrawRangeGate(component.LeftGates);
             
         }
 
         // UTILITIES
+        // =============================================================================================================
         private void DrawRangeGate(Gate[] gates) { foreach (Gate gate in gates) DrawGate(gate); }
         private void DrawRangeGate(ArraySegment<Gate> gates) { foreach (Gate gate in gates) DrawGate(gate); }
-        
+        private void DrawRangeGate(Memory<Gate> gates) { foreach (Gate gate in gates.Span) DrawGate(gate); }
         private void DrawGate(Gate gate)
         {
             bool isHorizontal = (gate.Index2 - gate.Index1 == 1);
