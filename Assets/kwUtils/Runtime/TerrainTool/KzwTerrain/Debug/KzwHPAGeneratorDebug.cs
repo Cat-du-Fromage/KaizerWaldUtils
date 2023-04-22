@@ -19,8 +19,11 @@ namespace KWUtils
         
         public bool DebugHPA = false;
         public bool Enable_TerrainGates_Debug = false;
+        
+        [Header("By Chunk")]
         public bool Enable_ChunkComponent_Debug = false;
-
+        public bool Enable_SideState_Debug = false;
+        
         public Keyboard Clavier => Keyboard.current;
         private void OnDrawGizmos()
         {
@@ -65,8 +68,8 @@ namespace KWUtils
                     currentRangeGateIndex = currentRangeGateIndex >= maxRangeGateIndex ? 0 : currentRangeGateIndex+1;
                 if (Clavier.numpadMinusKey.wasReleasedThisFrame)
                     currentRangeGateIndex = currentRangeGateIndex == 0 ? numRangeGateIndex-1 : currentRangeGateIndex-1;
-                for (int i = 0; i < GatesGridSystem.GroupedGates[currentRangeGateIndex].Length; i++)
-                    DrawGate(GatesGridSystem.GroupedGates[currentRangeGateIndex].Span[i]);
+                for (int i = 0; i < GatesGridSystem.GateClusters[currentRangeGateIndex].Length; i++)
+                    DrawGate(GatesGridSystem.GateClusters[currentRangeGateIndex].GateSlice.Span[i]);
             }
         }
         
@@ -88,11 +91,42 @@ namespace KWUtils
             }
             
             ChunkComponent component = GatesGridSystem.ChunkComponents[currentChunkIndex];
-            if (!component.TopGates.IsEmpty)    DrawRangeGate(component.TopGates);
-            if (!component.RightGates.IsEmpty)  DrawRangeGate(component.RightGates);
-            if (!component.BottomGates.IsEmpty) DrawRangeGate(component.BottomGates);
-            if (!component.LeftGates.IsEmpty)   DrawRangeGate(component.LeftGates);
-            
+            if (!component.TopGates.IsEmpty)    DrawRangeGate(component.TopGates.Span[0].GateSlice);
+            if (!component.RightGates.IsEmpty)  DrawRangeGate(component.RightGates.Span[0].GateSlice);
+            if (!component.BottomGates.IsEmpty) DrawRangeGate(component.BottomGates.Span[0].GateSlice);
+            if (!component.LeftGates.IsEmpty)   DrawRangeGate(component.LeftGates.Span[0].GateSlice);
+
+
+            GateClusterDebug();
+        }
+
+        private void GateClusterDebug()
+        {
+            if (!Enable_SideState_Debug) return;
+            ChunkComponent component = GatesGridSystem.ChunkComponents[currentChunkIndex];
+            if (!component.TopGates.IsEmpty)
+            {
+                if (Keyboard.current.upArrowKey.wasReleasedThisFrame) component.TopGates.Span[0].Toggle();
+                DrawClosedSide(component.TopGates.Span[0]);
+            }
+
+            if (!component.RightGates.IsEmpty)
+            {
+                if (Keyboard.current.rightArrowKey.wasReleasedThisFrame) component.RightGates.Span[0].Toggle();
+                DrawClosedSide(component.RightGates.Span[0]);
+            }
+
+            if (!component.BottomGates.IsEmpty)
+            {
+                if (Keyboard.current.downArrowKey.wasReleasedThisFrame) component.BottomGates.Span[0].Toggle();
+                DrawClosedSide(component.BottomGates.Span[0]);
+            }
+
+            if (!component.LeftGates.IsEmpty)
+            {
+                if (Keyboard.current.leftArrowKey.wasReleasedThisFrame) component.LeftGates.Span[0].Toggle();
+                DrawClosedSide(component.LeftGates.Span[0]);
+            }
         }
 
         // UTILITIES
@@ -103,10 +137,31 @@ namespace KWUtils
         private void DrawGate(Gate gate)
         {
             bool isHorizontal = (gate.Index2 - gate.Index1 == 1);
-            Gizmos.color = isHorizontal ? Color.green : Color.red;
+            Gizmos.color = isHorizontal ? Color.magenta : Color.cyan;
             float radius = isHorizontal ? 0.3f : 0.4f;
             Gizmos.DrawWireSphere(terrain.Grid.GridArray[gate.Index1].Center, radius);
             Gizmos.DrawWireSphere(terrain.Grid.GridArray[gate.Index2].Center, radius);
+        }
+        
+        private void DrawClosedSide(GateCluster cluster)
+        {
+            
+            Vector3 offsetRight = Vector3.right * 0.5f;
+            Vector3 offsetForward = Vector3.forward * 0.5f;
+            float offsetLengthMul = (terrain.Grid.GridData.NumCellInChunkX - 1) * 0.5f;
+
+            bool isHorizontal = cluster.Orientation == GateOrientation.Horizontal;
+            Vector3 position = terrain.Grid.GridArray[cluster[0].Index1].Center;
+            
+            position += isHorizontal ? offsetRight : offsetForward;
+            position += isHorizontal ? Vector3.forward * offsetLengthMul : Vector3.right * offsetLengthMul;
+
+            Vector3 size = isHorizontal
+                ? new Vector3(1, 2, terrain.Grid.GridData.NumCellInChunkX)
+                : new Vector3(terrain.Grid.GridData.NumCellInChunkX, 2, 1);
+            
+            Gizmos.color = cluster.IsClosed ? Color.red : Color.green;
+            Gizmos.DrawWireCube(position, size);
         }
     }
 }

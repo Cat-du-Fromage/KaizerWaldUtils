@@ -35,7 +35,7 @@ namespace KWUtils
         public bool4[] ChunkSides { get; private set; }
 
         //Continuous Gates on edges of chunks connected to other chunks
-        public List<Memory<Gate>> GroupedGates{ get; private set; }
+        public GateCluster[] GateClusters{ get; private set; }
         
         //Chunks with all gates connected to them
         public ChunkComponent[] ChunkComponents { get; private set; }
@@ -49,23 +49,51 @@ namespace KWUtils
             OffsetHtoV = max(0, numChunkXY.x - 1) * numChunkXY.y * chunkQuadsPerLine;
             NumSpaceHV = int2(max(0, numChunkXY.x - 1) * numChunkXY.y, numChunkXY.x * max(0, numChunkXY.y - 1));
 
-            ChunkSides = new bool4[csum(numChunkXY)];
+            ChunkSides = new bool4[numChunkXY.x * numChunkXY.y];
             BuildGates(chunkQuadsPerLine, numChunkXY);
-            CreateGroupedGate(chunkQuadsPerLine);
+            BuildGateClusters(chunkQuadsPerLine, numChunkXY);
             CreateChunkComponents(numChunkXY);
         }
-        
-        private void CreateGroupedGate(int chunkQuadsPerLine)
+        private void BuildGateClusters(int chunkQuadsPerLine, in int2 numChunkXY)
         {
             int numGroup = csum(NumSpaceHV);
-            GroupedGates = new List<Memory<Gate>>(numGroup);
+            GateClusters = new GateCluster[numGroup];
             for (int i = 0; i < numGroup; i++)
             {
                 int startIndex = chunkQuadsPerLine * i;
-                GroupedGates.Add(new Memory<Gate>(TerrainGates, startIndex, chunkQuadsPerLine));
+                int2 chunksPair = GetChunkPair(i, NumSpaceHV.x, numChunkXY);
+                //UnityEngine.Debug.Log($"index : {i} max: {numGroup} | startIndex: {startIndex} max: {TerrainGates.Length} | chunkPair = {chunksPair}");
+                GateClusters[i] = new GateCluster
+                (
+                    i,
+                    NumSpaceHV,
+                    numChunkXY,
+                    new Memory<Gate>(TerrainGates, startIndex, chunkQuadsPerLine),
+                    new Memory<bool4>(ChunkSides, chunksPair.x, 1),
+                    new Memory<bool4>(ChunkSides, chunksPair.y, 1)
+                );
+                
+            }
+            
+            //MAUVAIS INDEX!!!!
+            int2 GetChunkPair(int clusterIndex, int numIndicesHorizontal, int2 numChunkXY)
+            {
+                GateOrientation orientation = (numChunkXY.x is 1 || numChunkXY.y is 1) 
+                ? numChunkXY.x is 1 ? GateOrientation.Vertical : GateOrientation.Horizontal
+                : (clusterIndex < numIndicesHorizontal) ? GateOrientation.Horizontal : GateOrientation.Vertical;
+                
+                bool isHorizontal = orientation is GateOrientation.Horizontal;
+            
+                int offsetIndex   = isHorizontal ? clusterIndex : clusterIndex - numIndicesHorizontal;
+                int width         = isHorizontal ? numChunkXY.x - 1 : numChunkXY.x;
+                int2 coord        = GetXY2(offsetIndex, width);
+  
+                int chunk1Index   = isHorizontal ? clusterIndex + coord.y : offsetIndex;
+                int chunk2Index   = isHorizontal ? chunk1Index + 1 : chunk1Index + numChunkXY.x;
+
+                return new int2(chunk1Index, chunk2Index);
             }
         }
-        
         private void CreateChunkComponents(in int2 numChunkXY)
         {
             ChunkComponents = new ChunkComponent[numChunkXY.x * numChunkXY.y];
@@ -74,26 +102,16 @@ namespace KWUtils
                 (int x, int y) = GetXY(i, numChunkXY.x);
                 bool2 leftRight = bool2(x > 0, x < numChunkXY.x - 1);
                 bool2 bottomTop = bool2(y > 0, y < numChunkXY.y - 1);
-        
                 //Horizontal: start Indexes
                 int2 startLeftRightIndex = int2(i - y - 1, i - y);
                 //Vertical: start Indexes, numSpace because we work on chunks! not cells
                 int2 startBotTopIndex = NumSpaceHV.x + int2(mad(y-1, numChunkXY.x,x), mad(y,numChunkXY.x,x));
-                /*
                 ChunkComponents[i] = new ChunkComponent
                 {
-                    TopGates    = bottomTop[1] ? GroupedGates[startBotTopIndex[1]]    : Empty<Gate>(),
-                    RightGates  = leftRight[1] ? GroupedGates[startLeftRightIndex[1]] : Empty<Gate>(),
-                    BottomGates = bottomTop[0] ? GroupedGates[startBotTopIndex[0]]    : Empty<Gate>(),
-                    LeftGates   = leftRight[0] ? GroupedGates[startLeftRightIndex[0]] : Empty<Gate>(),
-                };
-                */
-                ChunkComponents[i] = new ChunkComponent
-                {
-                    TopGates    = bottomTop[1] ? GroupedGates[startBotTopIndex[1]]    : Memory<Gate>.Empty,
-                    RightGates  = leftRight[1] ? GroupedGates[startLeftRightIndex[1]] : Memory<Gate>.Empty,
-                    BottomGates = bottomTop[0] ? GroupedGates[startBotTopIndex[0]]    : Memory<Gate>.Empty,
-                    LeftGates   = leftRight[0] ? GroupedGates[startLeftRightIndex[0]] : Memory<Gate>.Empty,
+                    TopGates    = bottomTop[1] ? new Memory<GateCluster>(GateClusters, startBotTopIndex[1],1)    : Memory<GateCluster>.Empty,
+                    RightGates  = leftRight[1] ? new Memory<GateCluster>(GateClusters, startLeftRightIndex[1],1) : Memory<GateCluster>.Empty,
+                    BottomGates = bottomTop[0] ? new Memory<GateCluster>(GateClusters, startBotTopIndex[0],1)    : Memory<GateCluster>.Empty,
+                    LeftGates   = leftRight[0] ? new Memory<GateCluster>(GateClusters, startLeftRightIndex[0],1) : Memory<GateCluster>.Empty,
                 };
             }
         }
@@ -157,8 +175,7 @@ namespace KWUtils
                     if (index < NumSpaceHorizontalVertical[0])
                     {
                         int indexInChunkH = mad(ChunkQuadsPerLine, gateIndex, StartIndexHorizontalVertical[0]);
-                        int indexInGridH = GetGridCellIndexFromChunkCellIndex(chunkIndexH, mapNumQuadX, ChunkQuadsPerLine,
-                            indexInChunkH);
+                        int indexInGridH = GetGridCellIndexFromChunkCellIndex(chunkIndexH, mapNumQuadX, ChunkQuadsPerLine, indexInChunkH);
                         int position = baseIndexH + gateIndex;
                         Gates[position] = new Gate(indexInGridH, indexInGridH + 1);
                     }
@@ -171,33 +188,7 @@ namespace KWUtils
                         Gates[position] = new Gate(indexInGridV, indexInGridV + mapNumQuadX);
                     }
                 } //end for
-            } //end for
-        }
+            } //end GetGates
+        } //end for
     }
 }
-
-/*
-private void CreateChunkComponents(in int2 numChunkXY)
-{
-    ChunkComponents = new ChunkComponent[numChunkXY.x * numChunkXY.y];
-    for (int i = 0; i < ChunkComponents.Length; i++)
-    {
-        (int x, int y) = GetXY(i, numChunkXY.x);
-        bool2 leftRight = bool2(x > 0, x < numChunkXY.x - 1);
-        bool2 bottomTop = bool2(y > 0, y < numChunkXY.y - 1);
-        
-        //Horizontal: start Indexes
-        int2 startLeftRightIndex = int2(i - y - 1, i - y);
-        //Vertical: start Indexes, numSpace because we work on chunks! not cells
-        int2 startBotTopIndex = NumSpaceHV.x + int2(mad(y-1, numChunkXY.x,x), mad(y,numChunkXY.x,x));
-
-        ChunkComponents[i] = new ChunkComponent
-        {
-            TopGates    = bottomTop[1] ? GroupedGates[startBotTopIndex[1]]    : Empty<Gate>(),
-            RightGates  = leftRight[1] ? GroupedGates[startLeftRightIndex[1]] : Empty<Gate>(),
-            BottomGates = bottomTop[0] ? GroupedGates[startBotTopIndex[0]]    : Empty<Gate>(),
-            LeftGates   = leftRight[0] ? GroupedGates[startLeftRightIndex[0]] : Empty<Gate>(),
-        };
-    }
-}
-*/
