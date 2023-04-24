@@ -134,6 +134,7 @@ GameObject:
   - component: {fileID: 698576216}
   - component: {fileID: 698576217}
   - component: {fileID: 698576218}
+  - component: {fileID: 698576219}
   m_Layer: 0
   m_Name: V3Terrain
   m_TagString: Untagged
@@ -215,6 +216,23 @@ MonoBehaviour:
   DebugHPA: 0
   Enable_TerrainGates_Debug: 0
   Enable_ChunkComponent_Debug: 0
+  Enable_SideState_Debug: 0
+--- !u!114 &698576219
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 698576214}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 249964747f61ba249bb766eb89cad147, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  PrefabStart: {fileID: 1995422261184333810, guid: d09a6c8346bc27242b9cf885c9affa37,
+    type: 3}
+  PrefabEnd: {fileID: 1999308955604100977, guid: abaaef5eddda398419b8378d82bacf61,
+    type: 3}
 --- !u!1 &1048028268
 GameObject:
   m_ObjectHideFlags: 0
