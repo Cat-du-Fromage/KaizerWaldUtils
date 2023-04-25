@@ -8,7 +8,7 @@ namespace KWUtils
     public readonly struct Node
     {
         public readonly int CameFromNodeIndex;
-        public readonly int GCost; //Distance from Start Node
+        public readonly int GCost; // Distance from Start Node
         public readonly int HCost; // distance from End Node
         public readonly int FCost;
         public readonly int2 Coord;
@@ -29,6 +29,15 @@ namespace KWUtils
             HCost = default;
             FCost = GCost + HCost;
             Coord = coord;
+        }
+        
+        public Node(int nodeIndex, int gridWidth)
+        {
+            CameFromNodeIndex = -1;
+            GCost = int.MaxValue;
+            HCost = default;
+            FCost = GCost + HCost;
+            Coord = KWGrid.GetXY2(nodeIndex, gridWidth);
         }
     }
 }

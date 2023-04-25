@@ -11,6 +11,8 @@ using static KWUtils.KWmath;
 using static KWUtils.KWGrid;
 using static KWUtils.KWChunk;
 
+using float2 = Unity.Mathematics.float2; 
+
 namespace KWUtils
 {
     public sealed class GenericChunkedGrid<T> : GenericGrid<T>
@@ -68,7 +70,8 @@ namespace KWUtils
         //==========
         public Vector3 GetChunkCenter(int chunkIndex)
         {
-            float2 chunkCoord = (GetXY2(chunkIndex,NumChunkXY.x) * ChunkSize + new float2(ChunkSize/2f));
+            float2 offset = IsCentered ? ((float2)NumChunkXY * ChunkSize / 2) : float2.zero;
+            float2 chunkCoord = GetXY2(chunkIndex,NumChunkXY.x) * ChunkSize + new float2(ChunkSize/2f) - offset;
             return new Vector3(chunkCoord.x, 0, chunkCoord.y);
         }
         public Vector3 GetChunkCellCenter(int chunkIndex, int cellIndexInChunk)
@@ -105,6 +108,15 @@ namespace KWUtils
             int2 chunkCoord = (int2)floor(cellCoord / ChunkSize);
             int2 cellCoordInChunk = cellCoord - (chunkCoord * ChunkSize);
             return GetIndex(cellCoordInChunk,ChunkSize);
+        }
+        
+        public int GetChunkIndexFromPosition(float3 pos)
+        {
+            float2 offset = IsCentered ?GridData.NumCellXY / new float2(2f) : float2.zero;
+            float2 percents = (pos.xz + offset) / (NumChunkXY * ChunkSize);
+            percents = clamp(percents, float2.zero, 1f);
+            int2 xy =  clamp((int2)floor(NumChunkXY * percents), 0, NumChunkXY - 1); // Cellsize not applied?!
+            return mad(xy.y, NumChunkXY.x, xy.x);
         }
         //==============================================================================================================
         

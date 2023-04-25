@@ -43,7 +43,7 @@ namespace KWUtils
             NumQuadPerLine = Settings.NumQuadPerLine;
             NumChunkXY = Settings.NumChunkAxis;
 
-            Grid = new GenericChunkedGrid<GridCell>(Settings.NumQuadsAxis, Settings.NumQuadPerLine);
+            Grid = new GenericChunkedGrid<GridCell>(Settings.NumQuadsAxis, Settings.NumQuadPerLine, 1, true);
         }
 
         private void Start()

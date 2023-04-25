@@ -25,7 +25,7 @@ namespace KWUtils
     {
         private KzwTerrainGenerator terrain;
         
-        private GateGrid GatesGridSystem;
+        public GateGrid GatesGridSystem { get; private set; }
         // GRILLE DES OBSTACLES
         private GenericChunkedGrid<bool> obstaclesGrid;
 
