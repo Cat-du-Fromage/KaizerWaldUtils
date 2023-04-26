@@ -4,6 +4,7 @@ using Unity.Collections;
 using Unity.Jobs;
 using Unity.Mathematics;
 
+using static KWUtils.GateOrientation;
 using static Unity.Mathematics.bool4;
 
 namespace KWUtils
@@ -14,9 +15,10 @@ namespace KWUtils
         Vertical = 1
     }
 
+    // Pour le moment Représente une ligne entière
     public struct GateCluster
     {
-        public bool IsClosed{ get; private set; }
+        public bool IsClosed { get; private set; }
         public GateOrientation Orientation;
         public Memory<Gate> GateSlice;
         public Memory<bool4> Side1;
@@ -28,8 +30,8 @@ namespace KWUtils
             IsClosed = false;
             GateSlice = gateSlice;
             Orientation = (numChunkXY.x is 1 || numChunkXY.y is 1)
-            ? numChunkXY.x is 1 ? GateOrientation.Vertical : GateOrientation.Horizontal
-            : (indexCluster < numSpaceHV.x) ? GateOrientation.Horizontal : GateOrientation.Vertical;
+                ? numChunkXY.x is 1 ? Vertical : Horizontal
+                : (indexCluster < numSpaceHV.x) ? Horizontal : Vertical;
             Side1 = side1;
             Side2 = side2;
         }

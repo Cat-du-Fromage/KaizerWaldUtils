@@ -131,11 +131,10 @@ namespace KWUtils
 
         private int GetLowestFCostNodeIndex(ref NativeArray<Node> Nodes, NativeHashSet<int> openSet)
         {
-            //ATTENTION ENUMERATOR CAUSE CRASH!!!!
             int lowest = -1;
             foreach (int index in openSet)
             {
-                lowest = lowest == -1 ? index : lowest;
+                lowest = select(lowest,index,lowest == -1);
                 lowest = select(lowest, index, Nodes[index].FCost < Nodes[lowest].FCost);
             }
             return lowest;
