@@ -1,9 +1,12 @@
 using System;
+using System.Collections;
+using System.Collections.Generic;
 using Unity.Burst;
 using Unity.Collections;
 using Unity.Jobs;
 using Unity.Mathematics;
 
+using static KWUtils.KWmath;
 using static KWUtils.GateOrientation;
 using static Unity.Mathematics.bool4;
 
@@ -14,13 +17,94 @@ namespace KWUtils
         Horizontal = 0,
         Vertical = 1
     }
+    
+    public struct SubClusterNode
+    {
+        public readonly int2 CameFromSubCluster;
+        public readonly int GCost; // Distance from Start Node
+        public readonly int HCost; // distance from End Node
+        public readonly int FCost;
+        public readonly int2 SubClusterCoord;
+    }
+
+    public struct SubCluster
+    {
+        public int IndexClusterHV;
+        public int IndexInCluster;
+
+        //public PairStartLength GateStartIndexLength;
+        
+        private FixedList512Bytes<int2> Access;
+        private FixedList512Bytes<int> Distances;
+    }
+
+    // SubCluster by Cluster
+    public struct ClusterSubClusters
+    {
+        public FixedList512Bytes<PairStartLength> GateStartIndexLength;
+
+        public static ClusterSubClusters[] Build(int2 numSpaceHV, GateCluster[] cluster)
+        {
+            ClusterSubClusters[] array = new ClusterSubClusters[cmul(numSpaceHV)];
+
+            for (int i = 0; i < array.Length; i++)
+            {
+                array[i].GateStartIndexLength = new FixedList512Bytes<PairStartLength>();
+                array[i].GateStartIndexLength = GetSubCluster(cluster[i]);
+            }
+            
+            FixedList512Bytes<PairStartLength> GetSubCluster(GateCluster cluster)
+            {
+                FixedList512Bytes<PairStartLength> pairList = new ();
+                if (cluster.IsEmpty || cluster.IsClosed) return pairList;
+                Span<Gate> gateSlice = cluster.GateSlice.Span;
+                int startIndex = gateSlice[0].GateIndex;
+                for (int i = 0; i < gateSlice.Length; i++)
+                {
+                    if (!gateSlice[i].IsClosed) continue;
+                    if (i!=0)
+                    {
+                        pairList.Add(new PairStartLength(startIndex, i-startIndex));
+                    }
+                    startIndex = i + 1;
+                }
+                return pairList;
+            }
+            
+            return array;
+        }
+    }
+
+    public struct ChunkGatesData
+    {
+
+        public int numGateLine;
+        public int GateStartIndex;
+
+        // Start Index for row gates
+        public int GetStartIndexSideGateAt(ECardinal side, int index)
+        {
+            return GateStartIndex + ((int)side * numGateLine) + index;
+        }
+        
+        //Cluster
+        private FixedList64Bytes<int> topCluster;
+        
+        // Start Index for row gates
+        public int GetSubClusterStartIndexAt(ECardinal side, int index)
+        {
+            return GateStartIndex + ((int)side * numGateLine) + index;
+        }
+    }
 
     // Pour le moment Représente une ligne entière
     public struct GateCluster
     {
+        public readonly GateOrientation Orientation;
         public bool IsClosed { get; private set; }
-        public GateOrientation Orientation;
+
         public Memory<Gate> GateSlice;
+        
         public Memory<bool4> Side1;
         public Memory<bool4> Side2;
 
@@ -37,6 +121,8 @@ namespace KWUtils
         }
 
         public readonly int Length => GateSlice.Span.Length;
+        
+        public readonly bool IsEmpty => GateSlice.Span.Length == 0;
         public readonly Gate this[int index] => GateSlice.Span[index];
 
         // Close/Open Function
@@ -48,10 +134,10 @@ namespace KWUtils
         {
             if (IsClosed == newValue) return false;
             IsClosed = newValue;
-            Side1.Span[0] = Orientation == GateOrientation.Horizontal
+            Side1.Span[0] = Orientation == Horizontal
                 ? new bool4(Side1.Span[0].x, newValue, Side1.Span[0].zw)
                 : new bool4(Side1.Span[0].xy, newValue, Side1.Span[0].w);
-            Side2.Span[0] = Orientation == GateOrientation.Horizontal
+            Side2.Span[0] = Orientation == Horizontal
                 ? new bool4(Side2.Span[0].xyz, newValue)
                 : new bool4(newValue, Side2.Span[0].yzw);
             return true;

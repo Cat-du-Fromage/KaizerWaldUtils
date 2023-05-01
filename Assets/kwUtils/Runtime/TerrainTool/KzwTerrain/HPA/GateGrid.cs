@@ -24,6 +24,8 @@ namespace KWUtils
 {
     public class GateGrid
     {
+        private GridData gridData;
+        
         private int GatesLength;
         private int OffsetHtoV;
         public int2 NumSpaceHV{ get; private set; }
@@ -39,12 +41,18 @@ namespace KWUtils
         
         //Chunks with all gates connected to them
         public ChunkComponent[] ChunkComponents { get; private set; }
+        
+        // SubCluster by chunk AND by sides(inside struct)
+        //public ChunkSubCluster[] ChunkSubClusters { get; private set; }
+        
+        public ClusterSubClusters[] ClustersSubClusters { get; private set; }
 
 // =====================================================================================================================
 // --- Gates Construction ---
 // =====================================================================================================================
         public GateGrid(int chunkQuadsPerLine, in int2 numChunkXY)
         {
+            gridData = new GridData(numChunkXY * chunkQuadsPerLine, chunkQuadsPerLine);
             GatesLength = chunkQuadsPerLine;
             OffsetHtoV = max(0, numChunkXY.x - 1) * numChunkXY.y * chunkQuadsPerLine;
             NumSpaceHV = int2(max(0, numChunkXY.x - 1) * numChunkXY.y, numChunkXY.x * max(0, numChunkXY.y - 1));
@@ -53,6 +61,15 @@ namespace KWUtils
             BuildGates(chunkQuadsPerLine, numChunkXY);
             BuildGateClusters(chunkQuadsPerLine, numChunkXY);
             CreateChunkComponents(numChunkXY);
+            
+            // SubCluster By Cluster
+            ClustersSubClusters = ClusterSubClusters.Build(NumSpaceHV, GateClusters);
+            
+            /*
+            ChunkSubClusters = new ChunkSubCluster[ChunkComponents.Length];
+            for (int i = 0; i < ChunkComponents.Length; i++)
+                ChunkSubClusters[i] = new ChunkSubCluster(ChunkComponents[i]);
+            */
         }
         private void BuildGateClusters(int chunkQuadsPerLine, in int2 numChunkXY)
         {
@@ -75,7 +92,6 @@ namespace KWUtils
                 
             }
             
-            //MAUVAIS INDEX!!!!
             int2 GetChunkPair(int clusterIndex, int numIndicesHorizontal, int2 numChunkXY)
             {
                 GateOrientation orientation = (numChunkXY.x is 1 || numChunkXY.y is 1) 
@@ -132,13 +148,58 @@ namespace KWUtils
             job.Schedule(default).Complete();
             tempGates.CopyTo(TerrainGates);
         }
-        /*
-        ~GateGrid()
+        
+        // ==============================================================================================
+        // --- UPDATE ELEMENTS ---
+        // ==============================================================================================
+
+        public int GetClusterIndex(int gridIndex)
         {
-            //if (TerrainGates.IsCreated) TerrainGates.Dispose();
-            if (ChunkSides.IsCreated) ChunkSides.Dispose();
+            int chunkIndex = GetChunkIndexFromGridIndex(gridIndex, gridData.NumCellInChunkX, gridData.NumChunkXY.x);
+            int2 chunkCoord = GetXY2(chunkIndex, gridData.NumChunkXY.x);
+            int indexInChunk = GetCellChunkIndexFromGridIndex(gridIndex, gridData.NumCellInChunkX, gridData.NumChunkXY.x);
+            int2 cellCoord = GetXY2(indexInChunk, gridData.NumCellInChunkX);
+            
+            // Gauche
+            if (cellCoord.x == 0 && chunkCoord.x != 0)
+            {
+                int rightClusterIndex = chunkIndex - 1 - chunkCoord.y;
+                int gateIndex = cellCoord.y + rightClusterIndex * gridData.NumCellInChunkX;
+                return gateIndex;
+            } 
+            // Droite
+            if (cellCoord.x == gridData.NumCellInChunkX-1 && chunkCoord.x != gridData.NumChunkXY.x-1)
+            {
+                int leftClusterIndex = chunkIndex - chunkCoord.y;
+                int gateIndex = cellCoord.y + leftClusterIndex * gridData.NumCellInChunkX;
+                return gateIndex;
+            }
+            
+            // TOP / BOTTOM => OFFSET
+            
+            // Bas
+            if (cellCoord.y == 0 && chunkCoord.y != 0)
+            {
+                int botClusterIndex = NumSpaceHV.x + chunkIndex - gridData.NumChunkXY.x;
+                int gateIndex = cellCoord.x + botClusterIndex * gridData.NumCellInChunkX;
+                return gateIndex;
+            }
+            // Haut
+            if (cellCoord.y == gridData.NumCellInChunkX-1 && chunkCoord.y != gridData.NumCellInChunkX-1)
+            {
+                int topClusterIndex = NumSpaceHV.x + chunkIndex;
+                int gateIndex = cellCoord.x + topClusterIndex * gridData.NumCellInChunkX;
+                return gateIndex;
+            }
+            return 0;
+            
+            
         }
-        */
+        
+        public void CloseGateAt(int gateIndex)
+        {
+            TerrainGates[gateIndex].IsClosed = true;
+        }
     }
 
     [BurstCompile]
@@ -177,7 +238,7 @@ namespace KWUtils
                         int indexInChunkH = mad(ChunkQuadsPerLine, gateIndex, StartIndexHorizontalVertical[0]);
                         int indexInGridH = GetGridCellIndexFromChunkCellIndex(chunkIndexH, mapNumQuadX, ChunkQuadsPerLine, indexInChunkH);
                         int position = baseIndexH + gateIndex;
-                        Gates[position] = new Gate(indexInGridH, indexInGridH + 1);
+                        Gates[position] = new Gate(position, indexInGridH, indexInGridH + 1);
                     }
 
                     if (index < NumSpaceHorizontalVertical[1])
@@ -185,7 +246,7 @@ namespace KWUtils
                         int indexInChunkV = StartIndexHorizontalVertical[1] + gateIndex; //top left cell on the chunk + index
                         int indexInGridV = GetGridCellIndexFromChunkCellIndex(chunkIndexV, mapNumQuadX, ChunkQuadsPerLine, indexInChunkV);
                         int position = baseIndexV + gateIndex;
-                        Gates[position] = new Gate(indexInGridV, indexInGridV + mapNumQuadX);
+                        Gates[position] = new Gate(position,indexInGridV, indexInGridV + mapNumQuadX);
                     }
                 } //end for
             } //end GetGates

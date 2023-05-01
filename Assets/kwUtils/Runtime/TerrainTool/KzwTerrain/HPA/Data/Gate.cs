@@ -7,12 +7,14 @@ namespace KWUtils
     [Serializable]
     public struct Gate
     {
+        public int GateIndex;
         public bool IsClosed; // facilité pour math.any qui ne reconnaît que le cas true
         public int Index1;
         public int Index2;
 
-        public Gate(int index1, int index2)
+        public Gate(int gateIndex, int index1, int index2)
         {
+            GateIndex = gateIndex;
             IsClosed = false;
             Index1 = index1;
             Index2 = index2;
