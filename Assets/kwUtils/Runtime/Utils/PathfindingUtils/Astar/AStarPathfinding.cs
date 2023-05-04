@@ -143,7 +143,7 @@ namespace KWUtils.KWGenericGrid
             if (nativePathList.IsCreated) nativePathList.Dispose();
         }
 
-        [BurstCompile(CompileSynchronously = true)]
+        [BurstCompile]
         private struct JaStar : IJob
         {
             [ReadOnly] public int NumCellX;
@@ -157,25 +157,18 @@ namespace KWUtils.KWGenericGrid
             
             public void Execute()
             {
-                NativeHashSet<int> openSet = new NativeHashSet<int>(16, Allocator.Temp);
-                NativeHashSet<int> closeSet = new NativeHashSet<int>(16, Allocator.Temp);
+                NativeHashSet<int> openSet = new (16, Allocator.Temp);
+                NativeHashSet<int> closeSet = new (16, Allocator.Temp);
                 
                 Nodes[StartNodeIndex] = StartNode(Nodes[StartNodeIndex], Nodes[EndNodeIndex]);
                 openSet.Add(StartNodeIndex);
 
-                NativeList<int> neighbors = new NativeList<int>(8,Allocator.Temp);
+                NativeList<int> neighbors = new (8,Allocator.Temp);
 
-                while (!openSet.IsEmpty)
+                int currentNode = GetLowestFCostNodeIndex(openSet);
+                bool pathExist = currentNode == EndNodeIndex;
+                while (!openSet.IsEmpty && !pathExist)
                 {
-                    int currentNode = GetLowestFCostNodeIndex(openSet);
-                    
-                    //Check if we already arrived
-                    if (currentNode == EndNodeIndex)
-                    {
-                        CalculatePath();
-                        return;
-                    }
-
                     //Add "already check" Node AND remove from "To check"
                     openSet.Remove(currentNode);
                     closeSet.Add(currentNode);
@@ -190,8 +183,11 @@ namespace KWUtils.KWGenericGrid
                         }
                     }
                     neighbors.Clear();
+                    currentNode = GetLowestFCostNodeIndex(openSet);
+                    pathExist = currentNode == EndNodeIndex;
                 }
-                
+                if (!pathExist) return;
+                CalculatePath();
             }
 
             private void CalculatePath()
@@ -230,7 +226,7 @@ namespace KWUtils.KWGenericGrid
                 int lowest = -1;
                 foreach (int index in openSet)
                 {
-                    lowest = lowest == -1 ? index : lowest;
+                    lowest = select(lowest, index, lowest == -1);//lowest = lowest == -1 ? index : lowest;
                     lowest = select(lowest, index, Nodes[index].FCost < Nodes[lowest].FCost);
                 }
                 return lowest;

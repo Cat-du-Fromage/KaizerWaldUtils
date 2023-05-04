@@ -63,7 +63,7 @@ namespace KWUtils
             CreateChunkComponents(numChunkXY);
             
             // SubCluster By Cluster
-            ClustersSubClusters = ClusterSubClusters.Build(NumSpaceHV, GateClusters);
+            //ClustersSubClusters = ClusterSubClusters.Build(NumSpaceHV, GateClusters);
             
             /*
             ChunkSubClusters = new ChunkSubCluster[ChunkComponents.Length];

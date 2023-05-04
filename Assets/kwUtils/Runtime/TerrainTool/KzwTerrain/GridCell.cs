@@ -58,7 +58,7 @@ namespace KWUtils
             float height = (vert1 + normalize(vert2 - vert1) * (SQRT2/2f)).y;
             Center = new float3(coord2D.x, height, coord2D.y);
         }
-        
+
         // Highest Vertex on Cell
         public float HighestPoint => ceil(cmax(float4(Vertices[0].y, Vertices[1].y, Vertices[2].y, Vertices[3].y)));
 
@@ -70,17 +70,19 @@ namespace KWUtils
         public NativeSlice<float3> LeftTriangle => Vertices.ToNativeArray(Allocator.Temp).Slice(0, 3);
         public NativeSlice<float3> RightTriangle => Vertices.ToNativeArray(Allocator.Temp).Slice(1, 3);
         
-        public float3 Get3DTranslatedPosition(float2 position2D)
+        public float3 Get3DTranslatedPosition(in float2 position2D)
         {
             bool isLeftTri = IsPointInTriangle(LeftTriangle, position2D);
-            //Ray origin
-            float3 rayOrigin = new float3(position2D.x, HighestPoint, position2D.y);
-            //NORMAL
-            float3 triangleNormal = isLeftTri ? NormalTriangleLeft : NormalTriangleRight;
-            //Point A : start
-            float3 a = isLeftTri ? LeftTriangle[0] : RightTriangle[0];
+            float3 rayOrigin = new (position2D.x, HighestPoint, position2D.y);        // Ray origin
+            float3 triangleNormal = isLeftTri ? NormalTriangleLeft : NormalTriangleRight;// NORMAL
+            float3 a = isLeftTri ? LeftTriangle[0] : RightTriangle[0];                   // Point A : start
             float t = dot(a - rayOrigin, triangleNormal) / dot(down(), triangleNormal);
             return mad(t,down(), rayOrigin);
+        }
+        
+        public float3 Get3DTranslatedPosition(in float3 position3D)
+        {
+            return Get3DTranslatedPosition(position3D.xz);
         }
         
         public bool IsPointInTriangle(NativeSlice<float3> triangle, float2 position2D)
