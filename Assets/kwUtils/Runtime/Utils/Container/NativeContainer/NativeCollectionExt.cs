@@ -6,7 +6,8 @@ using Unity.Collections.LowLevel.Unsafe;
 using Unity.Mathematics;
 using UnityEngine;
 using System.Runtime.CompilerServices;
-
+using Unity.Jobs.LowLevel.Unsafe;
+using UnityEngine.Jobs;
 using static Unity.Collections.LowLevel.Unsafe.NativeArrayUnsafeUtility;
 using static KWUtils.KwManagedContainerUtils;
 
@@ -14,6 +15,8 @@ namespace KWUtils
 {
     public static class NativeCollectionExt
     {
+        public static int OptimumJobWorker => JobsUtility.JobWorkerCount - 1;
+        
         public static NativeArray<T> AllocNtvAry<T>(int size, Allocator a = Allocator.TempJob) 
         where T : struct
         {
@@ -107,6 +110,31 @@ namespace KWUtils
             NoAllocHelpers.ResizeList(list, newLength);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void DisposeIfCreated<T>(this ref NativeArray<T> nativeArray)
+        where T : struct
+        {
+            if (nativeArray.IsCreated) nativeArray.Dispose();
+        }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void DisposeIfCreated(this ref TransformAccessArray transformArray)
+        {
+            if (transformArray.isCreated) transformArray.Dispose();
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void DisposeIfCreated<T>(this ref NativeList<T> nativeContainer)
+        where T : unmanaged
+        {
+            if (nativeContainer.IsCreated) nativeContainer.Dispose();
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void DisposeIfCreated<T>(this ref NativeHashSet<T> nativeContainer)
+        where T : unmanaged, IEquatable<T>
+        {
+            if (nativeContainer.IsCreated) nativeContainer.Dispose();
+        }
     }
 }
