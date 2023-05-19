@@ -5,8 +5,9 @@ using UnityEngine;
 
 namespace KWUtils
 {
-    [CustomPropertyDrawer(typeof(ReadOnlyAttribute))]
-    public class ReadOnlyPropertyDrawer : PropertyDrawer
+#if UNITY_EDITOR
+    [CustomPropertyDrawer(typeof(ReadOnlyFieldAttribute))]
+    public class ReadOnlyFieldPropertyDrawer : PropertyDrawer
     {
         public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
         {
@@ -15,4 +16,5 @@ namespace KWUtils
             GUI.enabled = true;
         }
     }
+#endif
 }

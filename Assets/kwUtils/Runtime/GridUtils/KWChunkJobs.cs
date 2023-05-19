@@ -1,11 +1,11 @@
 #define EnableBurst
 
 
-/*
+
 #pragma warning disable 0168 // variable declared but not used.
 #pragma warning disable 0219 // variable assigned but not used.
 #pragma warning disable 0414 // private field assigned but not used.
-*/
+
 
 using KWUtils.KwTerrain;
 using UnityEngine;
@@ -19,7 +19,7 @@ using static KWUtils.KWmath;
 using static KWUtils.KWGrid;
 using static KWUtils.KWChunk;
 using int2 = Unity.Mathematics.int2;
-
+/*
 [assembly: RegisterGenericJobType(typeof(KWUtils.JOrderArrayByChunkIndex<bool>))]
 [assembly: RegisterGenericJobType(typeof(KWUtils.JOrderArrayByChunkIndex<int>))]
 [assembly: RegisterGenericJobType(typeof(KWUtils.JOrderArrayByChunkIndex<float>))]
@@ -43,10 +43,10 @@ using int2 = Unity.Mathematics.int2;
 [assembly: RegisterGenericJobType(typeof(KWUtils.JSharedOrderArrayByChunkIndex<float3>))]
 [assembly: RegisterGenericJobType(typeof(KWUtils.JSharedOrderArrayByChunkIndex<Vector2>))]
 [assembly: RegisterGenericJobType(typeof(KWUtils.JSharedOrderArrayByChunkIndex<Vector3>))]
-
+*/
 namespace KWUtils
 {
-/*
+
 #pragma warning disable 0219
     internal class KwChunkJobsGenericGeneration
     {
@@ -88,7 +88,7 @@ namespace KWUtils
         
     }
 #pragma warning restore 0219
-    */
+    
 
     // The Job will "slice" the array and reorder them
     // at the end when we cut the array given the number of cell in one chunk
